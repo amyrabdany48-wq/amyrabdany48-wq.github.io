@@ -2,247 +2,457 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>World War - جنگ جهانی</title>
+<meta name="viewport"
+      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+
+<title>جنگ جهانی | World War</title>
+
+<!-- نقشه -->
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
+
 *{
     box-sizing:border-box;
-    user-select:none;
 }
 
-html,body{
+html,
+body{
     margin:0;
+    padding:0;
     width:100%;
     height:100%;
     overflow:hidden;
     font-family:Tahoma,Arial,sans-serif;
-    background:#07111d;
-    color:#fff;
-}
-
-button,select{
-    font-family:inherit;
+    background:#07131f;
+    color:white;
 }
 
 #game{
+    position:relative;
     width:100%;
     height:100%;
-    position:relative;
-    overflow:hidden;
 }
+
+/* ================= MAP ================= */
 
 #map{
     position:absolute;
     inset:0;
     width:100%;
     height:100%;
-    background:
-        radial-gradient(circle at 50% 40%,#183d55 0%,#0a2435 45%,#06131f 100%);
+    background:#0b2433;
 }
 
-/* ---------------- TOP BAR ---------------- */
+.leaflet-container{
+    background:#0b2433;
+    font-family:Tahoma,Arial,sans-serif;
+}
+
+/* ================= TOP BAR ================= */
 
 #topbar{
+
     position:absolute;
-    top:8px;
-    left:8px;
-    right:8px;
-    min-height:65px;
-    z-index:10;
+
+    top:10px;
+    left:10px;
+    right:10px;
+
+    min-height:64px;
+
+    z-index:1000;
 
     display:flex;
     align-items:center;
+
     gap:7px;
 
-    padding:8px;
+    padding:8px 10px;
 
-    background:rgba(7,16,29,.94);
-    border:1px solid #35516d;
-    border-radius:14px;
-    box-shadow:0 8px 30px #0009;
+    background:rgba(5,15,27,.94);
+
+    border:1px solid #38536e;
+
+    border-radius:15px;
+
+    box-shadow:
+        0 8px 30px rgba(0,0,0,.55);
+
+    backdrop-filter:blur(10px);
 }
 
 .logo{
-    font-size:18px;
-    font-weight:bold;
+
     margin-left:auto;
-    color:#e9f4ff;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    white-space:nowrap;
 }
 
 .stat{
-    background:#14283d;
-    border:1px solid #29445e;
-    border-radius:9px;
+
+    min-width:75px;
+
     padding:7px 10px;
-    font-size:12px;
+
+    text-align:center;
+
+    background:#13283d;
+
+    border:1px solid #28465f;
+
+    border-radius:10px;
+
+    font-size:11px;
 }
 
 .stat b{
-    color:#71c9ff;
+
+    display:block;
+
+    margin-top:2px;
+
+    color:#73caff;
+
     font-size:15px;
 }
 
-button{
-    border:none;
+#endTurn{
+
+    background:#287b50;
+
+    min-height:45px;
+
+    padding:8px 13px;
+
+    border:0;
+
+    border-radius:10px;
+
     color:white;
-    background:#17689c;
-    padding:9px 12px;
-    border-radius:9px;
-    cursor:pointer;
+
     font-weight:bold;
+
+    cursor:pointer;
 }
 
-button:hover{
-    filter:brightness(1.2);
-}
+/* ================= COUNTRY PANEL ================= */
 
-#turnBtn{
-    background:#287a4e;
-}
+#countryPanel{
 
-/* ---------------- SIDE PANEL ---------------- */
-
-#panel{
     position:absolute;
-    top:82px;
-    right:9px;
-    width:270px;
-    z-index:9;
 
-    background:rgba(7,16,29,.95);
-    border:1px solid #35516d;
-    border-radius:14px;
-    padding:13px;
+    z-index:1001;
 
-    box-shadow:0 10px 35px #0009;
+    top:88px;
+
+    right:12px;
+
+    width:285px;
+
+    max-height:calc(100vh - 110px);
+
+    overflow:auto;
+
+    padding:14px;
+
+    background:rgba(5,15,27,.96);
+
+    border:1px solid #38536e;
+
+    border-radius:15px;
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,.6);
+
+    backdrop-filter:blur(12px);
 }
 
-#panel h2{
-    margin:0 0 10px;
-    font-size:19px;
+#countryTitle{
+
+    margin:0 0 12px;
+
+    font-size:20px;
+
+    color:#fff;
 }
 
 .info{
-    border-bottom:1px solid #ffffff12;
-    padding:7px 0;
+
     display:flex;
+
     justify-content:space-between;
+
+    padding:8px 2px;
+
+    border-bottom:1px solid rgba(255,255,255,.08);
+
     font-size:13px;
 }
 
 .info span{
-    color:#9fb1c5;
+
+    color:#9eafc1;
+}
+
+.info b{
+
+    color:#fff;
 }
 
 .actions{
+
     display:grid;
+
     grid-template-columns:1fr 1fr;
+
     gap:7px;
+
     margin-top:12px;
 }
 
+button{
+
+    border:0;
+
+    border-radius:9px;
+
+    color:white;
+
+    padding:10px 7px;
+
+    font-family:inherit;
+
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+button:active{
+
+    transform:scale(.97);
+}
+
 .attack{
-    background:#a63232;
+    background:#a93232;
 }
 
 .recruit{
-    background:#28784c;
+    background:#277b4d;
 }
 
-.build{
-    background:#76552b;
+.tank{
+    background:#876126;
 }
 
-.diplomacy{
-    background:#405b89;
+.air{
+    background:#276e91;
 }
 
-/* ---------------- LOG ---------------- */
+.peace{
+    background:#536fa8;
+}
+
+.alliance{
+    background:#536fa8;
+}
+
+.disabled{
+
+    opacity:.45;
+
+    pointer-events:none;
+}
+
+.help{
+
+    margin-top:10px;
+
+    padding:8px;
+
+    background:#101f30;
+
+    border-radius:8px;
+
+    color:#9eb0c4;
+
+    font-size:10px;
+
+    line-height:1.7;
+}
+
+/* ================= LOG ================= */
 
 #log{
+
     position:absolute;
-    bottom:10px;
+
+    z-index:1001;
+
     left:10px;
 
-    width:310px;
-    max-height:190px;
+    bottom:10px;
+
+    width:300px;
+
+    max-height:180px;
+
     overflow:auto;
 
-    background:rgba(7,16,29,.93);
-    border:1px solid #35516d;
+    padding:9px;
+
+    background:rgba(5,15,27,.94);
+
+    border:1px solid #38536e;
+
     border-radius:13px;
 
-    padding:10px;
-    z-index:8;
+    font-size:11px;
 
-    font-size:12px;
+    box-shadow:0 8px 25px rgba(0,0,0,.5);
 }
 
-.log{
-    padding:5px;
-    border-bottom:1px solid #ffffff10;
+.logLine{
+
+    padding:6px 2px;
+
+    border-bottom:1px solid rgba(255,255,255,.07);
+
+    line-height:1.5;
 }
 
-/* ---------------- START SCREEN ---------------- */
+/* ================= START SCREEN ================= */
 
-#start{
+#startScreen{
+
     position:absolute;
+
     inset:0;
-    z-index:50;
+
+    z-index:5000;
 
     display:flex;
-    align-items:center;
+
     justify-content:center;
 
+    align-items:center;
+
     background:
-        radial-gradient(circle,#193b57 0%,#07111d 65%,#02070c 100%);
+
+    radial-gradient(
+        circle at center,
+        #1b425b 0%,
+        #091725 50%,
+        #02070c 100%
+    );
 }
 
-.startbox{
-    width:min(500px,92%);
-    background:#0b1b2b;
-    border:1px solid #3b5b78;
-    border-radius:20px;
+.startBox{
+
+    width:min(480px,92%);
+
     padding:25px;
+
     text-align:center;
 
-    box-shadow:0 20px 80px #000;
+    background:#0a1928;
+
+    border:1px solid #3c5d79;
+
+    border-radius:20px;
+
+    box-shadow:0 25px 80px rgba(0,0,0,.8);
 }
 
-.startbox h1{
-    font-size:32px;
-    margin:0 0 8px;
+.startBox h1{
+
+    margin:0;
+
+    font-size:31px;
 }
 
-.startbox p{
-    color:#aebed0;
+.startBox p{
+
+    color:#aabbd0;
+
     line-height:1.8;
+
+    font-size:13px;
 }
 
-select{
+#countrySelect{
+
     width:100%;
-    padding:12px;
-    background:#14283d;
-    color:#fff;
-    border:1px solid #45617c;
-    border-radius:10px;
+
     margin:10px 0;
+
+    padding:12px;
+
+    color:white;
+
+    background:#142a40;
+
+    border:1px solid #405e78;
+
+    border-radius:10px;
+
+    font-family:inherit;
 }
 
-#startBtn{
+#startGame{
+
     width:100%;
-    font-size:17px;
-    background:#1e78ad;
+
+    background:#217cb4;
+
+    font-size:16px;
 }
 
-/* ---------------- MOBILE ---------------- */
+/* ================= COUNTRY LABEL ================= */
+
+.countryLabel{
+
+    background:transparent;
+
+    border:0;
+
+    box-shadow:none;
+
+    color:white;
+
+    font-weight:bold;
+
+    text-shadow:
+        1px 1px 3px #000,
+        -1px -1px 3px #000;
+
+    font-size:11px;
+
+    white-space:nowrap;
+}
+
+/* ================= MOBILE ================= */
 
 @media(max-width:700px){
 
     #topbar{
-        min-height:55px;
+
+        top:6px;
+        left:6px;
+        right:6px;
+
+        min-height:57px;
+
+        padding:5px;
+
         gap:4px;
+
+        overflow:hidden;
     }
 
     .logo{
@@ -250,41 +460,112 @@ select{
     }
 
     .stat{
-        padding:5px 7px;
-        font-size:10px;
+
+        min-width:55px;
+
+        padding:5px 4px;
+
+        font-size:9px;
     }
 
     .stat b{
+
         font-size:12px;
     }
 
-    #panel{
-        width:205px;
-        top:72px;
-        right:6px;
-        padding:9px;
+    #endTurn{
+
+        min-width:72px;
+
+        padding:7px;
+
+        font-size:10px;
     }
 
-    #panel h2{
-        font-size:15px;
+    /*
+       روی موبایل پنل دیگر وسط صفحه نیست.
+       پایین صفحه قرار می‌گیرد.
+    */
+
+    #countryPanel{
+
+        top:auto;
+
+        right:6px;
+        left:6px;
+
+        bottom:6px;
+
+        width:auto;
+
+        max-height:43vh;
+
+        padding:10px;
+
+        border-radius:14px;
+    }
+
+    #countryTitle{
+
+        font-size:16px;
+
+        margin-bottom:5px;
     }
 
     .info{
+
+        padding:5px;
+
         font-size:11px;
+    }
+
+    .actions{
+
+        gap:5px;
+
+        margin-top:7px;
     }
 
     button{
-        padding:8px 6px;
-        font-size:11px;
+
+        padding:8px 4px;
+
+        font-size:10px;
+    }
+
+    .help{
+
+        display:none;
     }
 
     #log{
-        width:210px;
-        max-height:120px;
-        bottom:6px;
+
         left:6px;
+
+        bottom:calc(43vh + 14px);
+
+        width:180px;
+
+        max-height:90px;
+
+        font-size:9px;
+
+        padding:6px;
     }
+
+    .countryLabel{
+
+        font-size:8px;
+    }
+
 }
+
+/* ================= HIDE ================= */
+
+.hidden{
+    display:none !important;
+}
+
 </style>
 </head>
 
@@ -292,1185 +573,1043 @@ select{
 
 <div id="game">
 
-<canvas id="map"></canvas>
+    <div id="map"></div>
 
-<!-- نوار بالا -->
 
-<div id="topbar">
+    <!-- ================= TOP ================= -->
 
-<div class="logo">
-🌍 WORLD WAR
+    <div id="topbar">
+
+        <div class="logo">
+            🌍 جنگ جهانی
+        </div>
+
+        <div class="stat">
+            کشور
+            <b id="playerCountry">---</b>
+        </div>
+
+        <div class="stat">
+            💰
+            <b id="money">0</b>
+        </div>
+
+        <div class="stat">
+            🪖
+            <b id="army">0</b>
+        </div>
+
+        <div class="stat">
+            🚜
+            <b id="tanks">0</b>
+        </div>
+
+        <div class="stat">
+            ✈️
+            <b id="planes">0</b>
+        </div>
+
+        <div class="stat">
+            📅
+            <b id="turn">1</b>
+        </div>
+
+        <button id="endTurn">
+            پایان نوبت
+        </button>
+
+    </div>
+
+
+    <!-- ================= COUNTRY PANEL ================= -->
+
+    <div id="countryPanel">
+
+        <h2 id="countryTitle">
+            یک کشور را انتخاب کنید
+        </h2>
+
+        <div class="info">
+            <span>مالک</span>
+            <b id="infoOwner">---</b>
+        </div>
+
+        <div class="info">
+            <span>ارتش</span>
+            <b id="infoArmy">---</b>
+        </div>
+
+        <div class="info">
+            <span>تانک</span>
+            <b id="infoTank">---</b>
+        </div>
+
+        <div class="info">
+            <span>هواپیما</span>
+            <b id="infoAir">---</b>
+        </div>
+
+        <div class="info">
+            <span>جمعیت</span>
+            <b id="infoPopulation">---</b>
+        </div>
+
+        <div class="info">
+            <span>صنعت</span>
+            <b id="infoIndustry">---</b>
+        </div>
+
+
+        <div class="actions">
+
+            <button
+                id="attack"
+                class="attack">
+                ⚔️ حمله
+            </button>
+
+            <button
+                id="recruit"
+                class="recruit">
+                🪖 سرباز
+            </button>
+
+            <button
+                id="buildTank"
+                class="tank">
+                🚜 تانک
+            </button>
+
+            <button
+                id="buildAir"
+                class="air">
+                ✈️ هواپیما
+            </button>
+
+            <button
+                id="peace"
+                class="peace">
+                🕊️ صلح
+            </button>
+
+            <button
+                id="alliance"
+                class="alliance">
+                🤝 اتحاد
+            </button>
+
+        </div>
+
+        <div class="help">
+            برای حمله ابتدا کشور دشمن را روی نقشه انتخاب کن.
+            کشور باید با یکی از سرزمین‌های تو مرز داشته باشد.
+        </div>
+
+    </div>
+
+
+    <!-- ================= LOG ================= -->
+
+    <div id="log"></div>
+
+
+    <!-- ================= START ================= -->
+
+    <div id="startScreen">
+
+        <div class="startBox">
+
+            <h1>
+                🌍 جنگ جهانی
+            </h1>
+
+            <p>
+                یک کشور را انتخاب کن و جهان را فتح کن.
+                نقشه دارای مرزهای واقعی کشورهای جهان است.
+            </p>
+
+            <select id="countrySelect">
+                <option value="">
+                    انتخاب کشور...
+                </option>
+            </select>
+
+            <button id="startGame">
+                شروع جنگ
+            </button>
+
+        </div>
+
+    </div>
+
 </div>
 
-<div class="stat">
-کشور:
-<b id="playerName">---</b>
-</div>
 
-<div class="stat">
-💰
-<b id="money">0</b>
-</div>
+<!-- Leaflet -->
 
-<div class="stat">
-🪖
-<b id="army">0</b>
-</div>
-
-<div class="stat">
-✈️
-<b id="air">0</b>
-</div>
-
-<div class="stat">
-🛡️
-<b id="defense">0</b>
-</div>
-
-<div class="stat">
-📅
-<b id="turn">1</b>
-</div>
-
-<button id="turnBtn">
-پایان نوبت
-</button>
-
-</div>
-
-
-<!-- پنل کشور -->
-
-<div id="panel">
-
-<h2 id="countryTitle">
-کشوری انتخاب نشده
-</h2>
-
-<div class="info">
-<span>مالک</span>
-<b id="owner">---</b>
-</div>
-
-<div class="info">
-<span>ارتش</span>
-<b id="countryArmy">---</b>
-</div>
-
-<div class="info">
-<span>نیروی هوایی</span>
-<b id="countryAir">---</b>
-</div>
-
-<div class="info">
-<span>تانک</span>
-<b id="countryTank">---</b>
-</div>
-
-<div class="info">
-<span>جمعیت</span>
-<b id="population">---</b>
-</div>
-
-<div class="info">
-<span>صنعت</span>
-<b id="industry">---</b>
-</div>
-
-<div class="actions">
-
-<button class="attack" id="attackBtn">
-⚔️ حمله
-</button>
-
-<button class="recruit" id="recruitBtn">
-🪖 سرباز
-</button>
-
-<button class="build" id="tankBtn">
-🚜 تانک
-</button>
-
-<button class="build" id="airBtn">
-✈️ هواپیما
-</button>
-
-<button class="diplomacy" id="peaceBtn">
-🕊️ صلح
-</button>
-
-<button class="diplomacy" id="allyBtn">
-🤝 اتحاد
-</button>
-
-</div>
-
-</div>
-
-
-<!-- گزارش جنگ -->
-
-<div id="log"></div>
-
-
-<!-- شروع -->
-
-<div id="start">
-
-<div class="startbox">
-
-<h1>🌍 جنگ جهانی</h1>
-
-<p>
-یک کشور را انتخاب کن، ارتش بساز، اقتصاد را توسعه بده
-و سرزمین‌های دیگر را تصرف کن.
-</p>
-
-<select id="countrySelect"></select>
-
-<button id="startBtn">
-شروع جنگ
-</button>
-
-</div>
-
-</div>
-
-</div>
+<script
+src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
 
 
 <script>
 
-/* =====================================================
+/* =========================================================
    WORLD WAR
-   بازی استراتژی جنگ جهانی در یک فایل HTML
-===================================================== */
+   موتور بازی
+========================================================= */
 
-const canvas=document.getElementById("map");
-const ctx=canvas.getContext("2d");
 
-let W=0;
-let H=0;
+/* ================= MAP ================= */
+
+const map = L.map("map",{
+
+    zoomControl:false,
+
+    attributionControl:false,
+
+    minZoom:2,
+
+    maxZoom:7
+
+}).setView([25,20],2.3);
+
+
+/*
+   نقشه پایه تاریک
+*/
+
+L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    {
+        maxZoom:19
+    }
+).addTo(map);
+
+
+/* ================= GAME DATA ================= */
+
+
+/*
+   اطلاعات اصلی کشورها
+
+   بعضی کشورها برای بازی مقدار
+   نظامی و اقتصادی اختصاصی دارند.
+*/
+
+const GAME_DATA={
+
+    USA:{
+        name:"آمریکا",
+        army:230,
+        tanks:90,
+        air:80,
+        money:1200,
+        industry:100,
+        population:340
+    },
+
+    CAN:{
+        name:"کانادا",
+        army:110,
+        tanks:30,
+        air:20,
+        money:600,
+        industry:65,
+        population:40
+    },
+
+    MEX:{
+        name:"مکزیک",
+        army:120,
+        tanks:35,
+        air:25,
+        money:450,
+        industry:45,
+        population:130
+    },
+
+    BRA:{
+        name:"برزیل",
+        army:170,
+        tanks:55,
+        air:35,
+        money:600,
+        industry:60,
+        population:216
+    },
+
+    ARG:{
+        name:"آرژانتین",
+        army:90,
+        tanks:25,
+        air:20,
+        money:400,
+        industry:45,
+        population:46
+    },
+
+    GBR:{
+        name:"بریتانیا",
+        army:160,
+        tanks:60,
+        air:75,
+        money:900,
+        industry:90,
+        population:69
+    },
+
+    FRA:{
+        name:"فرانسه",
+        army:150,
+        tanks:65,
+        air:55,
+        money:800,
+        industry:85,
+        population:68
+    },
+
+    DEU:{
+        name:"آلمان",
+        army:220,
+        tanks:110,
+        air:90,
+        money:1000,
+        industry:100,
+        population:84
+    },
+
+    ESP:{
+        name:"اسپانیا",
+        army:105,
+        tanks:30,
+        air:25,
+        money:450,
+        industry:55,
+        population:49
+    },
+
+    ITA:{
+        name:"ایتالیا",
+        army:130,
+        tanks:45,
+        air:40,
+        money:550,
+        industry:65,
+        population:59
+    },
+
+    POL:{
+        name:"لهستان",
+        army:120,
+        tanks:45,
+        air:25,
+        money:500,
+        industry:55,
+        population:38
+    },
+
+    UKR:{
+        name:"اوکراین",
+        army:140,
+        tanks:60,
+        air:25,
+        money:500,
+        industry:55,
+        population:38
+    },
+
+    RUS:{
+        name:"روسیه",
+        army:300,
+        tanks:180,
+        air:120,
+        money:1200,
+        industry:95,
+        population:144
+    },
+
+    TUR:{
+        name:"ترکیه",
+        army:145,
+        tanks:55,
+        air:40,
+        money:550,
+        industry:65,
+        population:86
+    },
+
+    IRN:{
+        name:"ایران",
+        army:150,
+        tanks:60,
+        air:35,
+        money:550,
+        industry:60,
+        population:89
+    },
+
+    SAU:{
+        name:"عربستان",
+        army:95,
+        tanks:35,
+        air:35,
+        money:1000,
+        industry:60,
+        population:37
+    },
+
+    EGY:{
+        name:"مصر",
+        army:130,
+        tanks:55,
+        air:40,
+        money:500,
+        industry:50,
+        population:112
+    },
+
+    DZA:{
+        name:"الجزایر",
+        army:90,
+        tanks:35,
+        air:25,
+        money:400,
+        industry:40,
+        population:46
+    },
+
+    NGA:{
+        name:"نیجریه",
+        army:90,
+        tanks:25,
+        air:20,
+        money:400,
+        industry:40,
+        population:230
+    },
+
+    ZAF:{
+        name:"آفریقای جنوبی",
+        army:85,
+        tanks:30,
+        air:25,
+        money:450,
+        industry:50,
+        population:61
+    },
+
+    ETH:{
+        name:"اتیوپی",
+        army:70,
+        tanks:15,
+        air:10,
+        money:300,
+        industry:30,
+        population:129
+    },
+
+    KEN:{
+        name:"کنیا",
+        army:55,
+        tanks:15,
+        air:10,
+        money:300,
+        industry:30,
+        population:55
+    },
+
+    COD:{
+        name:"کنگو",
+        army:75,
+        tanks:15,
+        air:10,
+        money:300,
+        industry:30,
+        population:112
+    },
+
+    IND:{
+        name:"هند",
+        army:280,
+        tanks:120,
+        air:100,
+        money:1000,
+        industry:85,
+        population:1430
+    },
+
+    PAK:{
+        name:"پاکستان",
+        army:150,
+        tanks:60,
+        air:45,
+        money:550,
+        industry:50,
+        population:245
+    },
+
+    CHN:{
+        name:"چین",
+        army:320,
+        tanks:180,
+        air:120,
+        money:1100,
+        industry:100,
+        population:1410
+    },
+
+    MNG:{
+        name:"مغولستان",
+        army:40,
+        tanks:10,
+        air:5,
+        money:200,
+        industry:25,
+        population:4
+    },
+
+    KOR:{
+        name:"کره جنوبی",
+        army:100,
+        tanks:40,
+        air:45,
+        money:650,
+        industry:85,
+        population:52
+    },
+
+    JPN:{
+        name:"ژاپن",
+        army:150,
+        tanks:35,
+        air:100,
+        money:950,
+        industry:95,
+        population:123
+    },
+
+    IDN:{
+        name:"اندونزی",
+        army:90,
+        tanks:15,
+        air:30,
+        money:500,
+        industry:50,
+        population:280
+    },
+
+    AUS:{
+        name:"استرالیا",
+        army:95,
+        tanks:35,
+        air:45,
+        money:750,
+        industry:80,
+        population:27
+    },
+
+    KAZ:{
+        name:"قزاقستان",
+        army:80,
+        tanks:30,
+        air:15,
+        money:400,
+        industry:45,
+        population:20
+    },
+
+    PER:{
+        name:"پرو",
+        army:65,
+        tanks:20,
+        air:15,
+        money:300,
+        industry:40,
+        population:34
+    },
+
+    CHL:{
+        name:"شیلی",
+        army:60,
+        tanks:15,
+        air:15,
+        money:300,
+        industry:40,
+        population:20
+    },
+
+    MAR:{
+        name:"مراکش",
+        army:70,
+        tanks:20,
+        air:15,
+        money:350,
+        industry:40,
+        population:38
+    }
+
+};
+
+
+/* ================= STATE ================= */
+
+let player=null;
 
 let selected=null;
-let player=null;
 
 let turn=1;
 
-let zoom=1;
-let offsetX=0;
-let offsetY=0;
+let countries={};
 
-let dragging=false;
-let lastX=0;
-let lastY=0;
 
+/* ================= COUNTRY COLOR ================= */
 
-/* =====================================================
-   کشورها
-===================================================== */
+const palette=[
 
-const countries={
+    "#3478a8",
+    "#9e4848",
+    "#467d55",
+    "#85683c",
+    "#725a91",
+    "#a55f48",
+    "#397d78",
+    "#7c7040",
+    "#536d94",
+    "#97586d"
 
-USA:{
-name:"آمریکا",
-x:-100,y:40,
-w:22,h:14,
-population:340,
-industry:95,
-army:180,
-air:80,
-tank:65,
-money:900,
-color:"#4e89c7"
-},
+];
 
-Canada:{
-name:"کانادا",
-x:-106,y:58,
-w:25,h:12,
-population:40,
-industry:55,
-army:70,
-air:25,
-tank:20,
-money:500,
-color:"#c74e5b"
-},
 
-Mexico:{
-name:"مکزیک",
-x:-102,y:23,
-w:13,h:9,
-population:130,
-industry:40,
-army:80,
-air:15,
-tank:18,
-money:350,
-color:"#579c63"
-},
+/* ================= GEOJSON ================= */
 
-Brazil:{
-name:"برزیل",
-x:-52,y:-10,
-w:20,h:21,
-population:216,
-industry:55,
-army:130,
-air:30,
-tank:40,
-money:550,
-color:"#4c9c68"
-},
 
-Argentina:{
-name:"آرژانتین",
-x:-64,y:-35,
-w:12,h:15,
-population:46,
-industry:38,
-army:70,
-air:18,
-tank:20,
-money:300,
-color:"#7b74b5"
-},
+/*
+   مرز واقعی کشورهای جهان.
+*/
 
-UK:{
-name:"بریتانیا",
-x:-3,y:54,
-w:5,h:4,
-population:69,
-industry:85,
-army:120,
-air:65,
-tank:45,
-money:700,
-color:"#455aa8"
-},
+const GEO_URL=
+"https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
 
-France:{
-name:"فرانسه",
-x:2,y:46,
-w:7,h:5,
-population:68,
-industry:75,
-army:110,
-air:50,
-tank:42,
-money:650,
-color:"#3d83b7"
-},
 
-Germany:{
-name:"آلمان",
-x:10,y:51,
-w:6,h:6,
-population:84,
-industry:98,
-army:170,
-air:75,
-tank:70,
-money:800,
-color:"#777777"
-},
+let geoLayer=null;
 
-Spain:{
-name:"اسپانیا",
-x:-4,y:40,
-w:7,h:5,
-population:49,
-industry:55,
-army:80,
-air:25,
-tank:25,
-money:400,
-color:"#bd9148"
-},
 
-Italy:{
-name:"ایتالیا",
-x:12,y:42,
-w:5,h:7,
-population:59,
-industry:65,
-army:100,
-air:35,
-tank:30,
-money:450,
-color:"#4f997b"
-},
+/* ================= LOAD MAP ================= */
 
-Poland:{
-name:"لهستان",
-x:19,y:52,
-w:7,h:5,
-population:38,
-industry:55,
-army:85,
-air:25,
-tank:30,
-money:350,
-color:"#b95c69"
-},
+fetch(GEO_URL)
 
-Russia:{
-name:"روسیه",
-x:80,y:58,
-w:45,h:20,
-population:144,
-industry:90,
-army:260,
-air:100,
-tank:150,
-money:900,
-color:"#8d5964"
-},
+.then(response=>{
 
-Ukraine:{
-name:"اوکراین",
-x:32,y:49,
-w:9,h:6,
-population:38,
-industry:50,
-army:90,
-air:20,
-tank:30,
-money:350,
-color:"#c4a34d"
-},
+    if(!response.ok){
 
-Turkey:{
-name:"ترکیه",
-x:35,y:39,
-w:10,h:5,
-population:86,
-industry:60,
-army:120,
-air:35,
-tank:40,
-money:450,
-color:"#a45b51"
-},
+        throw new Error("خطا در دریافت نقشه");
 
-Iran:{
-name:"ایران",
-x:53,y:32,
-w:10,h:8,
-population:89,
-industry:65,
-army:140,
-air:30,
-tank:50,
-money:500,
-color:"#599071"
-},
+    }
 
-Saudi:{
-name:"عربستان",
-x:45,y:23,
-w:13,h:10,
-population:37,
-industry:50,
-army:90,
-air:20,
-tank:25,
-money:800,
-color:"#718c53"
-},
+    return response.json();
 
-Egypt:{
-name:"مصر",
-x:30,y:27,
-w:7,h:8,
-population:112,
-industry:45,
-army:100,
-air:30,
-tank:35,
-money:400,
-color:"#aa884e"
-},
+})
 
-Nigeria:{
-name:"نیجریه",
-x:8,y:8,
-w:8,h:8,
-population:230,
-industry:35,
-army:75,
-air:15,
-tank:20,
-money:300,
-color:"#5c9271"
-},
+.then(data=>{
 
-SouthAfrica:{
-name:"آفریقای جنوبی",
-x:25,y:-30,
-w:13,h:9,
-population:61,
-industry:50,
-army:80,
-air:25,
-tank:30,
-money:400,
-color:"#9d7251"
-},
+    buildCountries(data);
 
-India:{
-name:"هند",
-x:79,y:22,
-w:12,h:15,
-population:1430,
-industry:80,
-army:250,
-air:80,
-tank:100,
-money:900,
-color:"#c17842"
-},
+})
 
-Pakistan:{
-name:"پاکستان",
-x:69,y:29,
-w:7,h:9,
-population:245,
-industry:45,
-army:130,
-air:35,
-tank:55,
-money:450,
-color:"#4b9070"
-},
+.catch(error=>{
 
-China:{
-name:"چین",
-x:105,y:35,
-w:20,h:16,
-population:1410,
-industry:100,
-army:300,
-air:110,
-tank:160,
-money:1000,
-color:"#a84c4c"
-},
+    console.error(error);
 
-Mongolia:{
-name:"مغولستان",
-x:103,y:47,
-w:13,h:8,
-population:4,
-industry:25,
-army:35,
-air:5,
-tank:10,
-money:150,
-color:"#9b8060"
-},
-
-Japan:{
-name:"ژاپن",
-x:138,y:37,
-w:5,h:9,
-population:123,
-industry:90,
-army:120,
-air:90,
-tank:35,
-money:850,
-color:"#aa5273"
-},
-
-Korea:{
-name:"کره جنوبی",
-x:128,y:36,
-w:4,h:6,
-population:52,
-industry:80,
-army:90,
-air:35,
-tank:35,
-money:500,
-color:"#507cad"
-},
-
-Indonesia:{
-name:"اندونزی",
-x:117,y:-3,
-w:17,h:7,
-population:280,
-industry:50,
-army:75,
-air:25,
-tank:15,
-money:450,
-color:"#ba714c"
-},
-
-Australia:{
-name:"استرالیا",
-x:134,y:-25,
-w:22,h:14,
-population:27,
-industry:75,
-army:85,
-air:40,
-tank:35,
-money:650,
-color:"#587c9b"
-},
-
-Kazakhstan:{
-name:"قزاقستان",
-x:68,y:48,
-w:18,h:9,
-population:20,
-industry:45,
-army:75,
-air:15,
-tank:30,
-money:350,
-color:"#8d7c4e"
-},
-
-Algeria:{
-name:"الجزایر",
-x:2,y:28,
-w:15,h:8,
-population:46,
-industry:35,
-army:75,
-air:15,
-tank:20,
-money:350,
-color:"#62865d"
-},
-
-Morocco:{
-name:"مراکش",
-x:-7,y:31,
-w:7,h:6,
-population:38,
-industry:40,
-army:65,
-air:15,
-tank:20,
-money:350,
-color:"#8e6d57"
-},
-
-Ethiopia:{
-name:"اتیوپی",
-x:40,y:9,
-w:9,h:8,
-population:129,
-industry:30,
-army:75,
-air:10,
-tank:15,
-money:250,
-color:"#89744f"
-},
-
-Kenya:{
-name:"کنیا",
-x:37,y:0,
-w:6,h:9,
-population:55,
-industry:30,
-army:55,
-air:10,
-tank:12,
-money:250,
-color:"#66875d"
-},
-
-DRC:{
-name:"کنگو",
-x:23,y:-3,
-w:10,h:11,
-population:112,
-industry:30,
-army:70,
-air:10,
-tank:15,
-money:250,
-color:"#735f80"
-},
-
-Peru:{
-name:"پرو",
-x:-76,y:-10,
-w:8,h:13,
-population:34,
-industry:35,
-army:65,
-air:12,
-tank:15,
-money:250,
-color:"#8a7655"
-},
-
-Chile:{
-name:"شیلی",
-x:-71,y:-28,
-w:4,h:22,
-population:20,
-industry:35,
-army:50,
-air:10,
-tank:10,
-money:220,
-color:"#617d9e"
-}
-
-};
-
-
-/* =====================================================
-   مالکیت اولیه
-===================================================== */
-
-for(const id in countries){
-
-    countries[id].owner=id;
-
-}
-
-
-/* =====================================================
-   مرزهای ساده
-===================================================== */
-
-const neighbors={
-
-USA:["Canada","Mexico"],
-
-Canada:["USA"],
-
-Mexico:["USA","Brazil"],
-
-Brazil:["Mexico","Argentina","Peru"],
-
-Argentina:["Brazil","Chile"],
-
-Chile:["Argentina","Peru"],
-
-Peru:["Chile","Brazil"],
-
-UK:["France"],
-
-France:["UK","Spain","Germany","Italy"],
-
-Spain:["France","Morocco"],
-
-Germany:["France","Poland","Italy"],
-
-Italy:["France","Germany"],
-
-Poland:["Germany","Ukraine","Russia"],
-
-Russia:[
-"Poland",
-"Ukraine",
-"Kazakhstan",
-"Mongolia",
-"China"
-],
-
-Ukraine:["Poland","Russia","Turkey"],
-
-Turkey:["Ukraine","Iran","Egypt"],
-
-Iran:[
-"Turkey",
-"Pakistan",
-"Kazakhstan",
-"Saudi"
-],
-
-Saudi:["Iran","Egypt"],
-
-Egypt:["Turkey","Saudi","Algeria"],
-
-Algeria:["Morocco","Egypt","Nigeria"],
-
-Morocco:["Algeria","Spain"],
-
-Nigeria:["Algeria","DRC"],
-
-DRC:["Nigeria","SouthAfrica","Kenya"],
-
-SouthAfrica:["DRC"],
-
-Ethiopia:["Egypt","Kenya"],
-
-Kenya:["Ethiopia","DRC"],
-
-India:["Pakistan","China"],
-
-Pakistan:["India","Iran","China"],
-
-China:[
-"Russia",
-"Mongolia",
-"Kazakhstan",
-"India",
-"Korea"
-],
-
-Mongolia:["Russia","China"],
-
-Japan:["Korea"],
-
-Korea:["China","Japan"],
-
-Indonesia:["Australia"],
-
-Australia:["Indonesia"],
-
-Kazakhstan:["Russia","China","Iran"]
-
-};
-
-
-/* =====================================================
-   ابزار نقشه
-===================================================== */
-
-function resize(){
-
-    W=innerWidth;
-    H=innerHeight;
-
-    canvas.width=W*devicePixelRatio;
-    canvas.height=H*devicePixelRatio;
-
-    ctx.setTransform(
-        devicePixelRatio,
-        0,
-        0,
-        devicePixelRatio,
-        0,
-        0
+    log(
+        "خطا در دریافت نقشه جهان. اتصال اینترنت را بررسی کنید."
     );
 
-    draw();
+});
+
+
+/* ================= BUILD COUNTRIES ================= */
+
+function buildCountries(data){
+
+    data.features.forEach((feature,index)=>{
+
+        const props=feature.properties || {};
+
+        const iso=
+            props.ISO_A3 ||
+            props.iso_a3 ||
+            props.ISO3 ||
+            props.ADM0_A3 ||
+            "";
+
+        const name=
+            props.ADMIN ||
+            props.NAME ||
+            props.name ||
+            "کشور";
+
+        let id=iso;
+
+        if(!id || id==="---"){
+
+            id="C_"+index;
+
+        }
+
+
+        /*
+           اگر اطلاعات اختصاصی نداریم،
+           اطلاعات پایه تولید می‌کنیم.
+        */
+
+        if(!GAME_DATA[id]){
+
+            GAME_DATA[id]={
+
+                name:name,
+
+                army:
+                    35+
+                    Math.floor(
+                        Math.random()*90
+                    ),
+
+                tanks:
+                    10+
+                    Math.floor(
+                        Math.random()*35
+                    ),
+
+                air:
+                    5+
+                    Math.floor(
+                        Math.random()*25
+                    ),
+
+                money:
+                    250+
+                    Math.floor(
+                        Math.random()*450
+                    ),
+
+                industry:
+                    25+
+                    Math.floor(
+                        Math.random()*60
+                    ),
+
+                population:
+                    5+
+                    Math.floor(
+                        Math.random()*150
+                    )
+
+            };
+
+        }
+
+
+        countries[id]={
+
+            id:id,
+
+            name:
+                GAME_DATA[id].name ||
+                name,
+
+            feature:feature,
+
+            owner:id,
+
+            army:GAME_DATA[id].army,
+
+            tanks:GAME_DATA[id].tanks,
+
+            air:GAME_DATA[id].air,
+
+            money:GAME_DATA[id].money,
+
+            industry:GAME_DATA[id].industry,
+
+            population:GAME_DATA[id].population,
+
+            color:
+                palette[
+                    index%palette.length
+                ]
+
+        };
+
+    });
+
+
+    /*
+       رسم مرزها
+    */
+
+    geoLayer=L.geoJSON(
+        data,
+        {
+
+            style:feature=>{
+
+                const props=
+                    feature.properties || {};
+
+                const iso=
+                    props.ISO_A3 ||
+                    props.iso_a3 ||
+                    props.ISO3 ||
+                    props.ADM0_A3 ||
+                    "";
+
+                const c=countries[iso];
+
+                return {
+
+                    color:"#52697d",
+
+                    weight:1,
+
+                    fillColor:
+                        c ?
+                        c.color :
+                        "#315069",
+
+                    fillOpacity:.72
+
+                };
+
+            },
+
+            onEachFeature:(feature,layer)=>{
+
+                const props=
+                    feature.properties || {};
+
+                const iso=
+                    props.ISO_A3 ||
+                    props.iso_a3 ||
+                    props.ISO3 ||
+                    props.ADM0_A3 ||
+                    "";
+
+                const c=countries[iso];
+
+                if(!c)return;
+
+
+                layer.on({
+
+                    click:()=>{
+
+                        selected=c;
+
+                        updatePanel();
+
+                        refreshMap();
+
+                    },
+
+                    mouseover:e=>{
+
+                        e.target.setStyle({
+
+                            weight:2,
+
+                            color:"#ffffff",
+
+                            fillOpacity:.9
+
+                        });
+
+                    },
+
+                    mouseout:e=>{
+
+                        refreshMap();
+
+                    }
+
+                });
+
+
+                /*
+                   نام کشور
+                */
+
+                const center=
+                    layer.getBounds().getCenter();
+
+
+                L.marker(
+                    center,
+                    {
+                        icon:
+                            L.divIcon({
+
+                                className:
+                                    "countryLabel",
+
+                                html:
+                                    c.name,
+
+                                iconSize:null
+
+                            }),
+
+                        interactive:false
+
+                    }
+
+                ).addTo(map);
+
+            }
+
+        }
+
+    ).addTo(map);
+
+
+    log(
+        "نقشه واقعی جهان بارگذاری شد."
+    );
+
+    refreshMap();
 
 }
 
-window.addEventListener("resize",resize);
+
+/* ================= REFRESH MAP ================= */
+
+function refreshMap(){
+
+    if(!geoLayer)return;
 
 
-/* تبدیل مختصات جهان */
+    geoLayer.eachLayer(layer=>{
 
-function project(lon,lat){
+        const props=
+            layer.feature.properties || {};
 
-    const x=(lon+180)/360*W;
+        const iso=
+            props.ISO_A3 ||
+            props.iso_a3 ||
+            props.ISO3 ||
+            props.ADM0_A3 ||
+            "";
 
-    const y=(90-lat)/180*H;
+        const c=countries[iso];
 
-    return [
-
-        x*zoom+offsetX,
-
-        y*zoom+offsetY
-
-    ];
-
-}
+        if(!c)return;
 
 
-/* =====================================================
-   رسم اقیانوس و کشورها
-===================================================== */
-
-function draw(){
-
-    ctx.clearRect(0,0,W,H);
-
-    /* اقیانوس */
-
-    ctx.fillStyle="#071b29";
-
-    ctx.fillRect(0,0,W,H);
-
-
-    /* خطوط طول جغرافیایی */
-
-    ctx.strokeStyle="#ffffff09";
-
-    ctx.lineWidth=1;
-
-    for(let lon=-180;lon<=180;lon+=20){
-
-        const a=project(lon,-90);
-        const b=project(lon,90);
-
-        ctx.beginPath();
-
-        ctx.moveTo(a[0],a[1]);
-        ctx.lineTo(b[0],b[1]);
-
-        ctx.stroke();
-
-    }
-
-
-    /* خطوط عرض */
-
-    for(let lat=-60;lat<=60;lat+=20){
-
-        const a=project(-180,lat);
-        const b=project(180,lat);
-
-        ctx.beginPath();
-
-        ctx.moveTo(a[0],a[1]);
-        ctx.lineTo(b[0],b[1]);
-
-        ctx.stroke();
-
-    }
-
-
-    /* کشورها */
-
-    for(const id in countries){
-
-        const c=countries[id];
-
-        const [x,y]=project(c.x,c.y);
-
-        const ww=c.w/360*W*1.9*zoom;
-
-        const hh=c.h/180*H*1.9*zoom;
-
-
-        ctx.beginPath();
-
-        ctx.roundRect(
-            x-ww/2,
-            y-hh/2,
-            ww,
-            hh,
-            5
-        );
+        let color=c.color;
 
 
         if(c.owner===player){
 
-            ctx.fillStyle="#25a56a";
+            color="#229e68";
+
+        }
+
+
+        if(selected===c){
+
+            layer.setStyle({
+
+                color:"#ffffff",
+
+                weight:3,
+
+                fillColor:color,
+
+                fillOpacity:.9
+
+            });
 
         }
         else{
 
-            ctx.fillStyle=c.color;
+            layer.setStyle({
+
+                color:"#52697d",
+
+                weight:1,
+
+                fillColor:color,
+
+                fillOpacity:.72
+
+            });
 
         }
 
-        ctx.fill();
-
-
-        if(c===selected){
-
-            ctx.strokeStyle="#ffffff";
-
-            ctx.lineWidth=3;
-
-        }
-        else{
-
-            ctx.strokeStyle="#536b82";
-
-            ctx.lineWidth=1;
-
-        }
-
-        ctx.stroke();
-
-
-        /* نام */
-
-        if(zoom>.65){
-
-            ctx.fillStyle="#fff";
-
-            ctx.font=`${Math.max(9,10*zoom)}px Tahoma`;
-
-            ctx.textAlign="center";
-
-            ctx.textBaseline="middle";
-
-            ctx.fillText(
-                c.name,
-                x,
-                y-5
-            );
-
-
-            ctx.font="9px Arial";
-
-            ctx.fillText(
-                "🪖"+Math.round(c.army),
-                x,
-                y+9
-            );
-
-        }
-
-    }
-
-
-    /* مرز بین کشورهای همسایه */
-
-    if(player){
-
-        ctx.strokeStyle="#ffffff20";
-
-        ctx.lineWidth=1;
-
-        for(const id in countries){
-
-            const c=countries[id];
-
-            if(!neighbors[id]) continue;
-
-            for(const n of neighbors[id]){
-
-                const d=countries[n];
-
-                if(!d)continue;
-
-                const a=project(c.x,c.y);
-                const b=project(d.x,d.y);
-
-                ctx.beginPath();
-
-                ctx.moveTo(a[0],a[1]);
-                ctx.lineTo(b[0],b[1]);
-
-                ctx.stroke();
-
-            }
-
-        }
-
-    }
+    });
 
 }
 
 
-/* =====================================================
-   انتخاب کشور
-===================================================== */
-
-function hitTest(mx,my){
-
-    let result=null;
-
-    let best=Infinity;
-
-    for(const id in countries){
-
-        const c=countries[id];
-
-        const [x,y]=project(c.x,c.y);
-
-        const ww=c.w/360*W*1.9*zoom;
-
-        const hh=c.h/180*H*1.9*zoom;
-
-        const dx=Math.abs(mx-x);
-        const dy=Math.abs(my-y);
-
-        if(dx<ww/2 && dy<hh/2){
-
-            const d=dx*dx+dy*dy;
-
-            if(d<best){
-
-                best=d;
-
-                result=c;
-
-            }
-
-        }
-
-    }
-
-    return result;
-
-}
-
-
-canvas.addEventListener(
-    "click",
-    function(e){
-
-        if(dragging)return;
-
-        const c=hitTest(
-            e.clientX,
-            e.clientY
-        );
-
-        if(c){
-
-            selected=c;
-
-            updatePanel();
-
-            draw();
-
-        }
-
-    }
-);
-
-
-/* =====================================================
-   حرکت نقشه
-===================================================== */
-
-canvas.addEventListener(
-    "pointerdown",
-    e=>{
-
-        dragging=false;
-
-        lastX=e.clientX;
-        lastY=e.clientY;
-
-        canvas.setPointerCapture(e.pointerId);
-
-    }
-);
-
-canvas.addEventListener(
-    "pointermove",
-    e=>{
-
-        if(e.buttons!==1)return;
-
-        const dx=e.clientX-lastX;
-        const dy=e.clientY-lastY;
-
-        if(Math.abs(dx)>2 || Math.abs(dy)>2){
-
-            dragging=true;
-
-        }
-
-        offsetX+=dx;
-        offsetY+=dy;
-
-        lastX=e.clientX;
-        lastY=e.clientY;
-
-        draw();
-
-    }
-);
-
-canvas.addEventListener(
-    "pointerup",
-    ()=>{
-
-        setTimeout(
-            ()=>dragging=false,
-            20
-        );
-
-    }
-);
-
-
-/* =====================================================
-   زوم
-===================================================== */
-
-canvas.addEventListener(
-    "wheel",
-    e=>{
-
-        e.preventDefault();
-
-        const oldZoom=zoom;
-
-        if(e.deltaY<0){
-
-            zoom*=1.12;
-
-        }
-        else{
-
-            zoom*=.89;
-
-        }
-
-        zoom=Math.max(
-            .55,
-            Math.min(3,zoom)
-        );
-
-
-        const mx=e.clientX;
-        const my=e.clientY;
-
-        offsetX=
-            mx-(mx-offsetX)*(zoom/oldZoom);
-
-        offsetY=
-            my-(my-offsetY)*(zoom/oldZoom);
-
-        draw();
-
-    },
-    {passive:false}
-);
-
-
-/* =====================================================
-   رابط کاربری
-===================================================== */
+/* ================= PANEL ================= */
 
 function updatePanel(){
 
-    if(!selected)return;
+    if(!selected){
 
-    document.getElementById("countryTitle")
-        .textContent=selected.name;
+        return;
 
-    document.getElementById("owner")
-        .textContent=
-        countries[selected.owner]?.name || "مستقل";
+    }
 
-    document.getElementById("countryArmy")
-        .textContent=Math.round(selected.army);
 
-    document.getElementById("countryAir")
-        .textContent=Math.round(selected.air);
+    document.getElementById(
+        "countryTitle"
+    ).textContent=
+        selected.name;
 
-    document.getElementById("countryTank")
-        .textContent=Math.round(selected.tank);
 
-    document.getElementById("population")
-        .textContent=selected.population+" میلیون";
+    document.getElementById(
+        "infoOwner"
+    ).textContent=
+        countries[selected.owner] ?
+        countries[selected.owner].name :
+        selected.name;
 
-    document.getElementById("industry")
-        .textContent=selected.industry;
+
+    document.getElementById(
+        "infoArmy"
+    ).textContent=
+        Math.round(selected.army);
+
+
+    document.getElementById(
+        "infoTank"
+    ).textContent=
+        Math.round(selected.tanks);
+
+
+    document.getElementById(
+        "infoAir"
+    ).textContent=
+        Math.round(selected.air);
+
+
+    document.getElementById(
+        "infoPopulation"
+    ).textContent=
+        Math.round(selected.population)
+        +" میلیون";
+
+
+    document.getElementById(
+        "infoIndustry"
+    ).textContent=
+        Math.round(selected.industry);
 
 }
 
 
-/* =====================================================
-   اطلاعات بازیکن
-===================================================== */
+/* ================= TOP ================= */
 
 function updateTop(){
 
@@ -1478,183 +1617,211 @@ function updateTop(){
 
     const p=countries[player];
 
-    document.getElementById("playerName")
-        .textContent=p.name;
+    if(!p)return;
 
-    document.getElementById("money")
-        .textContent=Math.floor(p.money);
 
-    document.getElementById("army")
-        .textContent=Math.floor(p.army);
+    document.getElementById(
+        "playerCountry"
+    ).textContent=p.name;
 
-    document.getElementById("air")
-        .textContent=Math.floor(p.air);
 
-    document.getElementById("defense")
-        .textContent=Math.floor(
-            p.army*.25+p.tank*.5+p.air*.3
-        );
+    document.getElementById(
+        "money"
+    ).textContent=
+        Math.floor(p.money);
 
-    document.getElementById("turn")
-        .textContent=turn;
+
+    document.getElementById(
+        "army"
+    ).textContent=
+        Math.floor(p.army);
+
+
+    document.getElementById(
+        "tanks"
+    ).textContent=
+        Math.floor(p.tanks);
+
+
+    document.getElementById(
+        "planes"
+    ).textContent=
+        Math.floor(p.air);
+
+
+    document.getElementById(
+        "turn"
+    ).textContent=
+        turn;
 
 }
 
 
-/* =====================================================
-   گزارش
-===================================================== */
+/* ================= LOG ================= */
 
-function log(message){
+function log(text){
 
-    const box=document.getElementById("log");
+    const box=
+        document.getElementById("log");
 
-    const line=document.createElement("div");
+    const line=
+        document.createElement("div");
 
-    line.className="log";
+    line.className="logLine";
 
     line.textContent=
-        "نوبت "+turn+" | "+message;
+        "نوبت "+turn+
+        " | "+
+        text;
 
     box.prepend(line);
 
 }
 
 
-/* =====================================================
-   درآمد
-===================================================== */
+/* ================= GET PLAYER COUNTRIES ================= */
 
-function getIncome(){
+function ownedCountries(){
 
-    let total=0;
+    if(!player)return [];
 
-    for(const id in countries){
-
-        const c=countries[id];
-
-        if(c.owner===player){
-
-            total+=
-                Math.floor(
-                    c.industry*3+
-                    c.population*.25
-                );
-
-        }
-
-    }
-
-    return total;
+    return Object.values(countries)
+        .filter(c=>c.owner===player);
 
 }
 
 
-/* =====================================================
-   استخدام
-===================================================== */
+/* ================= INCOME ================= */
 
-document.getElementById("recruitBtn")
-.onclick=function(){
+function getIncome(){
 
-    if(!player)return;
+    return ownedCountries()
+        .reduce(
 
-    const p=countries[player];
+            (sum,c)=>
+                sum+
+                Math.max(
+                    10,
+                    Math.floor(
+                        c.industry+
+                        c.population*.08
+                    )
+                ),
 
-    const cost=100;
+            0
 
-    if(p.money<cost){
+        );
 
-        log("پول کافی برای استخدام سرباز وجود ندارد.");
-
-        return;
-
-    }
-
-    p.money-=cost;
-
-    p.army+=25;
-
-    log("۲۵ سرباز جدید استخدام شد.");
-
-    updateTop();
-    updatePanel();
-
-};
+}
 
 
-/* =====================================================
-   ساخت تانک
-===================================================== */
-
-document.getElementById("tankBtn")
-.onclick=function(){
-
-    if(!player)return;
-
-    const p=countries[player];
-
-    const cost=180;
-
-    if(p.money<cost){
-
-        log("پول کافی برای ساخت تانک ندارید.");
-
-        return;
-
-    }
-
-    p.money-=cost;
-
-    p.tank+=10;
-
-    log("۱۰ تانک ساخته شد.");
-
-    updateTop();
-    updatePanel();
-
-};
+/* ================= ADJACENCY ================= */
 
 
-/* =====================================================
-   ساخت هواپیما
-===================================================== */
+/*
+   تشخیص تقریبی همسایگی با مرزهای جغرافیایی.
+*/
 
-document.getElementById("airBtn")
-.onclick=function(){
+function isNeighbor(a,b){
 
-    if(!player)return;
+    if(!a || !b)return false;
 
-    const p=countries[player];
-
-    const cost=220;
-
-    if(p.money<cost){
-
-        log("پول کافی برای ساخت هواپیما ندارید.");
-
-        return;
-
-    }
-
-    p.money-=cost;
-
-    p.air+=8;
-
-    log("۸ هواپیمای جنگی ساخته شد.");
-
-    updateTop();
-    updatePanel();
-
-};
+    if(a===b)return false;
 
 
-/* =====================================================
-   حمله
-===================================================== */
+    const la=
+        geoLayer
+        ?.getLayers()
+        .find(
+            x=>{
+                const p=
+                    x.feature.properties||{};
 
-document.getElementById("attackBtn")
-.onclick=function(){
+                const iso=
+                    p.ISO_A3 ||
+                    p.iso_a3 ||
+                    p.ISO3 ||
+                    p.ADM0_A3 ||
+                    "";
+
+                return iso===a.id;
+
+            }
+        );
+
+
+    const lb=
+        geoLayer
+        ?.getLayers()
+        .find(
+            x=>{
+                const p=
+                    x.feature.properties||{};
+
+                const iso=
+                    p.ISO_A3 ||
+                    p.iso_a3 ||
+                    p.ISO3 ||
+                    p.ADM0_A3 ||
+                    "";
+
+                return iso===b.id;
+
+            }
+        );
+
+
+    if(!la || !lb)return false;
+
+
+    const A=la.getBounds();
+
+    const B=lb.getBounds();
+
+
+    /*
+       اگر bounding boxها خیلی نزدیک باشند
+       کشورها را همسایه احتمالی در نظر می‌گیریم.
+    */
+
+    const latGap=
+        Math.max(
+            0,
+            Math.max(
+                A.getSouth(),
+                B.getSouth()
+            )-
+            Math.min(
+                A.getNorth(),
+                B.getNorth()
+            )
+        );
+
+
+    const lngGap=
+        Math.max(
+            0,
+            Math.max(
+                A.getWest(),
+                B.getWest()
+            )-
+            Math.min(
+                A.getEast(),
+                B.getEast()
+            )
+        );
+
+
+    return latGap<7 && lngGap<7;
+
+}
+
+
+/* ================= ATTACK ================= */
+
+document.getElementById(
+    "attack"
+).onclick=function(){
 
     if(!player || !selected){
 
@@ -1662,117 +1829,161 @@ document.getElementById("attackBtn")
 
     }
 
-    const p=countries[player];
 
-    const enemy=selected;
+    const me=
+        countries[player];
+
+
+    const enemy=
+        selected;
 
 
     if(enemy.owner===player){
 
-        log("این سرزمین متعلق به شماست.");
+        log(
+            "این کشور متعلق به شماست."
+        );
 
         return;
 
     }
 
 
-    if(
-        !neighbors[player] ||
-        !neighbors[player].includes(enemy.id)
-    ){
+    /*
+       برای جلوگیری از جنگ تصادفی
+       کشور باید نزدیک کشور شما باشد.
+    */
 
-        log("این کشور با کشور شما مرز مشترک ندارد.");
+    let adjacent=false;
+
+
+    for(const own of ownedCountries()){
+
+        if(isNeighbor(own,enemy)){
+
+            adjacent=true;
+
+            break;
+
+        }
+
+    }
+
+
+    if(!adjacent){
+
+        log(
+            "این کشور با سرزمین‌های شما هم‌مرز نیست."
+        );
 
         return;
 
     }
 
 
-    if(p.army<20){
+    if(me.army<20){
 
-        log("ارتش شما برای حمله کافی نیست.");
+        log(
+            "ارتش شما برای حمله کافی نیست."
+        );
 
         return;
 
     }
 
-
-    /* قدرت مهاجم */
 
     const attackPower=
 
-        p.army*.45+
-        p.tank*.75+
-        p.air*.35+
-        Math.random()*50;
+        me.army*.45+
 
+        me.tanks*.75+
 
-    /* قدرت مدافع */
+        me.air*.30+
+
+        me.industry*.15+
+
+        Math.random()*80;
+
 
     const defensePower=
 
-        enemy.army*.5+
-        enemy.tank*.8+
+        enemy.army*.50+
+
+        enemy.tanks*.80+
+
         enemy.air*.35+
-        Math.random()*60;
+
+        enemy.industry*.15+
+
+        Math.random()*80;
+
+
+    const attackerLoss=
+
+        Math.floor(
+            me.army*
+            (
+                .10+
+                Math.random()*.18
+            )
+        );
+
+
+    me.army=
+        Math.max(
+            5,
+            me.army-attackerLoss
+        );
 
 
     if(attackPower>defensePower){
 
-        const losses=
-            Math.floor(
-                p.army*.15+
-                Math.random()*15
-            );
-
-        p.army=Math.max(
-            5,
-            p.army-losses
-        );
-
         enemy.owner=player;
 
-        enemy.army=Math.max(
-            10,
-            Math.floor(
-                enemy.army*.35
-            )
-        );
+        enemy.army=
+            Math.max(
+                10,
+                Math.floor(
+                    enemy.army*.35
+                )
+            );
 
-        p.money=Math.max(
-            0,
-            p.money-100
-        );
+
+        me.money=
+            Math.max(
+                0,
+                me.money-100
+            );
+
 
         log(
-            "پیروزی! "+enemy.name+
+            "🏆 پیروزی! "+
+            enemy.name+
             " تصرف شد."
         );
 
     }
     else{
 
-        const losses=
-            Math.floor(
-                p.army*.30+
-                Math.random()*20
+        enemy.army=
+            Math.max(
+                5,
+                enemy.army-
+                Math.floor(
+                    enemy.army*.15
+                )
             );
 
-        p.army=Math.max(
-            5,
-            p.army-losses
-        );
 
-        enemy.army=Math.max(
-            5,
-            enemy.army-
-            Math.floor(
-                enemy.army*.15
-            )
-        );
+        me.money=
+            Math.max(
+                0,
+                me.money-50
+            );
+
 
         log(
-            "حمله به "+
+            "❌ حمله به "+
             enemy.name+
             " شکست خورد."
         );
@@ -1781,34 +1992,170 @@ document.getElementById("attackBtn")
 
 
     updateTop();
+
     updatePanel();
 
-    draw();
+    refreshMap();
 
     checkVictory();
 
 };
 
 
-/* =====================================================
-   صلح
-===================================================== */
+/* ================= RECRUIT ================= */
 
-document.getElementById("peaceBtn")
-.onclick=function(){
+document.getElementById(
+    "recruit"
+).onclick=function(){
 
-    if(!selected || !player)return;
+    if(!player)return;
 
-    if(selected.owner===player){
 
-        log("این کشور تحت کنترل شماست.");
+    const p=
+        countries[player];
+
+
+    const cost=100;
+
+
+    if(p.money<cost){
+
+        log(
+            "پول کافی برای استخدام سرباز ندارید."
+        );
 
         return;
 
     }
 
+
+    p.money-=cost;
+
+    p.army+=25;
+
+
     log(
-        "پیشنهاد صلح به "+
+        "🪖 ۲۵ سرباز جدید استخدام شد."
+    );
+
+
+    updateTop();
+
+    updatePanel();
+
+};
+
+
+/* ================= TANK ================= */
+
+document.getElementById(
+    "buildTank"
+).onclick=function(){
+
+    if(!player)return;
+
+
+    const p=
+        countries[player];
+
+
+    const cost=180;
+
+
+    if(p.money<cost){
+
+        log(
+            "پول کافی برای ساخت تانک ندارید."
+        );
+
+        return;
+
+    }
+
+
+    p.money-=cost;
+
+    p.tanks+=10;
+
+
+    log(
+        "🚜 ۱۰ تانک ساخته شد."
+    );
+
+
+    updateTop();
+
+    updatePanel();
+
+};
+
+
+/* ================= AIR ================= */
+
+document.getElementById(
+    "buildAir"
+).onclick=function(){
+
+    if(!player)return;
+
+
+    const p=
+        countries[player];
+
+
+    const cost=220;
+
+
+    if(p.money<cost){
+
+        log(
+            "پول کافی برای ساخت هواپیما ندارید."
+        );
+
+        return;
+
+    }
+
+
+    p.money-=cost;
+
+    p.air+=8;
+
+
+    log(
+        "✈️ ۸ هواپیما ساخته شد."
+    );
+
+
+    updateTop();
+
+    updatePanel();
+
+};
+
+
+/* ================= PEACE ================= */
+
+document.getElementById(
+    "peace"
+).onclick=function(){
+
+    if(!selected)return;
+
+
+    if(selected.owner===player){
+
+        log(
+            "این کشور متعلق به شماست."
+        );
+
+        return;
+
+    }
+
+
+    log(
+        "🕊️ پیشنهاد صلح به "+
         selected.name+
         " ارسال شد."
     );
@@ -1816,35 +2163,36 @@ document.getElementById("peaceBtn")
 };
 
 
-/* =====================================================
-   اتحاد
-===================================================== */
+/* ================= ALLIANCE ================= */
 
-document.getElementById("allyBtn")
-.onclick=function(){
+document.getElementById(
+    "alliance"
+).onclick=function(){
 
-    if(!selected || !player)return;
+    if(!selected)return;
+
 
     if(selected.owner===player){
 
-        log("این کشور در حال حاضر متعلق به شماست.");
+        log(
+            "این کشور در حال حاضر تحت کنترل شماست."
+        );
 
         return;
 
     }
 
+
     log(
-        "اتحاد با "+
+        "🤝 پیشنهاد اتحاد به "+
         selected.name+
-        " پیشنهاد شد."
+        " ارسال شد."
     );
 
 };
 
 
-/* =====================================================
-   هوش مصنوعی
-===================================================== */
+/* ================= AI ================= */
 
 function aiTurn(){
 
@@ -1854,79 +2202,110 @@ function aiTurn(){
 
     all.forEach(ai=>{
 
-        if(ai.owner===player)return;
+        if(ai.owner===player){
+
+            return;
+
+        }
 
 
-        /* رشد اقتصادی */
+        /*
+           درآمد
+        */
 
         ai.money+=
             Math.floor(
-                ai.industry*1.5
+                ai.industry*.8+
+                ai.population*.03
             );
 
 
-        /* تولید ارتش */
+        /*
+           تولید نظامی
+        */
 
-        if(ai.money>250){
+        if(ai.money>=120){
 
-            ai.money-=100;
+            ai.money-=120;
 
             ai.army+=20;
 
         }
 
 
-        /* حمله تصادفی */
+        /*
+           تانک
+        */
 
-        if(Math.random()<.35){
+        if(ai.money>=200){
 
-            const targets=
-                (neighbors[ai.id]||[])
-                .map(id=>countries[id])
-                .filter(Boolean)
-                .filter(
-                    c=>c.owner!==ai.owner
+            ai.money-=200;
+
+            ai.tanks+=8;
+
+        }
+
+
+        /*
+           حمله AI
+        */
+
+        if(Math.random()<.25){
+
+            const possible=
+                all.filter(
+                    target=>
+                        target.owner!==ai.owner &&
+                        isNeighbor(ai,target)
                 );
 
 
-            if(targets.length){
+            if(possible.length){
 
                 const target=
-                    targets[
+                    possible[
                         Math.floor(
                             Math.random()*
-                            targets.length
+                            possible.length
                         )
                     ];
 
 
                 const attackPower=
+
                     ai.army*.4+
-                    ai.tank*.7+
+                    ai.tanks*.7+
                     ai.air*.3;
 
 
                 const defensePower=
+
                     target.army*.5+
-                    target.tank*.8+
+                    target.tanks*.7+
                     target.air*.3;
 
 
                 if(
                     attackPower>
                     defensePower*
-                    (0.8+Math.random()*.5)
+                    (
+                        .85+
+                        Math.random()*.5
+                    )
                 ){
 
-                    target.owner=ai.owner;
+                    target.owner=
+                        ai.owner;
+
 
                     target.army=
                         Math.max(
                             8,
                             Math.floor(
-                                target.army*.3
+                                target.army*.35
                             )
                         );
+
 
                     ai.army=
                         Math.max(
@@ -1936,7 +2315,9 @@ function aiTurn(){
                             )
                         );
 
+
                     log(
+                        "⚔️ "+
                         ai.name+
                         "، "+
                         target.name+
@@ -1954,12 +2335,11 @@ function aiTurn(){
 }
 
 
-/* =====================================================
-   پایان نوبت
-===================================================== */
+/* ================= END TURN ================= */
 
-document.getElementById("turnBtn")
-.onclick=function(){
+document.getElementById(
+    "endTurn"
+).onclick=function(){
 
     if(!player)return;
 
@@ -1967,78 +2347,83 @@ document.getElementById("turnBtn")
     turn++;
 
 
-    const income=getIncome();
+    /*
+       درآمد بازیکن
+    */
 
-    countries[player].money+=income;
+    const income=
+        getIncome();
+
+
+    countries[player].money+=
+        income;
 
 
     log(
-        "درآمد جنگی شما: "+
+        "💰 درآمد جنگی شما: "+
         income+
         " پول"
     );
 
 
+    /*
+       هوش مصنوعی
+    */
+
     aiTurn();
 
 
-    /* تولید خودکار */
+    /*
+       رشد صنعت
+    */
 
-    for(const id in countries){
+    ownedCountries()
+        .forEach(c=>{
 
-        const c=countries[id];
-
-        if(c.owner===id){
-
-            c.money+=
-                Math.floor(
-                    c.industry*.5
+            c.industry=
+                Math.min(
+                    150,
+                    c.industry+
+                    Math.random()*.5
                 );
 
-        }
-
-    }
+        });
 
 
     updateTop();
 
     updatePanel();
 
-    draw();
+    refreshMap();
 
     checkVictory();
 
 };
 
 
-/* =====================================================
-   پیروزی
-===================================================== */
+/* ================= VICTORY ================= */
 
 function checkVictory(){
 
-    let count=0;
+    if(!player)return;
+
 
     const total=
         Object.keys(countries).length;
 
 
-    for(const id in countries){
-
-        if(countries[id].owner===player){
-
-            count++;
-
-        }
-
-    }
+    const mine=
+        Object.values(countries)
+        .filter(
+            c=>c.owner===player
+        ).length;
 
 
-    if(count===total){
+    if(mine>=total){
 
         alert(
-            "🏆 پیروزی نهایی!\n"+
-            "شما تمام جهان را تصرف کردید."
+            "🏆 پیروزی نهایی!\n\n"+
+            "تمام کشورهای جهان تحت فرمان شما قرار گرفتند."
         );
 
     }
@@ -2046,50 +2431,80 @@ function checkVictory(){
 }
 
 
-/* =====================================================
-   شروع بازی
-===================================================== */
+/* ================= COUNTRY SELECT ================= */
 
 const select=
-    document.getElementById("countrySelect");
+    document.getElementById(
+        "countrySelect"
+    );
 
 
-for(const id in countries){
+/*
+   کشورهایی که اطلاعات اختصاصی دارند
+   در ابتدای لیست قرار می‌گیرند.
+*/
+
+Object.keys(GAME_DATA)
+.forEach(id=>{
 
     const option=
-        document.createElement("option");
+        document.createElement(
+            "option"
+        );
 
     option.value=id;
 
     option.textContent=
-        countries[id].name;
+        GAME_DATA[id].name;
 
     select.appendChild(option);
 
-}
+});
 
 
-document.getElementById("startBtn")
-.onclick=function(){
+/* ================= START GAME ================= */
 
-    player=select.value;
+document.getElementById(
+    "startGame"
+).onclick=function(){
 
-    selected=countries[player];
+    if(!select.value){
+
+        alert(
+            "ابتدا یک کشور انتخاب کن."
+        );
+
+        return;
+
+    }
 
 
-    /* پول شروع */
+    player=
+        select.value;
+
+
+    /*
+       کشور بازیکن قوی‌تر شروع می‌کند.
+    */
 
     countries[player].money+=500;
 
     countries[player].army+=50;
 
 
-    document.getElementById("start")
-        .style.display="none";
+    document.getElementById(
+        "startScreen"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    selected=
+        countries[player];
 
 
     log(
-        "جنگ آغاز شد. کشور "+
+        "🌍 جنگ آغاز شد. "+
         countries[player].name+
         " تحت فرمان شماست."
     );
@@ -2099,18 +2514,19 @@ document.getElementById("startBtn")
 
     updatePanel();
 
-    draw();
+    refreshMap();
 
 };
 
 
-/* =====================================================
-   شروع رسم
-===================================================== */
+/* ================= INITIAL ================= */
 
-resize();
+document.getElementById(
+    "countryPanel"
+).style.display="block";
+
 
 </script>
 
 </body>
-    </html>                             
+    </html>
