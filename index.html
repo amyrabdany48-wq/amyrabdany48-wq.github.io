@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی دوز</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #141e30, #243b55);
+            color: white;
+        }
+
+        .game {
+            width: 95%;
+            max-width: 420px;
+            text-align: center;
+            padding: 25px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 35px;
+        }
+
+        .status {
+            font-size: 20px;
+            margin: 20px 0;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px auto;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 55px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .cell:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.03);
+        }
+
+        .cell.x {
+            color: #00e5ff;
+        }
+
+        .cell.o {
+            color: #ff5c8a;
+        }
+
+        button.restart {
+            border: none;
+            padding: 13px 25px;
+            border-radius: 12px;
+            background: #00bcd4;
+            color: white;
+            font-size: 17px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button.restart:hover {
+            background: #0097a7;
+            transform: scale(1.05);
+        }
+
+        .score {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            font-size: 17px;
+        }
+
+        .win {
+            animation: win 0.5s infinite alternate;
+        }
+
+        @keyframes win {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.08);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="game">
+
+    <h1>⭕ بازی دوز ❌</h1>
+
+    <div class="status" id="status">
+        نوبت بازیکن ❌
+    </div>
+
+    <div class="board" id="board"></div>
+
+    <button class="restart" onclick="restartGame()">
+        🔄 شروع دوباره
+    </button>
+
+    <div class="score">
+        <div>❌: <span id="scoreX">0</span></div>
+        <div>⭕: <span id="scoreO">0</span></div>
+    </div>
+
+</div>
+
+<script>
+
+    const boardElement = document.getElementById("board");
+    const statusElement = document.getElementById("status");
+
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let currentPlayer = "X";
+    let gameOver = false;
+
+    let scoreX = 0;
+    let scoreO = 0;
+
+    const winningCombinations = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
+
+    function createBoard() {
+
+        boardElement.innerHTML = "";
+
+        for (let i = 0; i < 9; i++) {
+
+            const cell = document.createElement("button");
+
+            cell.classList.add("cell");
+            cell.dataset.index = i;
+
+            cell.addEventListener("click", () => play(i));
+
+            boardElement.appendChild(cell);
+        }
+    }
+
+    function play(index) {
+
+        if (board[index] !== "" || gameOver) {
+            return;
+        }
+
+        board[index] = currentPlayer;
+
+        updateBoard();
+
+        const winner = checkWinner();
+
+        if (winner) {
+
+            gameOver = true;
+
+            if (winner === "X") {
+                scoreX++;
+            } else {
+                scoreO++;
+            }
+
+            updateScore();
+
+            statusElement.textContent =
+                "🎉 بازیکن " + (winner === "X" ? "❌" : "⭕") + " برنده شد!";
+
+            statusElement.classList.add("win");
+
+            highlightWinner();
+
+            return;
+        }
+
+        if (!board.includes("")) {
+
+            gameOver = true;
+            statusElement.textContent = "🤝 بازی مساوی شد!";
+            return;
+        }
+
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+
+        statusElement.textContent =
+            "نوبت بازیکن " +
+            (currentPlayer === "X" ? "❌" : "⭕");
+    }
+
+    function updateBoard() {
+
+        const cells = document.querySelectorAll(".cell");
+
+        cells.forEach((cell, index) => {
+
+            cell.textContent =
+                board[index] === "X"
+                ? "❌"
+                : board[index] === "O"
+                ? "⭕"
+                : "";
+
+            cell.classList.remove("x", "o");
+
+            if (board[index] === "X") {
+                cell.classList.add("x");
+            }
+
+            if (board[index] === "O") {
+                cell.classList.add("o");
+            }
+        });
+    }
+
+    function checkWinner() {
+
+        for (let combination of winningCombinations) {
+
+            const [a, b, c] = combination;
+
+            if (
+                board[a] &&
+                board[a] === board[b] &&
+                board[a] === board[c]
+            ) {
+                return board[a];
+            }
+        }
+
+        return null;
+    }
+
+    function highlightWinner() {
+
+        const winner = checkWinner();
+
+        winningCombinations.forEach(combination => {
+
+            const [a, b, c] = combination;
+
+            if (
+                board[a] === winner &&
+                board[b] === winner &&
+                board[c] === winner
+            ) {
+
+                const cells = document.querySelectorAll(".cell");
+
+                cells[a].style.background = "#2e7d32";
+                cells[b].style.background = "#2e7d32";
+                cells[c].style.background = "#2e7d32";
+            }
+        });
+    }
+
+    function updateScore() {
+
+        document.getElementById("scoreX").textContent = scoreX;
+        document.getElementById("scoreO").textContent = scoreO;
+    }
+
+    function restartGame() {
+
+        board = ["", "", "", "", "", "", "", "", ""];
+
+        currentPlayer = "X";
+        gameOver = false;
+
+        statusElement.classList.remove("win");
+
+        statusElement.textContent = "نوبت بازیکن ❌";
+
+        createBoard();
+    }
+
+    createBoard();
+
+</script>
+
+</body>
+  </html>
