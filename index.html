@@ -2,8 +2,8 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Global Dominion - World Strategy</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>World Empire Strategy</title>
 
 <style>
 *{
@@ -13,547 +13,564 @@
     font-family:Tahoma,Arial,sans-serif;
 }
 
-:root{
-    --bg:#07101a;
-    --panel:#101c29;
-    --panel2:#172636;
-    --panel3:#203449;
-    --border:#304a62;
-    --blue:#2389d5;
-    --green:#318e58;
-    --red:#a9444d;
-    --gold:#c99a36;
-    --purple:#7654b5;
-    --text:#f4f7fa;
-    --muted:#9eb0c2;
-}
-
 body{
-    background:var(--bg);
-    color:var(--text);
+    background:#08111d;
+    color:#fff;
     overflow:hidden;
 }
 
 button{
-    border:0;
-    color:white;
-    cursor:pointer;
     font-family:inherit;
+    border:0;
+    cursor:pointer;
+    color:#fff;
 }
 
-button:active{
-    transform:scale(.97);
+.hidden{
+    display:none!important;
 }
+
+/* =====================================================
+   COUNTRY SELECT
+===================================================== */
+
+#countryScreen{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    background:
+        radial-gradient(circle at 50% 20%,#173957 0%,#0a1624 45%,#050b12 100%);
+    overflow:auto;
+    padding:25px;
+}
+
+.selectHeader{
+    text-align:center;
+    margin:10px auto 20px;
+}
+
+.selectHeader h1{
+    font-size:30px;
+    color:#61c2ff;
+    margin-bottom:10px;
+}
+
+.selectHeader p{
+    color:#a9bfd2;
+}
+
+.countryLayout{
+    max-width:1450px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:1fr 340px;
+    gap:18px;
+}
+
+.mapCard,
+.countryCard{
+    background:#101d2b;
+    border:1px solid #2b435c;
+    border-radius:18px;
+    box-shadow:0 15px 50px #0008;
+}
+
+.mapCard{
+    padding:12px;
+    min-height:620px;
+}
+
+#selectMap{
+    width:100%;
+    height:600px;
+    background:#75aeca;
+    border-radius:13px;
+}
+
+.ocean{
+    fill:#75aeca;
+}
+
+.country{
+    fill:#6e985d;
+    stroke:#304e38;
+    stroke-width:1.2;
+    cursor:pointer;
+    transition:.15s;
+}
+
+.country:hover{
+    fill:#91bc70;
+}
+
+.country.selected{
+    fill:#dca83d;
+    stroke:#fff;
+    stroke-width:2.5;
+}
+
+.mapLabel{
+    fill:#17323a;
+    font-size:10px;
+    font-weight:bold;
+    pointer-events:none;
+}
+
+.countryCard{
+    padding:20px;
+    align-self:start;
+    position:sticky;
+    top:10px;
+}
+
+.countryCard h2{
+    color:#69c6ff;
+    margin-bottom:15px;
+}
+
+.selectedCountry{
+    background:#182b3e;
+    border:1px solid #35526c;
+    border-radius:12px;
+    padding:15px;
+    min-height:130px;
+    margin-bottom:15px;
+}
+
+.countryInfo{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:12px;
+}
+
+.infoBox{
+    background:#0d1926;
+    border-radius:8px;
+    padding:9px;
+    font-size:12px;
+}
+
+.startButton{
+    width:100%;
+    padding:15px;
+    border-radius:10px;
+    background:linear-gradient(135deg,#2387d0,#1764a0);
+    font-size:15px;
+    font-weight:bold;
+    margin-top:15px;
+}
+
+.startButton:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+}
+
+/* =====================================================
+   GAME
+===================================================== */
 
 #game{
-    position:relative;
     width:100vw;
     height:100vh;
+    position:relative;
+    background:#101b27;
 }
-
-/* TOP */
 
 .topbar{
     position:absolute;
     top:0;
     right:0;
     left:0;
-    height:62px;
-    z-index:50;
-
+    height:72px;
+    background:#101c2a;
+    border-bottom:1px solid #30465d;
     display:flex;
     align-items:center;
-    gap:12px;
-    padding:6px 10px;
-
-    background:#0d1825;
-    border-bottom:1px solid var(--border);
+    gap:10px;
+    padding:8px 12px;
+    z-index:100;
 }
 
-.logo{
-    font-size:17px;
+.brand{
+    font-size:18px;
     font-weight:bold;
-    color:#61baff;
+    color:#65c5ff;
     white-space:nowrap;
 }
 
 .resources{
     display:flex;
-    gap:5px;
-    align-items:center;
-    justify-content:center;
+    gap:6px;
     flex:1;
+    justify-content:center;
 }
 
 .res{
-    background:#18293a;
-    border:1px solid #294057;
-    padding:7px 8px;
+    background:#192b3e;
+    border:1px solid #29425b;
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:11px;
+    min-width:75px;
+    text-align:center;
+}
+
+.res span{
+    color:#75caff;
+    font-weight:bold;
+}
+
+.inflation{
+    background:#3b2428;
+    border:1px solid #7b4449;
+    padding:8px 11px;
     border-radius:8px;
     font-size:11px;
     white-space:nowrap;
 }
 
-.player{
-    background:#203249;
-    padding:8px 10px;
+.inflation b{
+    color:#ff7f7f;
+}
+
+.commander{
+    background:#1b3045;
+    padding:8px 12px;
     border-radius:8px;
-    font-size:11px;
     white-space:nowrap;
+    font-size:12px;
 }
 
 /* MAP */
 
-.map{
+#gameMapArea{
     position:absolute;
-    top:62px;
+    top:72px;
     right:0;
     left:0;
-    bottom:0;
+    bottom:75px;
     overflow:hidden;
-    background:#568ca5;
+    background:#73aac2;
 }
 
-.mapWorld{
+#gameMap{
     width:100%;
     height:100%;
-    transform-origin:center;
-    transition:transform .25s;
+    background:#73aac2;
 }
 
-svg{
-    width:100%;
-    height:100%;
-    display:block;
-}
-
-.ocean{
-    fill:#5f99b2;
-}
-
-.ocean2{
-    fill:#679fb6;
-}
-
-.land{
-    fill:#608d58;
-    stroke:#304a37;
-    stroke-width:1.3;
+.gLand{
+    fill:#6f995f;
+    stroke:#36523d;
+    stroke-width:1;
     cursor:pointer;
-    transition:.15s;
 }
 
-.land:hover{
-    fill:#83ad69;
+.gLand:hover{
+    fill:#91b972;
 }
 
-.land.selected{
-    fill:#d3a33f;
+.gLand.player{
+    fill:#d9a940;
     stroke:#fff;
-    stroke-width:2.5;
+    stroke-width:2;
 }
 
-.land.enemy{
-    fill:#87534f;
-}
-
-.countryText{
-    fill:#132b32;
-    font-weight:bold;
-    font-size:10px;
-    pointer-events:none;
-}
-
-.regionText{
-    fill:rgba(255,255,255,.35);
-    font-size:19px;
+.gLabel{
+    fill:#132e37;
+    font-size:9px;
     font-weight:bold;
     pointer-events:none;
 }
 
-/* MAP CONTROLS */
+/* SIDE */
 
-.mapControls{
+#countryPanel{
     position:absolute;
-    top:76px;
-    left:10px;
-    z-index:20;
-
-    display:flex;
-    flex-direction:column;
-    gap:5px;
-}
-
-.mapControls button{
-    width:38px;
-    height:38px;
-    border-radius:8px;
-    background:#122234;
-    border:1px solid #38516a;
-    font-size:18px;
-}
-
-/* COUNTRY PANEL */
-
-.countryPanel{
-    position:absolute;
-    top:75px;
-    right:10px;
+    top:84px;
+    right:12px;
     width:285px;
-    max-height:calc(100vh - 155px);
+    max-height:calc(100vh - 175px);
     overflow:auto;
-
-    background:rgba(10,20,31,.96);
-    border:1px solid var(--border);
-    border-radius:13px;
-    padding:12px;
-
-    z-index:25;
-    box-shadow:0 15px 45px rgba(0,0,0,.35);
+    background:#111d2b;
+    border:1px solid #344c63;
+    border-radius:14px;
+    padding:13px;
+    z-index:50;
+    box-shadow:0 12px 35px #0009;
 }
 
-.countryTitle{
-    font-size:18px;
-    color:#67baff;
+.panelHead{
+    color:#6bc7ff;
+    font-size:17px;
     font-weight:bold;
-    margin-bottom:4px;
-}
-
-.countrySub{
-    color:var(--muted);
-    font-size:10px;
-    margin-bottom:9px;
+    margin-bottom:10px;
 }
 
 .stat{
     background:#192a3c;
-    border:1px solid #2c4359;
+    border:1px solid #294157;
+    border-radius:8px;
     padding:9px;
-    border-radius:8px;
-    margin:5px 0;
-    font-size:11px;
+    margin:6px 0;
+    font-size:12px;
 }
 
-.action{
-    width:100%;
-    padding:10px;
-    border-radius:8px;
+.progress{
+    height:8px;
+    background:#0b141e;
+    border-radius:10px;
+    overflow:hidden;
     margin-top:6px;
-    background:var(--blue);
-    font-weight:bold;
-    font-size:11px;
 }
 
-.action.green{
-    background:var(--green);
-}
-
-.action.red{
-    background:var(--red);
-}
-
-.action.gold{
-    background:var(--gold);
-}
-
-.action.purple{
-    background:var(--purple);
-}
-
-.action.dark{
-    background:#263a50;
+.progress i{
+    display:block;
+    height:100%;
+    background:#4ca8e9;
 }
 
 /* BOTTOM */
 
-.bottom{
+.bottomBar{
     position:absolute;
-    bottom:7px;
-    left:50%;
-    transform:translateX(-50%);
-
-    z-index:70;
-
-    width:min(850px,97%);
-
+    bottom:0;
+    right:0;
+    left:0;
+    height:75px;
+    background:#0e1926;
+    border-top:1px solid #30465d;
     display:flex;
-    gap:5px;
-
-    padding:6px;
-
-    background:rgba(8,16,26,.97);
-    border:1px solid var(--border);
-    border-radius:12px;
+    justify-content:center;
+    align-items:center;
+    gap:7px;
+    z-index:80;
+    padding:8px;
 }
 
-.menu{
-    flex:1;
-    background:#1c2e42;
-    padding:10px 5px;
-    border-radius:7px;
-    font-size:10px;
+.menuButton{
+    min-width:100px;
+    height:54px;
+    border-radius:10px;
+    background:#1b2d40;
+    border:1px solid #30475d;
+    font-size:11px;
 }
 
-.menu:hover{
-    background:#2a4560;
+.menuButton:hover{
+    background:#29435b;
+}
+
+.menuButton.shop{
+    background:#315c37;
+}
+
+.menuButton.war{
+    background:#633336;
 }
 
 /* MODAL */
 
 .modal{
-    display:none;
     position:absolute;
     inset:0;
-    z-index:100;
-
+    background:#000b;
+    z-index:500;
+    display:none;
     align-items:center;
     justify-content:center;
-
-    padding:12px;
-
-    background:rgba(0,0,0,.72);
+    padding:15px;
 }
 
 .modal.show{
     display:flex;
 }
 
-.box{
-    width:min(680px,100%);
-    max-height:92vh;
+.modalBox{
+    width:min(850px,100%);
+    max-height:90vh;
     overflow:auto;
-
-    background:#101c29;
-    border:1px solid #40576d;
-    border-radius:15px;
-    padding:16px;
-
-    box-shadow:0 20px 70px rgba(0,0,0,.6);
+    background:#111e2c;
+    border:1px solid #3a536c;
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 20px 70px #000;
 }
 
-.box h2{
-    color:#68bdff;
-    font-size:19px;
-    margin-bottom:13px;
+.modalTitle{
+    color:#6bc8ff;
+    font-size:21px;
+    margin-bottom:15px;
 }
 
 .close{
     float:left;
-    background:#9f4049;
-    padding:6px 10px;
+    background:#923d46;
+    padding:7px 11px;
     border-radius:7px;
 }
-
-/* TABS */
-
-.tabs{
-    display:flex;
-    gap:5px;
-    overflow-x:auto;
-    margin-bottom:10px;
-}
-
-.tab{
-    white-space:nowrap;
-    background:#213449;
-    padding:9px 12px;
-    border-radius:7px;
-    font-size:10px;
-}
-
-.tab.active{
-    background:#287fc5;
-}
-
-/* GRID */
 
 .grid{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:8px;
+    gap:9px;
 }
 
 .card{
-    background:#192b3d;
-    border:1px solid #30465c;
+    background:#192a3c;
+    border:1px solid #30475c;
     border-radius:10px;
-    padding:10px 6px;
-    text-align:center;
+    padding:12px;
 }
 
-.icon{
-    display:block;
-    font-size:28px;
-    margin-bottom:5px;
+.card h3{
+    font-size:14px;
+    margin-bottom:7px;
 }
 
-.card b{
+.card p{
+    color:#a9bbcb;
     font-size:11px;
-}
-
-.card small{
-    display:block;
-    color:#9eb0c2;
-    font-size:9px;
-    margin-top:4px;
-    line-height:1.5;
-}
-
-.card button{
-    width:100%;
-    background:#287fc5;
-    border-radius:6px;
-    padding:7px;
-    margin-top:7px;
-    font-size:9px;
-}
-
-/* SHOP */
-
-.item{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:8px;
-
-    background:#192b3d;
-    border:1px solid #30465c;
-    padding:10px;
-    border-radius:9px;
-    margin:6px 0;
-}
-
-.itemInfo{
-    font-size:11px;
-}
-
-.itemInfo small{
-    display:block;
-    color:#9eb0c2;
-    margin-top:4px;
+    line-height:1.7;
 }
 
 .buy{
-    background:#328e59;
-    padding:8px 11px;
-    border-radius:7px;
-    font-size:10px;
-    white-space:nowrap;
-}
-
-/* NEWS */
-
-.news{
-    background:#192b3d;
-    border:1px solid #30465c;
+    width:100%;
+    margin-top:9px;
     padding:9px;
-    border-radius:8px;
-    margin:5px 0;
-    font-size:10px;
-}
-
-/* LOBBY */
-
-.room{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-
-    background:#192b3d;
-    border:1px solid #30465c;
-    padding:10px;
-    border-radius:9px;
-    margin:6px 0;
-}
-
-.room small{
-    display:block;
-    color:#9eb0c2;
-    margin-top:4px;
-}
-
-.join{
-    background:#318d58;
-    padding:8px 12px;
     border-radius:7px;
-    font-size:10px;
+    background:#287ebd;
+    font-weight:bold;
 }
 
-/* NOTIFY */
+.buy:hover{
+    background:#3598df;
+}
+
+.buy:disabled{
+    background:#3a4651;
+    opacity:.55;
+}
+
+.tabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+}
+
+.tab{
+    padding:9px 13px;
+    background:#1c2e40;
+    border-radius:8px;
+}
+
+.tab.active{
+    background:#277db9;
+}
+
+/* NOTICE */
 
 #notice{
-    display:none;
-
     position:absolute;
-    top:72px;
+    top:90px;
     left:50%;
     transform:translateX(-50%);
-
-    z-index:300;
-
-    background:#101e2d;
-    border:1px solid #50667d;
-    padding:10px 15px;
-    border-radius:8px;
-
-    font-size:11px;
-    text-align:center;
+    background:#16283a;
+    border:1px solid #4a6982;
+    border-radius:9px;
+    padding:10px 17px;
+    z-index:1000;
+    display:none;
+    box-shadow:0 8px 30px #0009;
 }
 
-/* MOBILE */
+/* RESPONSIVE */
 
-@media(max-width:750px){
+@media(max-width:900px){
 
-    .topbar{
-        height:58px;
-        gap:4px;
-        padding:5px;
+    .countryLayout{
+        grid-template-columns:1fr;
     }
 
-    .map{
-        top:58px;
+    .countryCard{
+        position:static;
     }
 
-    .logo{
-        font-size:11px;
+    .mapCard{
+        min-height:430px;
     }
 
-    .res{
-        padding:5px;
-        font-size:8px;
+    #selectMap{
+        height:430px;
     }
 
-    .player{
+    .resources .res:nth-child(n+4){
         display:none;
     }
 
-    .countryPanel{
-        top:67px;
-        right:6px;
+    .brand{
+        font-size:12px;
+    }
+
+    .commander{
+        display:none;
+    }
+
+    #countryPanel{
         width:220px;
-        max-height:calc(100vh - 130px);
-    }
-
-    .countryTitle{
-        font-size:15px;
-    }
-
-    .bottom{
-        width:98%;
-        bottom:5px;
-    }
-
-    .menu{
-        padding:9px 2px;
-        font-size:8px;
     }
 
     .grid{
         grid-template-columns:repeat(2,1fr);
     }
 
-    .box{
-        padding:13px;
+    .menuButton{
+        min-width:0;
+        flex:1;
+        font-size:9px;
+    }
+}
+
+@media(max-width:550px){
+
+    .topbar{
+        height:64px;
+        padding:5px;
+    }
+
+    .brand{
+        display:none;
+    }
+
+    .res{
+        min-width:55px;
+        padding:6px 4px;
+        font-size:9px;
+    }
+
+    .inflation{
+        padding:6px;
+        font-size:9px;
+    }
+
+    #gameMapArea{
+        top:64px;
+    }
+
+    #countryPanel{
+        top:72px;
+        right:5px;
+        width:205px;
+    }
+
+    .bottomBar{
+        height:70px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
     }
 }
 </style>
@@ -561,520 +578,2244 @@ svg{
 
 <body>
 
-<div id="game">
+<!-- =====================================================
+     COUNTRY SELECT SCREEN
+===================================================== -->
 
-<!-- TOP BAR -->
+<div id="countryScreen">
 
-<div class="topbar">
+    <div class="selectHeader">
+        <h1>🌍 WORLD EMPIRE</h1>
+        <p>ابتدا کشور خود را انتخاب کن، سپس وارد صفحه اصلی امپراتوری شو.</p>
+    </div>
 
-<div class="logo">🌍 GLOBAL DOMINION</div>
+    <div class="countryLayout">
 
-<div class="resources">
+        <div class="mapCard">
 
-<div class="res">💰 <span id="money">10000</span></div>
-<div class="res">🌾 <span id="food">500</span></div>
-<div class="res">🛢️ <span id="oil">300</span></div>
-<div class="res">⚙️ <span id="steel">250</span></div>
-<div class="res">🔩 <span id="equipment">100</span></div>
-<div class="res">🔬 <span id="science">0</span></div>
+            <svg id="selectMap"
+                 viewBox="0 0 1200 650"
+                 preserveAspectRatio="xMidYMid meet">
 
-</div>
+                <rect class="ocean" x="0" y="0" width="1200" height="650"/>
 
-<div class="player" id="playerTop">
-👤 فرمانده
-</div>
+                <!-- NORTH AMERICA -->
+                <path class="country" data-country="کانادا"
+                d="M80 100 L160 65 L260 75 L350 110 L390 155 L340 195 L260 180 L190 205 L110 175 Z"/>
 
-</div>
+                <path class="country" data-country="آمریکا"
+                d="M125 190 L205 180 L300 195 L335 245 L300 290 L210 280 L145 255 Z"/>
 
+                <path class="country" data-country="مکزیک"
+                d="M145 270 L215 285 L255 325 L220 350 L165 330 L125 300 Z"/>
 
-<!-- MAP -->
+                <!-- SOUTH AMERICA -->
+                <path class="country" data-country="کلمبیا"
+                d="M290 315 L330 300 L350 345 L315 375 L285 350 Z"/>
 
-<div class="map">
+                <path class="country" data-country="ونزوئلا"
+                d="M330 300 L385 300 L405 330 L360 350 L335 340 Z"/>
 
-<div class="mapWorld" id="mapWorld">
+                <path class="country" data-country="برزیل"
+                d="M330 350 L405 325 L465 355 L475 430 L430 505 L365 485 L335 425 L295 390 Z"/>
 
-<svg viewBox="0 0 1400 720"
-preserveAspectRatio="xMidYMid meet">
+                <path class="country" data-country="آرژانتین"
+                d="M365 480 L430 505 L410 565 L370 600 L345 535 Z"/>
 
-<rect class="ocean"
-x="0" y="0"
-width="1400"
-height="720"/>
+                <!-- EUROPE -->
+                <path class="country" data-country="انگلستان"
+                d="M500 130 L525 115 L540 145 L525 175 L505 160 Z"/>
 
-<rect class="ocean2"
-x="0" y="0"
-width="1400"
-height="720"
-opacity=".15"/>
+                <path class="country" data-country="فرانسه"
+                d="M530 180 L590 170 L620 215 L595 250 L540 235 Z"/>
 
+                <path class="country" data-country="اسپانیا"
+                d="M510 250 L565 240 L600 270 L550 295 L505 275 Z"/>
 
-<!-- NORTH AMERICA -->
+                <path class="country" data-country="آلمان"
+                d="M605 165 L650 165 L670 205 L640 235 L605 215 Z"/>
 
-<path class="land"
-data-country="کانادا"
-d="M90 100 L170 55 L280 55 L370 85 L420 135 L370 190 L300 195 L245 220 L165 195 L105 155 Z"/>
+                <path class="country" data-country="ایتالیا"
+                d="M630 235 L660 225 L680 270 L650 305 L635 270 Z"/>
 
-<path class="land"
-data-country="آمریکا"
-d="M150 205 L245 195 L330 210 L370 270 L335 315 L250 315 L180 290 L135 250 Z"/>
+                <path class="country" data-country="لهستان"
+                d="M665 155 L715 155 L730 195 L690 210 L665 190 Z"/>
 
-<path class="land"
-data-country="مکزیک"
-d="M135 290 L190 305 L235 345 L205 385 L155 355 L115 320 Z"/>
+                <path class="country" data-country="اوکراین"
+                d="M700 200 L780 190 L820 225 L780 255 L710 245 Z"/>
 
-<path class="land"
-data-country="کوبا"
-d="M250 345 L295 340 L325 355 L285 370 L245 360 Z"/>
+                <path class="country" data-country="نروژ"
+                d="M555 75 L585 65 L610 130 L585 155 L560 125 Z"/>
 
+                <!-- RUSSIA -->
+                <path class="country" data-country="روسیه"
+                d="M600 80 L700 45 L820 55 L960 85 L1080 125 L1050 180 L930 170 L850 190 L760 170 L680 145 L625 130 Z"/>
 
-<!-- SOUTH AMERICA -->
+                <!-- AFRICA -->
+                <path class="country" data-country="مراکش"
+                d="M480 300 L530 285 L555 315 L525 350 L480 335 Z"/>
 
-<path class="land"
-data-country="کلمبیا"
-d="M310 360 L355 345 L380 380 L350 410 L315 400 Z"/>
+                <path class="country" data-country="الجزایر"
+                d="M525 300 L595 290 L610 350 L555 365 L520 340 Z"/>
 
-<path class="land"
-data-country="برزیل"
-d="M350 365 L440 345 L520 380 L545 455 L505 525 L450 570 L380 535 L360 475 L315 420 Z"/>
+                <path class="country" data-country="لیبی"
+                d="M595 290 L660 295 L670 350 L610 355 Z"/>
 
-<path class="land"
-data-country="آرژانتین"
-d="M375 525 L450 570 L430 640 L385 675 L355 600 Z"/>
+                <path class="country" data-country="مصر"
+                d="M660 290 L700 295 L710 345 L675 365 L655 330 Z"/>
 
-<path class="land"
-data-country="شیلی"
-d="M350 505 L375 525 L355 625 L335 605 Z"/>
+                <path class="country" data-country="نیجریه"
+                d="M530 365 L590 360 L610 415 L555 430 L520 395 Z"/>
 
+                <path class="country" data-country="کنگو"
+                d="M590 420 L650 410 L670 470 L620 495 L580 455 Z"/>
 
-<!-- EUROPE -->
+                <path class="country" data-country="اتیوپی"
+                d="M700 365 L755 350 L780 400 L745 435 L705 415 Z"/>
 
-<path class="land"
-data-country="انگلستان"
-d="M570 135 L600 110 L620 145 L610 180 L580 175 Z"/>
+                <path class="country" data-country="آفریقای جنوبی"
+                d="M590 490 L665 470 L715 515 L670 575 L610 560 L570 525 Z"/>
 
-<path class="land"
-data-country="فرانسه"
-d="M570 195 L640 180 L670 225 L635 270 L575 250 Z"/>
+                <!-- MIDDLE EAST -->
+                <path class="country" data-country="ترکیه"
+                d="M650 220 L715 215 L750 245 L710 275 L655 260 Z"/>
 
-<path class="land"
-data-country="اسپانیا"
-d="M545 265 L610 255 L640 290 L570 305 L535 285 Z"/>
+                <path class="country" data-country="ایران"
+                d="M730 250 L790 235 L825 280 L805 330 L750 335 L715 295 Z"/>
 
-<path class="land"
-data-country="آلمان"
-d="M650 175 L700 170 L720 215 L690 250 L650 230 Z"/>
+                <path class="country" data-country="عراق"
+                d="M700 285 L745 275 L760 325 L725 350 L700 325 Z"/>
 
-<path class="land"
-data-country="ایتالیا"
-d="M680 250 L710 235 L735 265 L710 315 L690 300 Z"/>
+                <path class="country" data-country="عربستان"
+                d="M735 340 L805 325 L850 380 L805 430 L745 405 L720 370 Z"/>
 
-<path class="land"
-data-country="لهستان"
-d="M715 175 L765 170 L785 210 L750 235 L715 220 Z"/>
+                <!-- ASIA -->
+                <path class="country" data-country="قزاقستان"
+                d="M780 145 L870 125 L930 155 L915 205 L825 215 L780 185 Z"/>
 
-<path class="land"
-data-country="اوکراین"
-d="M770 205 L835 195 L870 235 L830 270 L775 250 Z"/>
+                <path class="country" data-country="هند"
+                d="M810 300 L860 285 L890 335 L865 405 L825 430 L795 375 Z"/>
 
+                <path class="country" data-country="پاکستان"
+                d="M775 265 L815 260 L830 310 L800 340 L775 310 Z"/>
 
-<!-- RUSSIA -->
+                <path class="country" data-country="چین"
+                d="M835 190 L930 175 L990 220 L965 285 L900 305 L835 270 Z"/>
 
-<path class="land"
-data-country="روسیه"
-d="M690 90 L780 45 L900 55 L1030 80 L1140 125 L1190 175 L1135 215 L1030 195 L960 220 L870 200 L790 175 L725 145 Z"/>
+                <path class="country" data-country="مغولستان"
+                d="M860 145 L950 145 L975 180 L910 205 L855 185 Z"/>
 
+                <path class="country" data-country="ژاپن"
+                d="M1010 220 L1035 205 L1050 240 L1028 275 L1008 255 Z"/>
 
-<!-- AFRICA -->
+                <path class="country" data-country="کره جنوبی"
+                d="M975 235 L995 225 L1005 265 L980 280 Z"/>
 
-<path class="land"
-data-country="مراکش"
-d="M510 310 L555 295 L580 330 L540 360 L505 345 Z"/>
+                <!-- AUSTRALIA -->
+                <path class="country" data-country="استرالیا"
+                d="M880 450 L970 420 L1060 455 L1050 520 L980 555 L905 530 L865 485 Z"/>
 
-<path class="land"
-data-country="الجزایر"
-d="M550 300 L625 295 L640 350 L585 375 L535 345 Z"/>
+                <!-- LABELS -->
+                <text class="mapLabel" x="165" y="230">آمریکا</text>
+                <text class="mapLabel" x="360" y="390">برزیل</text>
+                <text class="mapLabel" x="620" y="190">اروپا</text>
+                <text class="mapLabel" x="820" y="120">روسیه</text>
+                <text class="mapLabel" x="750" y="295">ایران</text>
+                <text class="mapLabel" x="870" y="245">چین</text>
+                <text class="mapLabel" x="930" y="490">استرالیا</text>
 
-<path class="land"
-data-country="لیبی"
-d="M635 300 L710 295 L720 355 L675 385 L635 350 Z"/>
+            </svg>
 
-<path class="land"
-data-country="مصر"
-d="M710 300 L755 300 L770 350 L735 390 L705 355 Z"/>
+        </div>
 
-<path class="land"
-data-country="نیجریه"
-d="M570 375 L635 370 L655 425 L605 450 L565 415 Z"/>
+        <div class="countryCard">
 
-<path class="land"
-data-country="اتیوپی"
-d="M730 395 L790 380 L825 430 L780 470 L735 450 Z"/>
+            <h2>🏳️ انتخاب کشور</h2>
 
-<path class="land"
-data-country="کنگو"
-d="M635 435 L710 425 L750 480 L710 530 L650 510 Z"/>
+            <div class="selectedCountry" id="selectedCountryBox">
 
-<path class="land"
-data-country="آفریقای جنوبی"
-d="M625 530 L710 510 L770 560 L720 625 L650 610 Z"/>
+                <b>هیچ کشوری انتخاب نشده</b>
 
+                <p style="margin-top:10px;color:#9fb4c7;font-size:12px">
+                    روی یکی از کشورها در نقشه کلیک کن.
+                </p>
 
-<!-- MIDDLE EAST -->
+            </div>
 
-<path class="land"
-data-country="ترکیه"
-d="M715 250 L775 240 L810 265 L775 295 L720 285 Z"/>
+            <div class="countryInfo">
 
-<path class="land"
-data-country="سوریه"
-d="M770 290 L805 285 L820 320 L790 340 L765 325 Z"/>
+                <div class="infoBox">
+                    💰 خزانه<br>
+                    <b id="startMoney">25,000</b>
+                </div>
 
-<path class="land"
-data-country="عراق"
-d="M795 320 L835 315 L850 355 L815 375 L790 350 Z"/>
+                <div class="infoBox">
+                    👥 جمعیت<br>
+                    <b id="startPopulation">-</b>
+                </div>
 
-<path class="land"
-data-country="ایران"
-d="M830 270 L900 255 L940 300 L920 365 L865 390 L825 345 Z"/>
+                <div class="infoBox">
+                    🏭 صنعت<br>
+                    <b id="startIndustry">-</b>
+                </div>
 
-<path class="land"
-data-country="عربستان"
-d="M825 385 L895 365 L945 415 L905 470 L845 450 L805 410 Z"/>
+                <div class="infoBox">
+                    ⚔️ قدرت نظامی<br>
+                    <b id="startMilitary">-</b>
+                </div>
 
-<path class="land"
-data-country="اسرائیل"
-d="M795 350 L812 350 L817 380 L800 390 Z"/>
+            </div>
 
+            <button class="startButton"
+                    id="startGameBtn"
+                    disabled
+                    onclick="startGame()">
+                ورود به کشور
+            </button>
 
-<!-- ASIA -->
+        </div>
 
-<path class="land"
-data-country="قزاقستان"
-d="M850 205 L940 185 L1000 220 L965 270 L885 275 L840 245 Z"/>
-
-<path class="land"
-data-country="هند"
-d="M930 320 L985 300 L1015 355 L985 425 L945 465 L915 405 Z"/>
-
-<path class="land"
-data-country="پاکستان"
-d="M890 300 L930 290 L945 330 L920 365 L890 345 Z"/>
-
-<path class="land"
-data-country="چین"
-d="M975 185 L1070 175 L1140 220 L1125 285 L1050 315 L985 280 Z"/>
-
-<path class="land"
-data-country="مغولستان"
-d="M1000 150 L1080 145 L1120 175 L1070 205 L1010 195 Z"/>
-
-<path class="land"
-data-country="ژاپن"
-d="M1160 250 L1185 225 L1200 260 L1175 300 L1155 280 Z"/>
-
-<path class="land"
-data-country="کره جنوبی"
-d="M1130 235 L1155 230 L1160 275 L1140 285 Z"/>
-
-<path class="land"
-data-country="اندونزی"
-d="M1010 475 L1080 465 L1140 485 L1100 510 L1030 505 Z"/>
-
-
-<!-- AUSTRALIA -->
-
-<path class="land"
-data-country="استرالیا"
-d="M1020 515 L1120 490 L1210 525 L1250 590 L1190 650 L1080 640 L1000 585 Z"/>
-
-
-<!-- TEXT -->
-
-<text class="countryText" x="210" y="255">آمریکا</text>
-<text class="countryText" x="385" y="430">برزیل</text>
-<text class="countryText" x="720" y="205">روسیه</text>
-<text class="countryText" x="860" y="325">ایران</text>
-<text class="countryText" x="1030" y="235">چین</text>
-<text class="countryText" x="955" y="375">هند</text>
-<text class="countryText" x="1090" y="570">استرالیا</text>
-<text class="countryText" x="690" y="215">آلمان</text>
-<text class="countryText" x="575" y="220">فرانسه</text>
-<text class="countryText" x="675" y="580">آفریقای جنوبی</text>
-
-<text class="regionText" x="380" y="160">NORTH AMERICA</text>
-<text class="regionText" x="420" y="330">SOUTH AMERICA</text>
-<text class="regionText" x="680" y="120">EUROPE</text>
-<text class="regionText" x="570" y="460">AFRICA</text>
-<text class="regionText" x="950" y="110">ASIA</text>
-
-</svg>
+    </div>
 
 </div>
 
 
-<div class="mapControls">
-<button onclick="zoom(1.15)">+</button>
-<button onclick="zoom(.87)">−</button>
-<button onclick="resetZoom()">⌂</button>
+<!-- =====================================================
+     MAIN GAME
+===================================================== -->
+
+<div id="game" class="hidden">
+
+    <div class="topbar">
+
+        <div class="brand">
+            🌍 WORLD EMPIRE
+        </div>
+
+        <div class="resources">
+
+            <div class="res">
+                💰 پول<br>
+                <span id="money">25,000</span>
+            </div>
+
+            <div class="res">
+                🌾 غذا<br>
+                <span id="food">1,000</span>
+            </div>
+
+            <div class="res">
+                🛢️ نفت<br>
+                <span id="oil">600</span>
+            </div>
+
+            <div class="res">
+                ⚙️ فولاد<br>
+                <span id="steel">500</span>
+            </div>
+
+            <div class="res">
+                👥 جمعیت<br>
+                <span id="population">10M</span>
+            </div>
+
+        </div>
+
+        <div class="inflation">
+            📈 تورم:
+            <b id="inflation">2.00%</b>
+        </div>
+
+        <div class="commander">
+            👤 <span id="playerName">فرمانده</span>
+        </div>
+
+    </div>
+
+
+    <div id="gameMapArea">
+
+        <svg id="gameMap"
+             viewBox="0 0 1200 650"
+             preserveAspectRatio="xMidYMid meet">
+
+            <rect class="ocean" x="0" y="0" width="1200" height="650"/>
+
+            <!-- NORTH AMERICA -->
+            <path class="gLand" data-name="کانادا"
+            d="M80 100 L160 65 L260 75 L350 110 L390 155 L340 195 L260 180 L190 205 L110 175 Z"/>
+
+            <path class="gLand" data-name="آمریکا"
+            d="M125 190 L205 180 L300 195 L335 245 L300 290 L210 280 L145 255 Z"/>
+
+            <path class="gLand" data-name="مکزیک"
+            d="M145 270 L215 285 L255 325 L220 350 L165 330 L125 300 Z"/>
+
+            <!-- SOUTH AMERICA -->
+            <path class="gLand" data-name="کلمبیا"
+            d="M290 315 L330 300 L350 345 L315 375 L285 350 Z"/>
+
+            <path class="gLand" data-name="برزیل"
+            d="M330 350 L405 325 L465 355 L475 430 L430 505 L365 485 L335 425 L295 390 Z"/>
+
+            <path class="gLand" data-name="آرژانتین"
+            d="M365 480 L430 505 L410 565 L370 600 L345 535 Z"/>
+
+            <!-- EUROPE -->
+            <path class="gLand" data-name="انگلستان"
+            d="M500 130 L525 115 L540 145 L525 175 L505 160 Z"/>
+
+            <path class="gLand" data-name="فرانسه"
+            d="M530 180 L590 170 L620 215 L595 250 L540 235 Z"/>
+
+            <path class="gLand" data-name="اسپانیا"
+            d="M510 250 L565 240 L600 270 L550 295 L505 275 Z"/>
+
+            <path class="gLand" data-name="آلمان"
+            d="M605 165 L650 165 L670 205 L640 235 L605 215 Z"/>
+
+            <path class="gLand" data-name="ایتالیا"
+            d="M630 235 L660 225 L680 270 L650 305 L635 270 Z"/>
+
+            <path class="gLand" data-name="لهستان"
+            d="M665 155 L715 155 L730 195 L690 210 L665 190 Z"/>
+
+            <path class="gLand" data-name="اوکراین"
+            d="M700 200 L780 190 L820 225 L780 255 L710 245 Z"/>
+
+            <path class="gLand" data-name="نروژ"
+            d="M555 75 L585 65 L610 130 L585 155 L560 125 Z"/>
+
+            <!-- RUSSIA -->
+            <path class="gLand" data-name="روسیه"
+            d="M600 80 L700 45 L820 55 L960 85 L1080 125 L1050 180 L930 170 L850 190 L760 170 L680 145 L625 130 Z"/>
+
+            <!-- AFRICA -->
+            <path class="gLand" data-name="مراکش"
+            d="M480 300 L530 285 L555 315 L525 350 L480 335 Z"/>
+
+            <path class="gLand" data-name="الجزایر"
+            d="M525 300 L595 290 L610 350 L555 365 L520 340 Z"/>
+
+            <path class="gLand" data-name="لیبی"
+            d="M595 290 L660 295 L670 350 L610 355 Z"/>
+
+            <path class="gLand" data-name="مصر"
+            d="M660 290 L700 295 L710 345 L675 365 L655 330 Z"/>
+
+            <path class="gLand" data-name="نیجریه"
+            d="M530 365 L590 360 L610 415 L555 430 L520 395 Z"/>
+
+            <path class="gLand" data-name="کنگو"
+            d="M590 420 L650 410 L670 470 L620 495 L580 455 Z"/>
+
+            <path class="gLand" data-name="اتیوپی"
+            d="M700 365 L755 350 L780 400 L745 435 L705 415 Z"/>
+
+            <path class="gLand" data-name="آفریقای جنوبی"
+            d="M590 490 L665 470 L715 515 L670 575 L610 560 L570 525 Z"/>
+
+            <!-- MIDDLE EAST -->
+            <path class="gLand" data-name="ترکیه"
+            d="M650 220 L715 215 L750 245 L710 275 L655 260 Z"/>
+
+            <path class="gLand" data-name="ایران"
+            d="M730 250 L790 235 L825 280 L805 330 L750 335 L715 295 Z"/>
+
+            <path class="gLand" data-name="عراق"
+            d="M700 285 L745 275 L760 325 L725 350 L700 325 Z"/>
+
+            <path class="gLand" data-name="عربستان"
+            d="M735 340 L805 325 L850 380 L805 430 L745 405 L720 370 Z"/>
+
+            <!-- ASIA -->
+            <path class="gLand" data-name="قزاقستان"
+            d="M780 145 L870 125 L930 155 L915 205 L825 215 L780 185 Z"/>
+
+            <path class="gLand" data-name="هند"
+            d="M810 300 L860 285 L890 335 L865 405 L825 430 L795 375 Z"/>
+
+            <path class="gLand" data-name="پاکستان"
+            d="M775 265 L815 260 L830 310 L800 340 L775 310 Z"/>
+
+            <path class="gLand" data-name="چین"
+            d="M835 190 L930 175 L990 220 L965 285 L900 305 L835 270 Z"/>
+
+            <path class="gLand" data-name="مغولستان"
+            d="M860 145 L950 145 L975 180 L910 205 L855 185 Z"/>
+
+            <path class="gLand" data-name="ژاپن"
+            d="M1010 220 L1035 205 L1050 240 L1028 275 L1008 255 Z"/>
+
+            <path class="gLand" data-name="کره جنوبی"
+            d="M975 235 L995 225 L1005 265 L980 280 Z"/>
+
+            <!-- AUSTRALIA -->
+            <path class="gLand" data-name="استرالیا"
+            d="M880 450 L970 420 L1060 455 L1050 520 L980 555 L905 530 L865 485 Z"/>
+
+            <text class="gLabel" x="165" y="230">آمریکا</text>
+            <text class="gLabel" x="360" y="390">برزیل</text>
+            <text class="gLabel" x="750" y="295">ایران</text>
+            <text class="gLabel" x="875" y="245">چین</text>
+            <text class="gLabel" x="820" y="115">روسیه</text>
+            <text class="gLabel" x="930" y="490">استرالیا</text>
+
+        </svg>
+
+
+        <div id="countryPanel">
+
+            <div class="panelHead" id="countryTitle">
+                کشور شما
+            </div>
+
+            <div class="stat">
+                👑 وضعیت: <b id="countryStatus">فعال</b>
+            </div>
+
+            <div class="stat">
+                ⭐ سطح کشور:
+                <b id="countryLevel">1</b>
+            </div>
+
+            <div class="stat">
+                🏭 قدرت صنعتی:
+                <b id="industryPower">10</b>
+            </div>
+
+            <div class="stat">
+                ⚔️ قدرت نظامی:
+                <b id="militaryPower">100</b>
+            </div>
+
+            <div class="stat">
+                😊 رضایت مردم:
+                <b id="approval">75%</b>
+
+                <div class="progress">
+                    <i id="approvalBar" style="width:75%"></i>
+                </div>
+            </div>
+
+            <div class="stat">
+                💰 درآمد روزانه:
+                <b id="dailyIncome">500</b>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- BOTTOM MENU -->
+
+    <div class="bottomBar">
+
+        <button class="menuButton shop"
+                onclick="openShop()">
+            🛒<br>فروشگاه
+        </button>
+
+        <button class="menuButton war"
+                onclick="openWar()">
+            ⚔️<br>جنگ
+        </button>
+
+        <button class="menuButton"
+                onclick="openEconomy()">
+            📊<br>اقتصاد
+        </button>
+
+        <button class="menuButton"
+                onclick="openInfrastructure()">
+            🏗️<br>زیرساخت
+        </button>
+
+        <button class="menuButton"
+                onclick="openDiplomacy()">
+            🌐<br>دیپلماسی
+        </button>
+
+        <button class="menuButton"
+                onclick="saveGame()">
+            💾<br>ذخیره
+        </button>
+
+    </div>
+
+
+    <div id="notice"></div>
+
+
+    <!-- =================================================
+         SHOP
+    ================================================= -->
+
+    <div class="modal" id="shopModal">
+
+        <div class="modalBox">
+
+            <button class="close"
+                    onclick="closeModal('shopModal')">
+                ✕
+            </button>
+
+            <div class="modalTitle">
+                🛒 فروشگاه ملی
+            </div>
+
+            <div class="tabs">
+
+                <button class="tab active"
+                        onclick="shopTab('civil')">
+                    🏭 صنعتی
+                </button>
+
+                <button class="tab"
+                        onclick="shopTab('military')">
+                    ⚔️ نظامی
+                </button>
+
+                <button class="tab"
+                        onclick="shopTab('weapons')">
+                    🔫 تجهیزات
+                </button>
+
+            </div>
+
+            <div id="shopContent"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         WAR
+    ================================================= -->
+
+    <div class="modal" id="warModal">
+
+        <div class="modalBox">
+
+            <button class="close"
+                    onclick="closeModal('warModal')">
+                ✕
+            </button>
+
+            <div class="modalTitle">
+                ⚔️ مرکز فرماندهی جنگ
+            </div>
+
+            <div class="stat">
+                کشور شما:
+                <b id="warCountry"></b>
+            </div>
+
+            <div class="stat">
+                قدرت نظامی:
+                <b id="warPower"></b>
+            </div>
+
+            <h3 style="margin:15px 0 8px">
+                کشورهای قابل حمله
+            </h3>
+
+            <div id="warTargets"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         ECONOMY
+    ================================================= -->
+
+    <div class="modal" id="economyModal">
+
+        <div class="modalBox">
+
+            <button class="close"
+                    onclick="closeModal('economyModal')">
+                ✕
+            </button>
+
+            <div class="modalTitle">
+                📊 اقتصاد کشور
+            </div>
+
+            <div class="grid">
+
+                <div class="card">
+                    <h3>💰 خزانه</h3>
+                    <p>
+                        <b id="ecoMoney"></b>
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>📈 تورم</h3>
+                    <p>
+                        <b id="ecoInflation"></b>
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>💸 مالیات</h3>
+                    <p>
+                        <b id="ecoTax"></b>
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>🏭 صنعت</h3>
+                    <p>
+                        <b id="ecoIndustry"></b>
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>😊 رضایت</h3>
+                    <p>
+                        <b id="ecoApproval"></b>
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>👥 جمعیت</h3>
+                    <p>
+                        <b id="ecoPopulation"></b>
+                    </p>
+                </div>
+
+            </div>
+
+            <button class="buy"
+                    onclick="investEconomy()">
+                🏗️ سرمایه‌گذاری ۵۰۰۰ پول
+            </button>
+
+            <button class="buy"
+                    onclick="reduceTax()">
+                📉 کاهش مالیات
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         INFRASTRUCTURE
+    ================================================= -->
+
+    <div class="modal" id="infraModal">
+
+        <div class="modalBox">
+
+            <button class="close"
+                    onclick="closeModal('infraModal')">
+                ✕
+            </button>
+
+            <div class="modalTitle">
+                🏗️ زیرساخت
+            </div>
+
+            <div class="grid">
+
+                <div class="card">
+                    <h3>🛣️ جاده</h3>
+                    <p>
+                        افزایش تولید و کاهش هزینه حمل‌ونقل.
+                    </p>
+
+                    <button class="buy"
+                            onclick="buildInfrastructure('road')">
+                        ساخت - 1500 💰
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3>⚡ نیروگاه</h3>
+                    <p>
+                        افزایش ظرفیت صنعتی.
+                    </p>
+
+                    <button class="buy"
+                            onclick="buildInfrastructure('power')">
+                        ساخت - 2500 💰
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3>🏥 بیمارستان</h3>
+                    <p>
+                        افزایش رضایت و رشد جمعیت.
+                    </p>
+
+                    <button class="buy"
+                            onclick="buildInfrastructure('hospital')">
+                        ساخت - 2200 💰
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3>🎓 دانشگاه</h3>
+                    <p>
+                        افزایش فناوری کشور.
+                    </p>
+
+                    <button class="buy"
+                            onclick="buildInfrastructure('university')">
+                        ساخت - 3500 💰
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         DIPLOMACY
+    ================================================= -->
+
+    <div class="modal" id="diplomacyModal">
+
+        <div class="modalBox">
+
+            <button class="close"
+                    onclick="closeModal('diplomacyModal')">
+                ✕
+            </button>
+
+            <div class="modalTitle">
+                🌐 دیپلماسی
+            </div>
+
+            <div id="diplomacyList"></div>
+
+        </div>
+
+    </div>
+
 </div>
 
 
-<!-- COUNTRY PANEL -->
+<script>
+
+/* =====================================================
+   GAME DATA
+===================================================== */
+
+const countryData = {
+
+    "آمریکا":{
+        population:335,
+        industry:95,
+        military:95,
+        money:50000
+    },
+
+    "چین":{
+        population:1410,
+        industry:93,
+        military:92,
+        money:48000
+    },
+
+    "روسیه":{
+        population:144,
+        industry:75,
+        military:90,
+        money:32000
+    },
+
+    "هند":{
+        population:1420,
+        industry:70,
+        military:82,
+        money:30000
+    },
+
+    "ایران":{
+        population:89,
+        industry:65,
+        military:72,
+        money:25000
+    },
+
+    "آلمان":{
+        population:84,
+        industry:90,
+        military:60,
+        money:42000
+    },
+
+    "فرانسه":{
+        population:68,
+        industry:82,
+        military:75,
+        money:38000
+    },
+
+    "انگلستان":{
+        population:68,
+        industry:80,
+        military:78,
+        money:40000
+    },
+
+    "ژاپن":{
+        population:124,
+        industry:88,
+        military:68,
+        money:43000
+    },
+
+    "کره جنوبی":{
+        population:52,
+        industry:86,
+        military:72,
+        money:35000
+    },
+
+    "ترکیه":{
+        population:86,
+        industry:63,
+        military:70,
+        money:23000
+    },
+
+    "برزیل":{
+        population:216,
+        industry:68,
+        military:60,
+        money:27000
+    },
+
+    "کانادا":{
+        population:40,
+        industry:72,
+        military:58,
+        money:36000
+    },
+
+    "استرالیا":{
+        population:27,
+        industry:70,
+        military:55,
+        money:34000
+    },
+
+    "اسپانیا":{
+        population:48,
+        industry:68,
+        military:55,
+        money:30000
+    },
+
+    "ایتالیا":{
+        population:59,
+        industry:70,
+        military:58,
+        money:30000
+    },
+
+    "لهستان":{
+        population:37,
+        industry:65,
+        military:68,
+        money:25000
+    },
+
+    "اوکراین":{
+        population:37,
+        industry:50,
+        military:65,
+        money:15000
+    },
+
+    "پاکستان":{
+        population:245,
+        industry:48,
+        military:73,
+        money:18000
+    },
+
+    "عربستان":{
+        population:36,
+        industry:60,
+        military:65,
+        money:45000
+    },
+
+    "مصر":{
+        population:112,
+        industry:48,
+        military:65,
+        money:16000
+    },
+
+    "مکزیک":{
+        population:130,
+        industry:62,
+        military:48,
+        money:22000
+    },
+
+    "آرژانتین":{
+        population:46,
+        industry:50,
+        military:40,
+        money:18000
+    },
+
+    "نروژ":{
+        population:5.5,
+        industry:76,
+        military:52,
+        money:50000
+    },
+
+    "قزاقستان":{
+        population:20,
+        industry:60,
+        military:50,
+        money:26000
+    }
+
+};
+
+
+/* =====================================================
+   GAME STATE
+===================================================== */
+
+let selectedCountry = null;
+
+let game = {
+
+    country:null,
+
+    money:25000,
+    food:1000,
+    oil:600,
+    steel:500,
+
+    population:89,
+
+    inflation:2.00,
+
+    tax:20,
+
+    approval:75,
+
+    industry:65,
+
+    military:72,
+
+    level:1,
+
+    technology:10,
+
+    lastInvestment:Date.now(),
+
+    buildings:{
+        farm:0,
+        greenhouse:0,
+        mine:0,
+        factory:0,
+        refinery:0,
+        tankFactory:0,
+        jetFactory:0,
+        droneFactory:0,
+        missileFactory:0,
+        weaponsFactory:0,
+        road:0,
+        power:0,
+        hospital:0,
+        university:0
+    },
+
+    equipment:{
+        tanks:10,
+        jets:5,
+        drones:8,
+        missiles:2,
+        apcs:15,
+        artillery:8,
+        f35:0,
+        rafale:0,
+        merkava:0,
+        leopard:0
+    },
 
-<div class="countryPanel">
+    relations:{}
 
-<div class="countryTitle" id="countryTitle">
-🌍 انتخاب کشور
-</div>
+};
 
-<div class="countrySub" id="countrySub">
-روی هر کشور نقشه کلیک کن
-</div>
 
-<div id="countryInfo">
+/* =====================================================
+   COUNTRY SELECT
+===================================================== */
 
-<div class="stat">
-🌐 وضعیت:
-<b>کشوری انتخاب نشده</b>
-</div>
+document.querySelectorAll("#selectMap .country")
+.forEach(el=>{
 
-</div>
+    el.addEventListener("click",()=>{
 
-<div id="countryActions">
+        document.querySelectorAll("#selectMap .country")
+        .forEach(x=>x.classList.remove("selected"));
 
-<button class="action green" onclick="startCountry()">
-🎮 انتخاب و شروع بازی
-</button>
+        el.classList.add("selected");
 
-</div>
+        selectedCountry = el.dataset.country;
 
-</div>
+        const d = countryData[selectedCountry] || {
+            population:50,
+            industry:50,
+            military:45,
+            money:20000
+        };
 
+        document.getElementById("selectedCountryBox")
+        .innerHTML = `
+            <h3>🇺🇳 ${selectedCountry}</h3>
+            <p style="margin-top:8px;color:#a9bfd0;font-size:12px">
+                این کشور برای شروع بازی انتخاب شد.
+            </p>
+        `;
 
-<!-- BOTTOM -->
+        document.getElementById("startMoney")
+        .innerText = format(d.money);
+
+        document.getElementById("startPopulation")
+        .innerText = d.population + " میلیون";
+
+        document.getElementById("startIndustry")
+        .innerText = d.industry + "%";
+
+        document.getElementById("startMilitary")
+        .innerText = d.military + "%";
+
+        document.getElementById("startGameBtn")
+        .disabled = false;
+
+    });
+
+});
+
+
+/* =====================================================
+   START GAME
+===================================================== */
+
+function startGame(){
+
+    if(!selectedCountry){
+
+        notify("اول یک کشور انتخاب کن");
+
+        return;
+    }
+
+    const d = countryData[selectedCountry] || {
+        population:50,
+        industry:50,
+        military:45,
+        money:20000
+    };
+
+    game.country = selectedCountry;
+
+    game.money = d.money;
+    game.population = d.population;
+    game.industry = d.industry;
+    game.military = d.military;
+
+    game.approval = 75;
+
+    document.getElementById("countryScreen")
+    .classList.add("hidden");
+
+    document.getElementById("game")
+    .classList.remove("hidden");
+
+    document.getElementById("countryTitle")
+    .innerText = "🇺🇳 " + game.country;
+
+    document.getElementById("warCountry")
+    .innerText = game.country;
+
+    updateAll();
+
+    notify("امپراتوری " + game.country + " آماده است");
+
+}
+
+
+/* =====================================================
+   SHOP DATA
+===================================================== */
+
+const shopItems = {
+
+civil:[
+
+    {
+        id:"farm",
+        icon:"🌾",
+        name:"مزرعه",
+        desc:"تولید مداوم غذا",
+        money:800,
+        steel:30
+    },
+
+    {
+        id:"greenhouse",
+        icon:"🌱",
+        name:"گلخانه",
+        desc:"تولید غذای پیشرفته و افزایش بهره‌وری کشاورزی",
+        money:1500,
+        steel:50
+    },
+
+    {
+        id:"mine",
+        icon:"⛏️",
+        name:"معدن فولاد",
+        desc:"استخراج فولاد",
+        money:1800,
+        steel:80
+    },
+
+    {
+        id:"factory",
+        icon:"🏭",
+        name:"کارخانه صنعتی",
+        desc:"افزایش درآمد صنعتی",
+        money:3000,
+        steel:150
+    },
+
+    {
+        id:"refinery",
+        icon:"🛢️",
+        name:"پالایشگاه",
+        desc:"تولید نفت و سوخت",
+        money:3500,
+        steel:180
+    },
+
+    {
+        id:"weaponsFactory",
+        icon:"🔩",
+        name:"کارخانه مهمات",
+        desc:"تولید تجهیزات و مهمات نظامی",
+        money:4000,
+        steel:250
+    }
+
+],
+
+military:[
+
+    {
+        id:"tankFactory",
+        icon:"🏗️",
+        name:"کارخانه تانک",
+        desc:"تولید تانک‌های اصلی میدان نبرد",
+        money:5000,
+        steel:350
+    },
+
+    {
+        id:"jetFactory",
+        icon:"✈️",
+        name:"کارخانه جنگنده",
+        desc:"تولید هواپیماهای جنگی",
+        money:9000,
+        steel:500
+    },
+
+    {
+        id:"droneFactory",
+        icon:"🛩️",
+        name:"کارخانه پهپاد",
+        desc:"تولید پهپادهای شناسایی و رزمی",
+        money:5000,
+        steel:250
+    },
+
+    {
+        id:"missileFactory",
+        icon:"🚀",
+        name:"کارخانه موشک",
+        desc:"تولید سامانه‌های موشکی",
+        money:12000,
+        steel:800
+    }
+
+],
+
+weapons:[
+
+    {
+        id:"merkava",
+        icon:"🪖",
+        name:"مرکاوا",
+        desc:"تانک پیشرفته",
+        money:4000,
+        steel:250,
+        equipment:"merkava"
+    },
+
+    {
+        id:"leopard",
+        icon:"🛡️",
+        name:"Leopard 2",
+        desc:"تانک اصلی پیشرفته",
+        money:4500,
+        steel:280,
+        equipment:"leopard"
+    },
+
+    {
+        id:"f35",
+        icon:"✈️",
+        name:"F-35",
+        desc:"جنگنده نسل پنجم",
+        money:15000,
+        steel:700,
+        oil:100,
+        equipment:"f35"
+    },
+
+    {
+        id:"rafale",
+        icon:"🛩️",
+        name:"Rafale",
+        desc:"جنگنده چندمنظوره پیشرفته",
+        money:10000,
+        steel:500,
+        oil:70,
+        equipment:"rafale"
+    },
+
+    {
+        id:"tank",
+        icon:"🚜",
+        name:"تانک استاندارد",
+        desc:"افزایش قدرت زمینی",
+        money:2500,
+        steel:150,
+        equipment:"tanks"
+    },
+
+    {
+        id:"jet",
+        icon:"✈️",
+        name:"جنگنده استاندارد",
+        desc:"افزایش قدرت هوایی",
+        money:7000,
+        steel:400,
+        oil:50,
+        equipment:"jets"
+    },
+
+    {
+        id:"drone",
+        icon:"🛸",
+        name:"پهپاد رزمی",
+        desc:"افزایش قدرت شناسایی و حمله",
+        money:3000,
+        steel:120,
+        oil:20,
+        equipment:"drones"
+    },
+
+    {
+        id:"missile",
+        icon:"🚀",
+        name:"موشک",
+        desc:"افزایش قدرت موشکی",
+        money:6000,
+        steel:300,
+        oil:40,
+        equipment:"missiles"
+    },
+
+    {
+        id:"apc",
+        icon:"🚙",
+        name:"نفربر زرهی",
+        desc:"افزایش قدرت زمینی",
+        money:1800,
+        steel:100,
+        equipment:"apcs"
+    },
+
+    {
+        id:"artillery",
+        icon:"💥",
+        name:"توپخانه",
+        desc:"افزایش قدرت آتش زمینی",
+        money:3000,
+        steel:180,
+        equipment:"artillery"
+    }
+
+]};
+
+
+/* =====================================================
+   SHOP
+===================================================== */
+
+let currentShopTab = "civil";
+
+function openShop(){
+
+    shopTab("civil");
+
+    document.getElementById("shopModal")
+    .classList.add("show");
+
+}
+
+
+function shopTab(tab){
+
+    currentShopTab = tab;
+
+    document.querySelectorAll(".tab")
+    .forEach(x=>x.classList.remove("active"));
+
+    const buttons = document.querySelectorAll(".tab");
+
+    if(tab==="civil") buttons[0].classList.add("active");
+    if(tab==="military") buttons[1].classList.add("active");
+    if(tab==="weapons") buttons[2].classList.add("active");
+
+    const container =
+        document.getElementById("shopContent");
+
+    container.innerHTML = "";
+
+    shopItems[tab].forEach(item=>{
+
+        const div = document.createElement("div");
+
+        div.className = "card";
+
+        let costs =
+            `${format(item.money)} 💰`;
+
+        if(item.steel)
+            costs += ` | ${format(item.steel)} ⚙️`;
+
+        if(item.oil)
+            costs += ` | ${format(item.oil)} 🛢️`;
+
+        div.innerHTML = `
+
+            <h3>
+                ${item.icon}
+                ${item.name}
+            </h3>
+
+            <p>
+                ${item.desc}
+            </p>
+
+            <p style="margin-top:5px">
+                💵 ${costs}
+            </p>
+
+            <button class="buy"
+                    onclick="buyItem('${item.id}')">
+                خرید
+            </button>
+
+        `;
+
+        container.appendChild(div);
+
+    });
+
+}
+
+
+function findShopItem(id){
+
+    for(const category in shopItems){
+
+        const found =
+            shopItems[category].find(x=>x.id===id);
+
+        if(found)
+            return found;
+
+    }
 
-<div class="bottom">
+    return null;
 
-<button class="menu" onclick="openWar()">
-⚔️ جنگ
-</button>
+}
 
-<button class="menu" onclick="openBuildings()">
-🏭 صنایع
-</button>
 
-<button class="menu" onclick="openArmy()">
-🪖 ارتش
-</button>
+function buyItem(id){
 
-<button class="menu" onclick="openResearch()">
-🔬 فناوری
-</button>
+    const item = findShopItem(id);
 
-<button class="menu" onclick="openDiplomacy()">
-🤝 دیپلماسی
-</button>
+    if(!item)
+        return;
 
-<button class="menu" onclick="openEconomy()">
-📊 اقتصاد
-</button>
+    if(game.money < item.money){
 
-<button class="menu" onclick="openLobby()">
-👥 لابی
-</button>
+        notify("💰 پول کافی نیست");
 
-</div>
+        return;
+    }
 
-</div>
+    if(item.steel &&
+       game.steel < item.steel){
 
+        notify("⚙️ فولاد کافی نیست");
 
-<!-- NOTICE -->
+        return;
+    }
 
-<div id="notice"></div>
+    if(item.oil &&
+       game.oil < item.oil){
 
+        notify("🛢️ نفت کافی نیست");
 
-<!-- ======================================================
-     WAR MODAL
-====================================================== -->
+        return;
+    }
 
-<div class="modal" id="warModal">
+    game.money -= item.money;
 
-<div class="box">
+    if(item.steel)
+        game.steel -= item.steel;
 
-<button class="close" onclick="closeModal('warModal')">✕</button>
+    if(item.oil)
+        game.oil -= item.oil;
 
-<h2>⚔️ مرکز فرماندهی جنگ</h2>
+    if(item.equipment){
 
-<div class="stat">
-کشور شما:
-<b id="warCountry">انتخاب نشده</b>
-</div>
+        game.equipment[item.equipment]++;
 
-<div class="stat">
-قدرت نظامی شما:
-<b id="warPower">0</b>
-</div>
+        if(
+            item.equipment==="tanks" ||
+            item.equipment==="merkava" ||
+            item.equipment==="leopard"
+        )
+            game.military += 1.5;
 
-<div class="stat">
-وضعیت:
-<b id="warStatus">آماده</b>
-</div>
+        if(
+            item.equipment==="jets" ||
+            item.equipment==="f35" ||
+            item.equipment==="rafale"
+        )
+            game.military += 2;
 
-<h3 style="margin:12px 0 7px;font-size:13px">
-🎯 کشورهای هدف
-</h3>
-
-<div id="targets"></div>
-
-</div>
-</div>
-
-
-<!-- ======================================================
-     BUILDINGS
-====================================================== -->
-
-<div class="modal" id="buildingsModal">
-
-<div class="box">
-
-<button class="close" onclick="closeModal('buildingsModal')">✕</button>
-
-<h2>🏭 صنایع و زیرساخت</h2>
-
-<div class="tabs">
-
-<button class="tab active">
-🏗️ ساخت‌وساز
-</button>
-
-</div>
-
-<div class="grid">
-
-<div class="card">
-<span class="icon">🌾</span>
-<b>مزرعه</b>
-<small>تولید غذا</small>
-<small>سطح: <b id="farm">0</b></small>
-<button onclick="build('farm')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">🏭</span>
-<b>کارخانه اقتصادی</b>
-<small>تولید پول</small>
-<small>سطح: <b id="factory">0</b></small>
-<button onclick="build('factory')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">⚙️</span>
-<b>معدن فولاد</b>
-<small>تولید فولاد</small>
-<small>سطح: <b id="mine">0</b></small>
-<button onclick="build('mine')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">🛢️</span>
-<b>پالایشگاه نفت</b>
-<small>تولید نفت</small>
-<small>سطح: <b id="refinery">0</b></small>
-<button onclick="build('refinery')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">🏙️</span>
-<b>شهر</b>
-<small>افزایش درآمد</small>
-<small>سطح: <b id="city">0</b></small>
-<button onclick="build('city')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">🔬</span>
-<b>دانشگاه</b>
-<small>تولید علم</small>
-<small>سطح: <b id="university">0</b></small>
-<button onclick="build('university')">ساخت / ارتقا</button>
-</div>
-
-</div>
-
-<h3 style="margin:15px 0 8px;font-size:13px">
-⚔️ صنایع نظامی
-</h3>
-
-<div class="grid">
-
-<div class="card">
-<span class="icon">🚜</span>
-<b>کارخانه تانک</b>
-<small>تولید تانک</small>
-<small>سطح: <b id="tankFactory">0</b></small>
-<button onclick="build('tankFactory')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">✈️</span>
-<b>کارخانه جنگنده</b>
-<small>تولید جنگنده</small>
-<small>سطح: <b id="airFactory">0</b></small>
-<button onclick="build('airFactory')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">🛩️</span>
-<b>کارخانه پهپاد</b>
-<small>تولید پهپاد</small>
-<small>سطح: <b id="droneFactory">0</b></small>
-<button onclick="build('droneFactory')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">🚀</span>
-<b>کارخانه موشک</b>
-<small>تولید واحد موشکی بازی</small>
-<small>سطح: <b id="missileFactory">0</b></small>
-<button onclick="build('missileFactory')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">🚢</span>
-<b>کارخانه کشتی</b>
-<small>تولید ناو</small>
-<small>سطح: <b id="shipFactory">0</b></small>
-<button onclick="build('shipFactory')">ساخت / ارتقا</button>
-</div>
-
-<div class="card">
-<span class="icon">🪖</span>
-<b>کارخانه تجهیزات</b>
-<small>تجهیزات ارتش</small>
-<small>سطح: <b id="equipmentFactory">0</b></small>
-<button onclick="build('equipmentFactory')">ساخت / ارتقا</button>
-</div>
-
-</div>
-
-</div>
-</div>
-
-
-<!-- ======================================================
-     ARMY
-====================================================== -->
-
-<div class="modal" id="armyModal">
-
-<div class="box">
-
-<button class="close" onclick="closeModal('armyModal')">✕</button>
-
-<h2>🪖 ارتش</h2>
-
-<div class="stat">🪖 نیروهای زمینی: <b id="soldiers">100</b></div>
-<div class="stat">🚜 تانک‌ها: <b id="tanks">10</b></div>
-<div class="stat">✈️ جنگنده‌ها: <b id="fighters">5</b></div>
-<div class="stat">🛩️ پهپادها: <b id="drones">0</
+        if(item.equipment==="drones")
+            game.military += .7;
+
+        if(item.equipment==="missiles")
+            game.military += 2.5;
+
+    }else{
+
+        game.buildings[item.id]++;
+
+        if(item.id==="factory")
+            game.industry += 3;
+
+        if(item.id==="mine")
+            game.industry += 1.5;
+
+        if(item.id==="greenhouse")
+            game.approval += .5;
+
+        if(item.id==="farm")
+            game.approval += .2;
+
+        if(
+            item.id==="tankFactory" ||
+            item.id==="jetFactory" ||
+            item.id==="droneFactory" ||
+            item.id==="missileFactory" ||
+            item.id==="weaponsFactory"
+        )
+            game.industry += 2;
+
+    }
+
+    updateAll();
+
+    notify("خرید انجام شد: " + item.name);
+
+}
+
+
+/* =====================================================
+   WAR
+===================================================== */
+
+function openWar(){
+
+    document.getElementById("warPower")
+    .innerText = Math.round(game.military);
+
+    document.getElementById("warCountry")
+    .innerText = game.country;
+
+    const container =
+        document.getElementById("warTargets");
+
+    container.innerHTML = "";
+
+    Object.keys(countryData)
+    .filter(c=>c!==game.country)
+    .slice(0,10)
+    .forEach(c=>{
+
+        const target =
+            countryData[c];
+
+        const div =
+            document.createElement("div");
+
+        div.className = "card";
+
+        div.innerHTML = `
+
+            <h3>🇺🇳 ${c}</h3>
+
+            <p>
+                قدرت تقریبی:
+                ${target.military}
+            </p>
+
+            <button class="buy"
+                    onclick="attack('${escapeJs(c)}')">
+                ⚔️ حمله
+            </button>
+
+        `;
+
+        container.appendChild(div);
+
+    });
+
+    document.getElementById("warModal")
+    .classList.add("show");
+
+}
+
+
+function attack(targetName){
+
+    const target =
+        countryData[targetName];
+
+    if(!target){
+
+        notify("کشور پیدا نشد");
+
+        return;
+    }
+
+    if(game.military < target.military * .7){
+
+        notify("❌ قدرت نظامی کافی نیست");
+
+        return;
+    }
+
+    const chance =
+        Math.random();
+
+    if(chance < .55){
+
+        const reward =
+            Math.floor(target.money * .08);
+
+        game.money += reward;
+
+        game.military -= target.military * .05;
+
+        game.approval -= 5;
+
+        notify(
+            "🏆 پیروزی! " +
+            format(reward) +
+            " پول به دست آوردی."
+        );
+
+    }else{
+
+        game.military -= target.military * .1;
+
+        game.approval -= 8;
+
+        notify("❌ حمله شکست خورد.");
+
+    }
+
+    updateAll();
+
+}
+
+
+/* =====================================================
+   ECONOMY
+===================================================== */
+
+function openEconomy(){
+
+    document.getElementById("ecoMoney")
+    .innerText = format(game.money);
+
+    document.getElementById("ecoInflation")
+    .innerText = game.inflation.toFixed(2)+"%";
+
+    document.getElementById("ecoTax")
+    .innerText = game.tax+"%";
+
+    document.getElementById("ecoIndustry")
+    .innerText = Math.round(game.industry);
+
+    document.getElementById("ecoApproval")
+    .innerText = Math.round(game.approval)+"%";
+
+    document.getElementById("ecoPopulation")
+    .innerText = game.population+" میلیون";
+
+    document.getElementById("economyModal")
+    .classList.add("show");
+
+}
+
+
+function investEconomy(){
+
+    if(game.money < 5000){
+
+        notify("پول کافی نیست");
+
+        return;
+    }
+
+    game.money -= 5000;
+
+    game.inflation =
+        Math.max(
+            .5,
+            game.inflation - .8
+        );
+
+    game.industry += 2;
+
+    game.approval += 1;
+
+    game.lastInvestment = Date.now();
+
+    updateAll();
+
+    openEconomy();
+
+    notify("اقتصاد کشور تقویت شد");
+
+}
+
+
+function reduceTax(){
+
+    if(game.tax <= 5){
+
+        notify("مالیات در کمترین مقدار است");
+
+        return;
+    }
+
+    game.tax -= 2;
+
+    game.approval += 2;
+
+    updateAll();
+
+    openEconomy();
+
+    notify("مالیات کاهش یافت");
+
+}
+
+
+/* =====================================================
+   INFRASTRUCTURE
+===================================================== */
+
+const infrastructureCosts = {
+
+    road:{
+        money:1500,
+        steel:50
+    },
+
+    power:{
+        money:2500,
+        steel:120
+    },
+
+    hospital:{
+        money:2200,
+        steel:80
+    },
+
+    university:{
+        money:3500,
+        steel:150
+    }
+
+};
+
+
+function openInfrastructure(){
+
+    document.getElementById("infraModal")
+    .classList.add("show");
+
+}
+
+
+function buildInfrastructure(type){
+
+    const p =
+        infrastructureCosts[type];
+
+    if(game.money < p.money){
+
+        notify("پول کافی نیست");
+
+        return;
+    }
+
+    if(game.steel < p.steel){
+
+        notify("فولاد کافی نیست");
+
+        return;
+    }
+
+    game.money -= p.money;
+    game.steel -= p.steel;
+
+    game.buildings[type]++;
+
+    if(type==="road")
+        game.industry += 1;
+
+    if(type==="power")
+        game.industry += 3;
+
+    if(type==="hospital")
+        game.approval += 3;
+
+    if(type==="university"){
+        game.technology += 3;
+        game.industry += 2;
+    }
+
+    updateAll();
+
+    notify("زیرساخت ساخته شد");
+
+}
+
+
+/* =====================================================
+   DIPLOMACY
+===================================================== */
+
+function openDiplomacy(){
+
+    const box =
+        document.getElementById("diplomacyList");
+
+    box.innerHTML = "";
+
+    Object.keys(countryData)
+    .filter(c=>c!==game.country)
+    .slice(0,12)
+    .forEach(country=>{
+
+        if(game.relations[country]===undefined)
+            game.relations[country]=0;
+
+        const relation =
+            game.relations[country];
+
+        const div =
+            document.createElement("div");
+
+        div.className="card";
+
+        div.style.marginBottom="8px";
+
+        div.innerHTML = `
+
+            <h3>🌐 ${country}</h3>
+
+            <p>
+                رابطه:
+                <b>${relation}</b>
+            </p>
+
+            <button class="buy"
+                    onclick="improveRelation('${escapeJs(country)}')">
+                🤝 بهبود روابط - 500 💰
+            </button>
+
+        `;
+
+        box.appendChild(div);
+
+    });
+
+    document.getElementById("diplomacyModal")
+    .classList.add("show");
+
+}
+
+
+function improveRelation(country){
+
+    if(game.money < 500){
+
+        notify("پول کافی نیست");
+
+        return;
+    }
+
+    game.money -= 500;
+
+    if(game.relations[country]===undefined)
+        game.relations[country]=0;
+
+    game.relations[country] += 5;
+
+    game.approval += .3;
+
+    openDiplomacy();
+
+    updateAll();
+
+    notify("روابط با "+country+" بهتر شد");
+
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+function closeModal(id){
+
+    document.getElementById(id)
+    .classList.remove("show");
+
+}
+
+
+/* =====================================================
+   RESOURCES
+===================================================== */
+
+function updateAll(){
+
+    document.getElementById("money")
+    .innerText = format(game.money);
+
+    document.getElementById("food")
+    .innerText = format(game.food);
+
+    document.getElementById("oil")
+    .innerText = format(game.oil);
+
+    document.getElementById("steel")
+    .innerText = format(game.steel);
+
+    document.getElementById("population")
+    .innerText =
+        game.population.toFixed(1)+"M";
+
+    document.getElementById("inflation")
+    .innerText =
+        game.inflation.toFixed(2)+"%";
+
+    document.getElementById("countryTitle")
+    .innerText =
+        "🇺🇳 "+game.country;
+
+    document.getElementById("countryLevel")
+    .innerText =
+        game.level;
+
+    document.getElementById("industryPower")
+    .innerText =
+        Math.round(game.industry);
+
+    document.getElementById("militaryPower")
+    .innerText =
+        Math.round(game.military);
+
+    document.getElementById("approval")
+    .innerText =
+        Math.round(game.approval)+"%";
+
+    document.getElementById("approvalBar")
+    .style.width =
+        Math.max(0,Math.min(100,game.approval))+"%";
+
+    document.getElementById("dailyIncome")
+    .innerText =
+        format(calculateIncome());
+
+    document.getElementById("playerName")
+    .innerText =
+        game.country;
+
+}
+
+
+/* =====================================================
+   ECONOMIC CALCULATIONS
+===================================================== */
+
+function calculateIncome(){
+
+    let income = 300;
+
+    income += game.industry * 15;
+
+    income += game.buildings.factory * 150;
+
+    income += game.buildings.refinery * 120;
+
+    income += game.buildings.road * 50;
+
+    income += game.tax * 15;
+
+    income *=
+        Math.max(.35,1-game.inflation/100);
+
+    return Math.floor(income);
+
+}
+
+
+function economicTick(){
+
+    const income =
+        calculateIncome();
+
+    game.money += income;
+
+    game.food +=
+        game.buildings.farm * 20;
+
+    game.food +=
+        game.buildings.greenhouse * 35;
+
+    game.oil +=
+        game.buildings.refinery * 12;
+
+    game.steel +=
+        game.buildings.mine * 15;
+
+    game.population +=
+        .01 + game.buildings.hospital*.002;
+
+    /*
+       اگر پول زیاد در خزانه بماند و سرمایه‌گذاری نشود،
+       تورم بالا می‌رود.
+    */
+
+    const idleMoneyPressure =
+        game.money / 100000;
+
+    if(Date.now()-game.lastInvestment > 20000){
+
+        game.inflation +=
+            .01 + idleMoneyPressure*.02;
+
+    }
+
+    /*
+       سرمایه‌گذاری و زیرساخت
+       تورم را آهسته کاهش می‌دهند.
+    */
+
+    if(
+        game.buildings.road+
+        game.buildings.power+
+        game.buildings.university > 0
+    ){
+
+        game.inflation -= .002;
+    }
+
+    game.inflation =
+        Math.max(
+            .5,
+            Math.min(
+                99,
+                game.inflation
+            )
+        );
+
+    /*
+       رضایت
+    */
+
+    if(game.inflation > 10)
+        game.approval -= .08;
+
+    if(game.inflation > 20)
+        game.approval -= .15;
+
+    if(game.approval < 20)
+        game.approval = 20;
+
+    if(game.approval > 100)
+        game.approval = 100;
+
+    /*
+       سطح
+    */
+
+    const totalBuildings =
+        Object.values(game.buildings)
+        .reduce((a,b)=>a+b,0);
+
+    game.level =
+        Math.max(
+            1,
+            Math.floor(
+                1+
+                totalBuildings/5+
+                game.technology/10
+            )
+        );
+
+    updateAll();
+
+}
+
+
+/* =====================================================
+   SAVE / LOAD
+===================================================== */
+
+function saveGame(){
+
+    localStorage.setItem(
+        "worldEmpireSave",
+        JSON.stringify(game)
+    );
+
+    notify("💾 بازی ذخیره شد");
+
+}
+
+
+function loadGame(){
+
+    const save =
+        localStorage.getItem("worldEmpireSave");
+
+    if(!save)
+        return;
+
+    try{
+
+        const data =
+            JSON.parse(save);
+
+        game =
+            Object.assign(
+                game,
+                data
+            );
+
+        if(game.country){
+
+            selectedCountry =
+                game.country;
+
+            document.getElementById("countryScreen")
+            .classList.add("hidden");
+
+            document.getElementById("game")
+            .classList.remove("hidden");
+
+            updateAll();
+
+        }
+
+    }catch(e){
+
+        console.log(e);
+
+    }
+
+}
+
+
+/* =====================================================
+   NOTIFICATION
+===================================================== */
+
+let noticeTimer;
+
+function notify(text){
+
+    const n =
+        document.getElementById("notice");
+
+    n.innerText = text;
+
+    n.style.display="block";
+
+    clearTimeout(noticeTimer);
+
+    noticeTimer =
+        setTimeout(()=>{
+            n.style.display="none";
+        },2500);
+
+}
+
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+function format(num){
+
+    return Math.floor(num)
+        .toLocaleString("en-US");
+
+}
+
+
+function escapeJs(text){
+
+    return String(text)
+        .replaceAll("\\","\\\\")
+        .replaceAll("'","\\'")
+        .replaceAll("\n"," ");
+
+}
+
+
+/* =====================================================
+   MAP COUNTRY CLICK IN GAME
+===================================================== */
+
+document.querySelectorAll("#gameMap .gLand")
+.forEach(country=>{
+
+    country.addEventListener("click",()=>{
+
+        const name =
+            country.dataset.name;
+
+        if(name===game.country){
+
+            notify(
+                "🇺🇳 این کشور تحت کنترل توست."
+            );
+
+            return;
+        }
+
+        const d =
+            countryData[name];
+
+        if(!d){
+
+            notify("اطلاعات این کشور هنوز ثبت نشده.");
+
+            return;
+        }
+
+        notify(
+            "🌐 "+
+            name+
+            " | قدرت نظامی: "+
+            d.military+
+            " | صنعت: "+
+            d.industry
+        );
+
+    });
+
+});
+
+
+/* =====================================================
+   AUTO SAVE
+===================================================== */
+
+setInterval(()=>{
+
+    if(!document
+        .getElementById("game")
+        .classList.contains("hidden")){
+
+        localStorage.setItem(
+            "worldEmpireSave",
+            JSON.stringify(game)
+        );
+
+    }
+
+},15000);
+
+
+/* =====================================================
+   ECONOMY LOOP
+===================================================== */
+
+setInterval(()=>{
+
+    if(!document
+        .getElementById("game")
+        .classList.contains("hidden")){
+
+        economicTick();
+
+    }
+
+},5000);
+
+
+/* =====================================================
+   INITIAL LOAD
+===================================================== */
+
+loadGame();
+
+</script>
+
+</body>
+    </html>
