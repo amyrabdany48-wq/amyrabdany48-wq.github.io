@@ -2,518 +2,1164 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>World Dominion 2.0</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+
+<title>WORLD DOMINION 3.0</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-font-family:Tahoma,Arial,sans-serif;
-background:#060a10;
-color:#e7eef8;
-overflow:hidden
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
 }
-button{font-family:inherit}
+
+body{
+font-family:
+Tahoma,
+Arial,
+sans-serif;
+background:#050a10;
+color:#e9f2fc;
+overflow:hidden;
+}
+
+button{
+font-family:inherit;
+}
 
 :root{
---bg:#09111b;
---panel:#0d1723;
---panel2:#111e2d;
---border:#26394f;
---text:#dce8f5;
---muted:#71849a;
---blue:#2e9ce6;
---green:#35b57c;
---red:#d8525e;
---gold:#d6a646
+--bg:#07101a;
+--panel:#0b1622;
+--panel2:#101e2d;
+--line:#24384d;
+--blue:#2499e6;
+--blue2:#43b7ff;
+--green:#35b981;
+--red:#d95762;
+--gold:#d5a844;
+--text:#e8f2fc;
+--muted:#72869c;
 }
 
-/* TOP */
-.top{
-height:70px;
-background:linear-gradient(180deg,#142131,#0b121c);
-border-bottom:1px solid var(--border);
+/* ================= TOP ================= */
+
+.topbar{
+
+height:72px;
+
+background:
+linear-gradient(
+180deg,
+#142333,
+#0a121d
+);
+
+border-bottom:1px solid #294056;
+
 display:flex;
+
 align-items:center;
+
 justify-content:space-between;
-padding:0 14px;
+
+padding:0 13px;
+
 position:relative;
-z-index:30;
-box-shadow:0 3px 18px #0009
+
+z-index:1000;
+
+box-shadow:
+0 4px 25px #000b;
+
 }
+
 .logo{
-font-size:19px;
-font-weight:bold;
-color:#54b5f4;
-min-width:190px
-}
-.logo small{
-display:block;
-font-size:8px;
-letter-spacing:2px;
-color:#687d95;
-margin-top:4px
-}
-.resources{
-display:flex;
-gap:6px;
-align-items:center
-}
-.resource{
-background:#0d1825;
-border:1px solid #26384d;
-border-radius:6px;
-min-width:91px;
-padding:7px 9px;
-text-align:center
-}
-.resource span{
-display:block;
-font-size:8px;
-color:#70849b
-}
-.resource b{font-size:12px}
-.turn{
-display:flex;
-align-items:center;
-gap:6px;
-min-width:220px;
-justify-content:flex-end
-}
-.date{
-background:#111e2d;
-border:1px solid #2b4058;
-padding:9px;
-border-radius:6px;
-font-size:10px
-}
-.next{
-background:#238fda;
-border:0;
-color:#fff;
-padding:10px 14px;
-border-radius:6px;
-font-weight:bold;
-cursor:pointer
-}
-.next:hover{background:#35a8f3}
 
-/* MAIN */
-.main{
-height:calc(100vh - 70px);
-display:flex
-}
-
-/* LEFT */
-.left{
-width:255px;
-background:var(--panel);
-border-left:1px solid var(--border);
-overflow:auto;
-z-index:20
-}
-.block{
-padding:13px;
-border-bottom:1px solid #1d2c3d
-}
-.title{
-font-size:10px;
-color:#71869d;
-margin-bottom:10px
-}
-.country{
-display:flex;
-gap:9px;
-align-items:center
-}
-.flag{
-width:46px;height:31px;border-radius:4px;
-background:linear-gradient(#239060 0 33%,#fff 33% 66%,#d94252 66%);
-border:1px solid #6e7e91
-}
-.country b{font-size:16px}
-.country small{
-display:block;
-font-size:9px;
-color:#73869d;
-margin-top:3px
-}
-.stat{
-margin:8px 0;
-font-size:10px
-}
-.statline{
-display:flex;
-justify-content:space-between
-}
-.statline span{color:#70839a}
-.bar{
-height:5px;
-background:#192534;
-border-radius:4px;
-margin-top:4px;
-overflow:hidden
-}
-.bar i{
-height:100%;
-display:block;
-background:#3198d9
-}
-.nav{
-width:100%;
-padding:10px;
-margin-bottom:5px;
-border:1px solid #26394e;
-background:#101b28;
-color:#c6d5e6;
-border-radius:5px;
-cursor:pointer;
-text-align:right;
-font-size:11px
-}
-.nav:hover,.nav.active{
-background:#17304a;
-border-color:#327caf;
-color:white
-}
-
-/* MAP */
-.map{
-flex:1;
-position:relative;
-overflow:hidden;
-background:#07121d
-}
-#world{
-width:100%;
-height:100%;
-transform-origin:center;
-transition:transform .2s
-}
-.ocean{fill:#081d2b}
-.grid{
-stroke:#16415a;
-stroke-width:.55;
-fill:none;
-opacity:.5
-}
-.land{
-stroke:#08111a;
-stroke-width:1.5;
-cursor:pointer;
-transition:.15s
-}
-.land:hover{
-filter:brightness(1.3);
-stroke:#fff;
-stroke-width:2
-}
-.land.selected{
-stroke:#fff;
-stroke-width:2.7;
-filter:brightness(1.18)
-}
-.maplabel{
-fill:#dbeaff;
-font-size:10px;
-text-anchor:middle;
-paint-order:stroke;
-stroke:#07121b;
-stroke-width:3px;
-pointer-events:none
-}
-.mapbar{
-position:absolute;
-top:13px;
-left:13px;
-right:13px;
-display:flex;
-justify-content:space-between;
-pointer-events:none;
-z-index:10
-}
-.mapstatus{
-background:#09131eea;
-border:1px solid #2d4259;
-padding:9px 12px;
-border-radius:6px;
-font-size:9px;
-color:#8ba1b9
-}
-.mapstatus b{color:#e8f4ff}
-.tools{
-display:flex;
-gap:5px;
-pointer-events:auto
-}
-.tools button{
-width:38px;height:38px;
-border:1px solid #30455d;
-background:#0b1724ed;
-color:white;
-border-radius:5px;
-font-size:17px;
-cursor:pointer
-}
-
-/* RIGHT */
-.right{
-width:315px;
-background:var(--panel);
-border-right:1px solid var(--border);
-overflow:auto;
-z-index:20
-}
-.head{
-padding:16px;
-background:linear-gradient(180deg,#152437,#0d1723);
-border-bottom:1px solid #2a3e54
-}
-.head h2{font-size:19px}
-.head p{
-font-size:9px;
-color:#72869d;
-margin-top:4px
-}
-.cards{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:6px;
-padding:11px
-}
-.card{
-background:#111c29;
-border:1px solid #24364a;
-padding:9px;
-border-radius:5px
-}
-.card span{
-font-size:8px;
-color:#72859b;
-display:block;
-margin-bottom:5px
-}
-.card b{font-size:13px}
-.section{
-padding:12px;
-border-bottom:1px solid #1d2b3a
-}
-.section h3{
-font-size:11px;
-color:#91a6bd;
-margin-bottom:9px
-}
-.action{
-width:100%;
-padding:10px;
-margin-bottom:5px;
-background:#111d2a;
-border:1px solid #294058;
-border-radius:5px;
-color:#d3e0ed;
-cursor:pointer;
-text-align:right;
-font-size:10px
-}
-.action:hover{background:#17314a}
-.action.red{color:#ff9da4;border-color:#66323a}
-.action.green{color:#91e2bc;border-color:#28604b}
-
-/* BOTTOM EVENTS */
-.events{
-position:absolute;
-bottom:13px;
-left:13px;
-width:310px;
-max-height:175px;
-background:#08111beF;
-border:1px solid #30445b;
-border-radius:7px;
-z-index:15;
-overflow:auto
-}
-.eventsTitle{
-padding:9px;
-font-size:10px;
-color:#849ab2;
-border-bottom:1px solid #253649
-}
-.event{
-padding:8px 9px;
-border-bottom:1px solid #172535;
-font-size:9px;
-color:#a9bacb
-}
-.event strong{color:#fff}
-
-/* MODAL */
-.modal{
-position:fixed;
-inset:0;
-background:#000b;
-z-index:100;
-display:none;
-align-items:center;
-justify-content:center
-}
-.modal.show{display:flex}
-.modalbox{
-width:min(700px,94vw);
-max-height:88vh;
-overflow:auto;
-background:#0d1723;
-border:1px solid #3a5068;
-border-radius:9px;
-box-shadow:0 25px 80px #000
-}
-.modalhead{
-display:flex;
-justify-content:space-between;
-padding:14px;
-background:#152436;
-border-bottom:1px solid #2b4057
-}
-.modalhead b{font-size:14px}
-.close{
 font-size:20px;
-color:#899caf;
-cursor:pointer
-}
-.modalbody{padding:16px}
-.biggrid{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:8px
-}
-.unit{
-background:#111d2b;
-border:1px solid #263a50;
-border-radius:6px;
-padding:11px
-}
-.unit h4{font-size:11px;margin-bottom:7px}
-.unit p{
-font-size:9px;
-color:#8194a9;
-line-height:1.8
-}
-.unit button{
-margin-top:8px;
-width:100%;
-padding:7px;
-background:#16304a;
-border:1px solid #2e628b;
-color:white;
-border-radius:4px;
-cursor:pointer
+
+font-weight:bold;
+
+color:#4eb6fa;
+
+min-width:190px;
+
 }
 
-/* RESPONSIVE */
+.logo small{
+
+display:block;
+
+font-size:8px;
+
+letter-spacing:2px;
+
+color:#71869d;
+
+margin-top:4px;
+
+}
+
+.resources{
+
+display:flex;
+
+gap:6px;
+
+align-items:center;
+
+}
+
+.res{
+
+background:#0c1825;
+
+border:1px solid #263a50;
+
+border-radius:6px;
+
+min-width:88px;
+
+padding:7px;
+
+text-align:center;
+
+}
+
+.res span{
+
+display:block;
+
+font-size:8px;
+
+color:#70859b;
+
+}
+
+.res b{
+
+font-size:12px;
+
+}
+
+.turnbox{
+
+display:flex;
+
+align-items:center;
+
+gap:6px;
+
+}
+
+.date{
+
+background:#101d2b;
+
+border:1px solid #2b4057;
+
+border-radius:6px;
+
+padding:10px;
+
+font-size:10px;
+
+}
+
+.next{
+
+border:0;
+
+background:#238fd8;
+
+color:white;
+
+padding:11px 14px;
+
+border-radius:6px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+}
+
+.next:hover{
+
+background:#35a7ef;
+
+}
+
+/* ================= LAYOUT ================= */
+
+.app{
+
+height:calc(100vh - 72px);
+
+display:flex;
+
+}
+
+/* ================= LEFT ================= */
+
+.left{
+
+width:250px;
+
+background:#0a141f;
+
+border-left:1px solid #25384d;
+
+overflow:auto;
+
+z-index:500;
+
+}
+
+.block{
+
+padding:13px;
+
+border-bottom:1px solid #1c2c3c;
+
+}
+
+.title{
+
+font-size:10px;
+
+color:#71859b;
+
+margin-bottom:10px;
+
+}
+
+.player{
+
+display:flex;
+
+align-items:center;
+
+gap:9px;
+
+}
+
+.flag{
+
+width:47px;
+
+height:31px;
+
+border-radius:4px;
+
+background:
+linear-gradient(
+#23935f 0 33%,
+#fff 33% 66%,
+#d9404c 66%
+);
+
+border:1px solid #66788a;
+
+}
+
+.player b{
+
+font-size:16px;
+
+}
+
+.player small{
+
+display:block;
+
+font-size:8px;
+
+color:#72869d;
+
+margin-top:3px;
+
+}
+
+.stat{
+
+margin:9px 0;
+
+font-size:10px;
+
+}
+
+.statline{
+
+display:flex;
+
+justify-content:space-between;
+
+}
+
+.statline span{
+
+color:#71859c;
+
+}
+
+.bar{
+
+height:5px;
+
+background:#192635;
+
+border-radius:5px;
+
+overflow:hidden;
+
+margin-top:4px;
+
+}
+
+.bar i{
+
+display:block;
+
+height:100%;
+
+background:#329de0;
+
+}
+
+.menu{
+
+width:100%;
+
+background:#101c29;
+
+border:1px solid #263b50;
+
+color:#c8d7e7;
+
+border-radius:5px;
+
+padding:10px;
+
+margin-bottom:5px;
+
+cursor:pointer;
+
+text-align:right;
+
+font-size:10px;
+
+}
+
+.menu:hover{
+
+background:#17314a;
+
+border-color:#357da9;
+
+}
+
+.menu.active{
+
+background:#16304a;
+
+color:white;
+
+}
+
+/* ================= MAP ================= */
+
+.map{
+
+flex:1;
+
+position:relative;
+
+overflow:hidden;
+
+background:#07141f;
+
+}
+
+#map{
+
+width:100%;
+
+height:100%;
+
+background:#081c2b;
+
+}
+
+.leaflet-container{
+
+background:#081c2b;
+
+font-family:Tahoma,Arial,sans-serif;
+
+}
+
+.leaflet-control-zoom{
+
+border:1px solid #2b4158!important;
+
+}
+
+.leaflet-control-zoom a{
+
+background:#0c1825!important;
+
+color:#e5f2ff!important;
+
+border-color:#2b4158!important;
+
+}
+
+.mapHUD{
+
+position:absolute;
+
+top:13px;
+
+left:13px;
+
+right:13px;
+
+z-index:800;
+
+display:flex;
+
+justify-content:space-between;
+
+pointer-events:none;
+
+}
+
+.hud{
+
+background:#07121de8;
+
+border:1px solid #2c4259;
+
+border-radius:7px;
+
+padding:9px 12px;
+
+font-size:9px;
+
+color:#8297ae;
+
+box-shadow:0 4px 18px #0008;
+
+}
+
+.hud b{
+
+color:#edf6ff;
+
+}
+
+/* ================= WATERWAYS ================= */
+
+.waterway{
+
+color:#62c9ff;
+
+font-weight:bold;
+
+font-size:10px;
+
+text-shadow:
+0 1px 3px #000,
+0 0 5px #000;
+
+}
+
+.waterPopup{
+
+direction:rtl;
+
+font-family:Tahoma;
+
+min-width:210px;
+
+}
+
+.waterPopup h3{
+
+font-size:14px;
+
+margin-bottom:7px;
+
+}
+
+.waterPopup p{
+
+font-size:10px;
+
+line-height:1.8;
+
+color:#4d5c69;
+
+}
+
+.waterBtn{
+
+width:100%;
+
+padding:8px;
+
+margin-top:7px;
+
+background:#14304a;
+
+color:#fff;
+
+border:1px solid #327aa7;
+
+border-radius:5px;
+
+cursor:pointer;
+
+}
+
+/* ================= RIGHT ================= */
+
+.right{
+
+width:315px;
+
+background:#0a141f;
+
+border-right:1px solid #25384d;
+
+overflow:auto;
+
+z-index:500;
+
+}
+
+.countryHead{
+
+padding:17px;
+
+background:
+linear-gradient(
+180deg,
+#152638,
+#0c1723
+);
+
+border-bottom:1px solid #2a4055;
+
+}
+
+.countryHead h2{
+
+font-size:20px;
+
+}
+
+.countryHead p{
+
+font-size:9px;
+
+color:#71859d;
+
+margin-top:5px;
+
+}
+
+.cards{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:6px;
+
+padding:11px;
+
+}
+
+.card{
+
+background:#101c29;
+
+border:1px solid #24384c;
+
+border-radius:6px;
+
+padding:10px;
+
+}
+
+.card span{
+
+display:block;
+
+font-size:8px;
+
+color:#71859b;
+
+margin-bottom:5px;
+
+}
+
+.card b{
+
+font-size:13px;
+
+}
+
+.section{
+
+padding:12px;
+
+border-bottom:1px solid #1c2c3c;
+
+}
+
+.section h3{
+
+font-size:11px;
+
+color:#91a5ba;
+
+margin-bottom:9px;
+
+}
+
+.action{
+
+width:100%;
+
+padding:10px;
+
+margin-bottom:5px;
+
+border:1px solid #293f55;
+
+background:#101d2a;
+
+color:#d2e0ed;
+
+border-radius:5px;
+
+cursor:pointer;
+
+text-align:right;
+
+font-size:10px;
+
+}
+
+.action:hover{
+
+background:#17314a;
+
+}
+
+.action.green{
+
+color:#8ce0bb;
+
+border-color:#28604c;
+
+}
+
+.action.red{
+
+color:#ff9ba3;
+
+border-color:#64333a;
+
+}
+
+/* ================= EVENT LOG ================= */
+
+.events{
+
+position:absolute;
+
+left:13px;
+
+bottom:13px;
+
+width:300px;
+
+max-height:175px;
+
+background:#07111beF;
+
+border:1px solid #2d4259;
+
+border-radius:7px;
+
+z-index:800;
+
+overflow:auto;
+
+box-shadow:0 5px 20px #0008;
+
+}
+
+.eventTitle{
+
+padding:9px;
+
+font-size:10px;
+
+color:#8ba0b6;
+
+border-bottom:1px solid #26384c;
+
+}
+
+.event{
+
+padding:8px;
+
+border-bottom:1px solid #172535;
+
+font-size:9px;
+
+color:#a9bacb;
+
+}
+
+.event strong{
+
+color:#fff;
+
+}
+
+/* ================= MODAL ================= */
+
+.modal{
+
+position:fixed;
+
+inset:0;
+
+background:#000b;
+
+display:none;
+
+align-items:center;
+
+justify-content:center;
+
+z-index:5000;
+
+}
+
+.modal.show{
+
+display:flex;
+
+}
+
+.modalBox{
+
+width:min(760px,94vw);
+
+max-height:90vh;
+
+overflow:auto;
+
+background:#0b1622;
+
+border:1px solid #385169;
+
+border-radius:9px;
+
+box-shadow:0 25px 100px #000;
+
+}
+
+.modalHead{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:14px;
+
+background:#152638;
+
+border-bottom:1px solid #2b4157;
+
+}
+
+.modalHead b{
+
+font-size:14px;
+
+}
+
+.close{
+
+font-size:21px;
+
+cursor:pointer;
+
+color:#8b9daf;
+
+}
+
+.modalBody{
+
+padding:15px;
+
+}
+
+.grid{
+
+display:grid;
+
+grid-template-columns:
+repeat(2,1fr);
+
+gap:8px;
+
+}
+
+.item{
+
+background:#101d2a;
+
+border:1px solid #263b50;
+
+border-radius:6px;
+
+padding:11px;
+
+}
+
+.item h4{
+
+font-size:11px;
+
+margin-bottom:7px;
+
+}
+
+.item p{
+
+font-size:9px;
+
+line-height:1.9;
+
+color:#8194a8;
+
+}
+
+.item button{
+
+width:100%;
+
+margin-top:8px;
+
+padding:8px;
+
+border-radius:4px;
+
+border:1px solid #326b91;
+
+background:#14304a;
+
+color:white;
+
+cursor:pointer;
+
+}
+
+.item button:hover{
+
+background:#19415f;
+
+}
+
+/* ================= MOBILE ================= */
+
 @media(max-width:1050px){
-.left{width:205px}
-.right{width:270px}
-.resource:nth-child(n+3){display:none}
+
+.left{
+
+width:205px;
+
 }
-@media(max-width:750px){
-.left{display:none}
-.right{width:245px}
-.logo{display:none}
-.resource{min-width:70px}
-.events{width:230px}
+
+.right{
+
+width:270px;
+
 }
+
+.res:nth-child(n+4){
+
+display:none;
+
+}
+
+}
+
+@media(max-width:760px){
+
+.left{
+
+display:none;
+
+}
+
+.right{
+
+width:245px;
+
+}
+
+.logo{
+
+display:none;
+
+}
+
+.res{
+
+min-width:70px;
+
+}
+
+.events{
+
+width:220px;
+
+}
+
+}
+
+/* ================= LOADING ================= */
+
+.loading{
+
+position:absolute;
+
+inset:0;
+
+background:#07121c;
+
+z-index:2000;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+flex-direction:column;
+
+gap:12px;
+
+}
+
+.loading b{
+
+font-size:20px;
+
+color:#4db6f5;
+
+}
+
+.loading span{
+
+font-size:10px;
+
+color:#71879d;
+
+}
+
+.spinner{
+
+width:38px;
+
+height:38px;
+
+border:3px solid #20364b;
+
+border-top-color:#35a9ed;
+
+border-radius:50%;
+
+animation:spin .8s linear infinite;
+
+}
+
+@keyframes spin{
+
+to{transform:rotate(360deg)}
+
+}
+
 </style>
 </head>
 
 <body>
 
-<header class="top">
+
+<!-- =====================================================
+TOP BAR
+===================================================== -->
+
+<header class="topbar">
 
 <div class="logo">
+
 WORLD DOMINION
-<small>GLOBAL STRATEGY SIMULATOR 2.0</small>
+
+<small>
+GLOBAL STRATEGY SIMULATOR 3.0
+</small>
+
 </div>
+
 
 <div class="resources">
 
-<div class="resource">
+<div class="res">
 <span>💰 خزانه</span>
 <b id="money">$125,000</b>
 </div>
 
-<div class="resource">
+<div class="res">
 <span>🛢 نفت</span>
 <b id="oil">8,420</b>
 </div>
 
-<div class="resource">
+<div class="res">
 <span>🌾 غذا</span>
 <b id="food">15,800</b>
 </div>
 
-<div class="resource">
-<span>🏭 ظرفیت صنعتی</span>
+<div class="res">
+<span>🏭 صنعت</span>
 <b id="industry">72</b>
 </div>
 
-<div class="resource">
+<div class="res">
 <span>📈 تورم</span>
 <b id="inflation">18.4%</b>
 </div>
 
 </div>
 
-<div class="turn">
-<div class="date" id="date">ژانویه 2026</div>
-<button class="next" onclick="nextTurn()">پایان ماه ▶</button>
+
+<div class="turnbox">
+
+<div class="date" id="date">
+
+ژانویه 2026
+
+</div>
+
+<button class="next" onclick="nextTurn()">
+
+پایان ماه ▶
+
+</button>
+
 </div>
 
 </header>
 
 
-<div class="main">
+<div class="app">
 
-<!-- LEFT -->
+
+<!-- =====================================================
+LEFT PANEL
+===================================================== -->
 
 <aside class="left">
 
 <div class="block">
 
-<div class="title">کشور تحت کنترل</div>
+<div class="title">
 
-<div class="country">
+کشور بازیکن
+
+</div>
+
+<div class="player">
+
 <div class="flag"></div>
+
 <div>
+
 <b>ایران</b>
-<small>کشور بازیکن</small>
-</div>
+
+<small>
+جمهوری اسلامی ایران
+</small>
+
 </div>
 
-<div class="stat">
-<div class="statline">
-<span>ثبات سیاسی</span><b>78%</b>
-</div>
-<div class="bar"><i style="width:78%"></i></div>
 </div>
 
-<div class="stat">
-<div class="statline">
-<span>رضایت مردم</span><b>67%</b>
-</div>
-<div class="bar"><i style="width:67%"></i></div>
-</div>
 
 <div class="stat">
+
 <div class="statline">
-<span>آمادگی نظامی</span><b>84%</b>
-</div>
-<div class="bar"><i style="width:84%"></i></div>
+
+<span>ثبات سیاسی</span>
+
+<b>78%</b>
+
 </div>
 
-<div class="stat">
-<div class="statline">
-<span>تولید صنعتی</span><b>72%</b>
+<div class="bar">
+<i style="width:78%"></i>
 </div>
-<div class="bar"><i style="width:72%"></i></div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="statline">
+
+<span>رضایت عمومی</span>
+
+<b>67%</b>
+
+</div>
+
+<div class="bar">
+<i style="width:67%"></i>
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="statline">
+
+<span>ظرفیت صنعتی</span>
+
+<b id="industrySide">72</b>
+
+</div>
+
+<div class="bar">
+<i id="industryBar" style="width:72%"></i>
+</div>
+
 </div>
 
 </div>
@@ -521,244 +1167,201 @@ WORLD DOMINION
 
 <div class="block">
 
-<div class="title">مدیریت</div>
+<div class="title">
 
-<button class="nav active" onclick="openPanel('economy')">💰 اقتصاد و بودجه</button>
-<button class="nav" onclick="openPanel('army')">⚔️ نیروهای مسلح</button>
-<button class="nav" onclick="openPanel('air')">✈️ نیروی هوایی</button>
-<button class="nav" onclick="openPanel('navy')">⚓ نیروی دریایی</button>
-<button class="nav" onclick="openPanel('industry')">🏭 صنعت و کارخانه‌ها</button>
-<button class="nav" onclick="openPanel('bank')">🏦 بانک مرکزی</button>
-<button class="nav" onclick="openPanel('research')">🔬 تحقیقات</button>
-<button class="nav" onclick="openPanel('diplomacy')">🤝 دیپلماسی</button>
+مدیریت کشور
+
+</div>
+
+<button class="menu active"
+onclick="openPanel('economy')">
+
+💰 اقتصاد
+
+</button>
+
+<button class="menu"
+onclick="openPanel('industry')">
+
+🏭 زیرساخت و کارخانه
+
+</button>
+
+<button class="menu"
+onclick="openPanel('military')">
+
+⚔️ صنایع نظامی
+
+</button>
+
+<button class="menu"
+onclick="openPanel('university')">
+
+🎓 دانشگاه و تحقیقات
+
+</button>
+
+<button class="menu"
+onclick="openPanel('bank')">
+
+🏦 بانک مرکزی
+
+</button>
+
+<button class="menu"
+onclick="openPanel('waterways')">
+
+🌊 تنگه‌ها و کانال‌ها
+
+</button>
 
 </div>
 
 
 <div class="block">
 
-<div class="title">اقتصاد داخلی</div>
+<div class="title">
 
-<div class="stat">
-<div class="statline">
-<span>مالیات</span><b>18%</b>
-</div>
-<div class="bar"><i style="width:18%"></i></div>
+اقتصاد داخلی
+
 </div>
 
 <div class="stat">
+
 <div class="statline">
-<span>بیکاری</span><b>8.2%</b>
+<span>مالیات</span>
+<b>18%</b>
 </div>
-<div class="bar"><i style="width:8.2%"></i></div>
+
+<div class="bar">
+<i style="width:18%"></i>
+</div>
+
 </div>
 
 <div class="stat">
+
 <div class="statline">
-<span>رشد اقتصادی</span><b>2.1%</b>
+<span>بیکاری</span>
+<b>8.2%</b>
 </div>
-<div class="bar"><i style="width:21%"></i></div>
+
+<div class="bar">
+<i style="width:8%"></i>
 </div>
+
+</div>
+
+<div class="stat">
+
+<div class="statline">
+<span>رشد</span>
+<b>2.1%</b>
+</div>
+
+<div class="bar">
+<i style="width:21%"></i>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="block">
+
+<div class="title">
+
+اطلاعات جهان
+
+</div>
+
+<button class="menu"
+onclick="openPanel('countries')">
+
+🌍 فهرست کشورهای جهان
+
+</button>
+
+<button class="menu"
+onclick="openPanel('trade')">
+
+🚢 تجارت جهانی
+
+</button>
 
 </div>
 
 </aside>
 
 
-<!-- MAP -->
+<!-- =====================================================
+MAP
+===================================================== -->
 
 <section class="map">
 
-<div class="mapbar">
+<div id="map"></div>
 
-<div class="mapstatus">
-نقشه سیاسی جهان | <b id="selectedMap">ایران</b>
+
+<div class="mapHUD">
+
+<div class="hud">
+
+نقشه سیاسی جهان |
+
+<b id="mapSelected">
+ایران
+</b>
+
 </div>
 
-<div class="tools">
-<button onclick="zoom(1.15)">＋</button>
-<button onclick="zoom(.87)">−</button>
-<button onclick="resetZoom()">⌂</button>
-</div>
+
+<div class="hud">
+
+کشورها:
+
+<b>
+200+
+</b>
+
+&nbsp; | &nbsp;
+
+آبراه‌های استراتژیک:
+
+<b>
+20+
+</b>
 
 </div>
 
-
-<svg id="world" viewBox="0 0 1400 720">
-
-<rect width="1400" height="720" class="ocean"/>
-
-<g class="grid">
-<path d="M50 100H1350"/>
-<path d="M50 190H1350"/>
-<path d="M50 280H1350"/>
-<path d="M50 370H1350"/>
-<path d="M50 460H1350"/>
-<path d="M50 550H1350"/>
-<path d="M150 30V680"/>
-<path d="M300 30V680"/>
-<path d="M450 30V680"/>
-<path d="M600 30V680"/>
-<path d="M750 30V680"/>
-<path d="M900 30V680"/>
-<path d="M1050 30V680"/>
-<path d="M1200 30V680"/>
-</g>
-
-
-<!-- NORTH AMERICA -->
-
-<path id="canada" class="land" fill="#684d9a"
-d="M105 125L170 78L260 70L350 88L425 115L405 160L340 175L275 160L210 180L150 165Z"/>
-
-<path id="usa" class="land" fill="#3978b2"
-d="M155 178L225 165L300 175L370 190L400 245L355 275L290 260L230 250L180 225Z"/>
-
-<path id="mexico" class="land" fill="#a66e43"
-d="M180 250L240 255L270 290L250 330L205 312L175 280Z"/>
-
-
-<!-- SOUTH AMERICA -->
-
-<path id="brazil" class="land" fill="#36875d"
-d="M370 305L430 275L505 295L545 350L530 420L485 485L430 475L395 425L350 370Z"/>
-
-<path id="argentina" class="land" fill="#457da7"
-d="M390 455L430 470L450 520L420 605L385 580L370 520Z"/>
-
-<path id="chile" class="land" fill="#9d5157"
-d="M350 430L370 430L380 575L360 550L345 480Z"/>
-
-
-<!-- EUROPE -->
-
-<path id="uk" class="land" fill="#5278af"
-d="M650 150L670 132L685 155L675 180L655 173Z"/>
-
-<path id="france" class="land" fill="#4d87aa"
-d="M665 185L725 175L750 215L720 250L675 235Z"/>
-
-<path id="germany" class="land" fill="#ad8b48"
-d="M720 165L750 165L765 210L742 225L720 200Z"/>
-
-<path id="spain" class="land" fill="#a65c42"
-d="M650 245L705 240L725 265L680 280L645 265Z"/>
-
-<path id="italy" class="land" fill="#5d9a63"
-d="M760 235L790 245L795 280L770 300L755 270Z"/>
-
-<path id="poland" class="land" fill="#9b5b8f"
-d="M760 170L805 165L820 195L790 215L760 200Z"/>
-
-<path id="ukraine" class="land" fill="#a38443"
-d="M805 195L865 185L890 220L850 245L810 230Z"/>
-
-
-<!-- RUSSIA -->
-
-<path id="russia" class="land" fill="#774e98"
-d="M720 115L810 75L930 70L1050 90L1170 110L1280 150L1245 195L1150 185L1060 170L970 180L880 165L800 175L750 150Z"/>
-
-
-<!-- AFRICA -->
-
-<path id="algeria" class="land" fill="#447c61"
-d="M660 280L735 265L775 290L760 345L680 340L645 310Z"/>
-
-<path id="egypt" class="land" fill="#b18b48"
-d="M770 285L815 280L830 325L790 345L765 315Z"/>
-
-<path id="nigeria" class="land" fill="#418b61"
-d="M680 370L725 365L740 405L705 420L670 400Z"/>
-
-<path id="southAfrica" class="land" fill="#a64e48"
-d="M735 500L800 480L840 525L805 575L750 565L720 530Z"/>
-
-
-<!-- MIDDLE EAST -->
-
-<path id="turkey" class="land" fill="#a54d4d"
-d="M815 245L885 230L925 250L895 275L835 270Z"/>
-
-<path id="syria" class="land" fill="#7b7245"
-d="M845 275L885 270L900 300L865 315L840 300Z"/>
-
-<path id="iraq" class="land" fill="#897044"
-d="M875 305L920 300L935 340L900 355L870 335Z"/>
-
-<path id="iran" class="land selected" fill="#2e8b68"
-d="M925 270L1000 250L1050 280L1040 340L995 370L935 345L910 305Z"/>
-
-<path id="saudi" class="land" fill="#927644"
-d="M900 355L975 345L1020 390L985 450L920 425L890 385Z"/>
-
-<path id="israel" class="land" fill="#5b7eb1"
-d="M860 325L868 322L870 350L862 353Z"/>
-
-
-<!-- CENTRAL / SOUTH ASIA -->
-
-<path id="afghanistan" class="land" fill="#806b43"
-d="M1000 265L1050 260L1080 295L1045 320L1005 310Z"/>
-
-<path id="pakistan" class="land" fill="#4e8864"
-d="M1035 315L1080 300L1110 340L1080 390L1040 365Z"/>
-
-<path id="india" class="land" fill="#aa6c42"
-d="M1080 335L1125 325L1160 370L1135 440L1100 470L1075 410Z"/>
-
-
-<!-- ASIA -->
-
-<path id="china" class="land" fill="#a3484d"
-d="M1040 205L1130 185L1210 220L1240 280L1210 335L1150 325L1110 295L1060 270L1020 245Z"/>
-
-<path id="mongolia" class="land" fill="#856e43"
-d="M1060 165L1150 150L1200 180L1170 215L1080 210Z"/>
-
-<path id="japan" class="land" fill="#ad5b54"
-d="M1260 250L1280 225L1295 255L1280 290Z"/>
-
-<path id="southKorea" class="land" fill="#4e7aa7"
-d="M1220 250L1240 240L1250 270L1235 290Z"/>
-
-
-<!-- OCEANIA -->
-
-<path id="australia" class="land" fill="#a47742"
-d="M1050 475L1140 440L1230 455L1285 510L1260 570L1180 595L1100 575L1040 530Z"/>
-
-
-<!-- LABELS -->
-
-<text class="maplabel" x="280" y="215">آمریکا</text>
-<text class="maplabel" x="450" y="355">برزیل</text>
-<text class="maplabel" x="760" y="200">اروپا</text>
-<text class="maplabel" x="980" y="315">ایران</text>
-<text class="maplabel" x="1140" y="260">چین</text>
-<text class="maplabel" x="1180" y="520">استرالیا</text>
-
-</svg>
+</div>
 
 
 <div class="events" id="events">
 
-<div class="eventsTitle">📜 گزارش‌های جهان</div>
+<div class="eventTitle">
 
-<div class="event">
-<strong>دولت:</strong> اقتصاد کشور وارد ماه جدید شد.
+📜 گزارش‌های جهان
+
 </div>
 
 <div class="event">
-<strong>چین:</strong> سرمایه‌گذاری صنعتی جدید اعلام کرد.
+
+<strong>دولت:</strong>
+سال جدید آغاز شد.
 </div>
 
 <div class="event">
-<strong>بازار نفت:</strong> قیمت جهانی نفت کاهش یافت.
+
+<strong>بازار:</strong>
+قیمت جهانی انرژی در حال تغییر است.
 </div>
 
 <div class="event">
-<strong>روسیه:</strong> بودجه دفاعی افزایش یافت.
+
+<strong>تجارت:</strong>
+کشتی‌های تجاری در مسیرهای جهانی حرکت می‌کنند.
 </div>
 
 </div>
@@ -766,45 +1369,102 @@ d="M1050 475L1140 440L1230 455L1285 510L1260 570L1180 595L1100 575L1040 530Z"/>
 </section>
 
 
-<!-- RIGHT -->
+<!-- =====================================================
+RIGHT
+===================================================== -->
 
 <aside class="right">
 
-<div class="head">
-<h2 id="countryName">ایران</h2>
-<p id="countryType">قدرت منطقه‌ای • خاورمیانه</p>
+<div class="countryHead">
+
+<h2 id="countryName">
+ایران
+</h2>
+
+<p id="countryType">
+قدرت منطقه‌ای • خاورمیانه
+</p>
+
 </div>
+
 
 <div class="cards">
 
 <div class="card">
-<span>جمعیت</span>
-<b id="population">89.6M</b>
+
+<span>
+جمعیت
+</span>
+
+<b id="population">
+89.6M
+</b>
+
 </div>
 
-<div class="card">
-<span>GDP</span>
-<b id="gdp">$413B</b>
-</div>
 
 <div class="card">
-<span>قدرت نظامی</span>
-<b id="military">84</b>
+
+<span>
+GDP
+</span>
+
+<b id="gdp">
+$413B
+</b>
+
 </div>
 
-<div class="card">
-<span>اقتصاد</span>
-<b id="economy">71</b>
-</div>
 
 <div class="card">
-<span>نفت</span>
-<b id="oilInfo">9,300</b>
+
+<span>
+قدرت اقتصادی
+</span>
+
+<b id="economy">
+71
+</b>
+
 </div>
 
+
 <div class="card">
-<span>ثبات</span>
-<b id="stability">78%</b>
+
+<span>
+قدرت نظامی
+</span>
+
+<b id="military">
+84
+</b>
+
+</div>
+
+
+<div class="card">
+
+<span>
+نفت
+</span>
+
+<b id="oilInfo">
+9,300
+</b>
+
+</div>
+
+
+<div class="card">
+
+<span>
+ثبات
+</span>
+
+<b id="stability">
+78%
+</b>
+
 </div>
 
 </div>
@@ -812,46 +1472,97 @@ d="M1050 475L1140 440L1230 455L1285 510L1260 570L1180 595L1100 575L1040 530Z"/>
 
 <div class="section">
 
-<h3>اقدامات</h3>
+<h3>
+اقدامات کشور
+</h3>
 
-<button class="action green" onclick="trade()">🤝 قرارداد تجاری</button>
-<button class="action" onclick="diplomacy()">🏛 مذاکره دیپلماتیک</button>
-<button class="action" onclick="sanction()">💳 تحریم اقتصادی</button>
-<button class="action red" onclick="militaryAction()">⚔️ عملیات نظامی</button>
+<button class="action green"
+onclick="tradeCountry()">
+
+🤝 قرارداد تجاری
+
+</button>
+
+<button class="action"
+onclick="diplomacy()">
+
+🏛 مذاکره دیپلماتیک
+
+</button>
+
+<button class="action"
+onclick="inspectCountry()">
+
+🔎 اطلاعات کامل
+
+</button>
+
+<button class="action red"
+onclick="militaryAction()">
+
+⚔️ اقدام نظامی
+
+</button>
 
 </div>
 
 
 <div class="section">
 
-<h3>قدرت نظامی کشور</h3>
+<h3>
+قدرت نظامی
+</h3>
 
 <div class="stat">
+
 <div class="statline">
-<span>نیروی زمینی</span><b>81</b>
-</div>
-<div class="bar"><i style="width:81%"></i></div>
+<span>زمینی</span>
+<b>81</b>
 </div>
 
-<div class="stat">
-<div class="statline">
-<span>نیروی هوایی</span><b>79</b>
-</div>
-<div class="bar"><i style="width:79%"></i></div>
+<div class="bar">
+<i style="width:81%"></i>
 </div>
 
-<div class="stat">
-<div class="statline">
-<span>نیروی دریایی</span><b>67</b>
-</div>
-<div class="bar"><i style="width:67%"></i></div>
 </div>
 
 <div class="stat">
+
 <div class="statline">
-<span>پدافند</span><b>88</b>
+<span>هوایی</span>
+<b>79</b>
 </div>
-<div class="bar"><i style="width:88%"></i></div>
+
+<div class="bar">
+<i style="width:79%"></i>
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="statline">
+<span>دریایی</span>
+<b>67</b>
+</div>
+
+<div class="bar">
+<i style="width:67%"></i>
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="statline">
+<span>پدافند</span>
+<b>88</b>
+</div>
+
+<div class="bar">
+<i style="width:88%"></i>
+</div>
+
 </div>
 
 </div>
@@ -861,437 +1572,1247 @@ d="M1050 475L1140 440L1230 455L1285 510L1260 570L1180 595L1100 575L1040 530Z"/>
 </div>
 
 
-<!-- MODAL -->
+<!-- =====================================================
+MODAL
+===================================================== -->
 
 <div class="modal" id="modal">
 
-<div class="modalbox">
+<div class="modalBox">
 
-<div class="modalhead">
-<b id="modalTitle">مدیریت</b>
-<span class="close" onclick="closeModal()">×</span>
+<div class="modalHead">
+
+<b id="modalTitle">
+مدیریت
+</b>
+
+<span class="close"
+onclick="closeModal()">
+×
+</span>
+
 </div>
 
-<div class="modalbody" id="modalBody"></div>
-
+<div class="modalBody"
+id="modalBody">
 </div>
 
 </div>
+
+</div>
+
+
+<div class="loading" id="loading">
+
+<div class="spinner"></div>
+
+<b>
+WORLD DOMINION
+</b>
+
+<span>
+در حال بارگذاری نقشه جهان...
+</span>
+
+</div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 
 <script>
 
-/* =====================================================
-   DATA
-===================================================== */
+/* =========================================================
+GAME STATE
+========================================================= */
 
-const countries={
+const game={
 
-iran:{
-name:"ایران",
-type:"قدرت منطقه‌ای • خاورمیانه",
-population:"89.6M",
+year:2026,
+
+month:1,
+
+money:125000,
+
+oil:8420,
+
+food:15800,
+
+industry:72,
+
+inflation:18.4,
+
+selectedCountry:"Iran",
+
+buildings:{
+
+farm:2,
+
+factory:4,
+
+militaryFactory:1,
+
+university:2,
+
+powerPlant:1,
+
+refinery:1,
+
+port:1,
+
+airport:1
+
+}
+
+};
+
+
+/* =========================================================
+COUNTRY DATABASE
+========================================================= */
+
+const countryNames={
+
+AFG:"افغانستان",
+ALB:"آلبانی",
+DZA:"الجزایر",
+AND:"آندورا",
+AGO:"آنگولا",
+ATG:"آنتیگوا و باربودا",
+ARG:"آرژانتین",
+ARM:"ارمنستان",
+AUS:"استرالیا",
+AUT:"اتریش",
+AZE:"آذربایجان",
+BHS:"باهاما",
+BHR:"بحرین",
+BGD:"بنگلادش",
+BRB:"باربادوس",
+BLR:"بلاروس",
+BEL:"بلژیک",
+BLZ:"بلیز",
+BEN:"بنین",
+BTN:"بوتان",
+BOL:"بولیوی",
+BIH:"بوسنی و هرزگوین",
+BWA:"بوتسوانا",
+BRA:"برزیل",
+BRN:"برونئی",
+BGR:"بلغارستان",
+BFA:"بورکینافاسو",
+BDI:"بوروندی",
+CPV:"کیپ ورد",
+KHM:"کامبوج",
+CMR:"کامرون",
+CAN:"کانادا",
+CAF:"جمهوری آفریقای مرکزی",
+TCD:"چاد",
+CHL:"شیلی",
+CHN:"چین",
+COL:"کلمبیا",
+COM:"کومور",
+COG:"کنگو",
+COD:"جمهوری دموکراتیک کنگو",
+CRI:"کاستاریکا",
+CIV:"ساحل عاج",
+HRV:"کرواسی",
+CUB:"کوبا",
+CYP:"قبرس",
+CZE:"چک",
+DNK:"دانمارک",
+DJI:"جیبوتی",
+DMA:"دومینیکا",
+DOM:"جمهوری دومینیکن",
+ECU:"اکوادور",
+EGY:"مصر",
+SLV:"السالوادور",
+GNQ:"گینه استوایی",
+ERI:"اریتره",
+EST:"استونی",
+SWZ:"اسواتینی",
+ETH:"اتیوپی",
+FJI:"فیجی",
+FIN:"فنلاند",
+FRA:"فرانسه",
+GAB:"گابن",
+GMB:"گامبیا",
+GEO:"گرجستان",
+DEU:"آلمان",
+GHA:"غنا",
+GRC:"یونان",
+GRD:"گرانادا",
+GTM:"گواتمالا",
+GIN:"گینه",
+GNB:"گینه بیسائو",
+GUY:"گویان",
+HTI:"هائیتی",
+HND:"هندوراس",
+HUN:"مجارستان",
+ISL:"ایسلند",
+IND:"هند",
+IDN:"اندونزی",
+IRN:"ایران",
+IRQ:"عراق",
+IRL:"ایرلند",
+ISR:"اسرائیل",
+ITA:"ایتالیا",
+JAM:"جامائیکا",
+JPN:"ژاپن",
+JOR:"اردن",
+KAZ:"قزاقستان",
+KEN:"کنیا",
+KIR:"کیریباتی",
+PRK:"کره شمالی",
+KOR:"کره جنوبی",
+KWT:"کویت",
+KGZ:"قرقیزستان",
+LAO:"لائوس",
+LVA:"لتونی",
+LBN:"لبنان",
+LSO:"لسوتو",
+LBR:"لیبریا",
+LBY:"لیبی",
+LIE:"لیختن‌اشتاین",
+LTU:"لیتوانی",
+LUX:"لوکزامبورگ",
+MDG:"ماداگاسکار",
+MWI:"مالاوی",
+MYS:"مالزی",
+MDV:"مالدیو",
+MLI:"مالی",
+MLT:"مالت",
+MHL:"جزایر مارشال",
+MRT:"موریتانی",
+MUS:"موریس",
+MEX:"مکزیک",
+FSM:"میکرونزی",
+MDA:"مولداوی",
+MCO:"موناکو",
+MNG:"مغولستان",
+MNE:"مونته‌نگرو",
+MAR:"مراکش",
+MOZ:"موزامبیک",
+MMR:"میانمار",
+NAM:"نامیبیا",
+NRU:"نائورو",
+NPL:"نپال",
+NLD:"هلند",
+NZL:"نیوزیلند",
+NIC:"نیکاراگوئه",
+NER:"نیجر",
+NGA:"نیجریه",
+MKD:"مقدونیه شمالی",
+NOR:"نروژ",
+OMN:"عمان",
+PAK:"پاکستان",
+PLW:"پالائو",
+PAN:"پاناما",
+PNG:"پاپوآ گینه نو",
+PRY:"پاراگوئه",
+PER:"پرو",
+PHL:"فیلیپین",
+POL:"لهستان",
+PRT:"پرتغال",
+QAT:"قطر",
+ROU:"رومانی",
+RUS:"روسیه",
+RWA:"رواندا",
+KNA:"سنت کیتس و نویس",
+LCA:"سنت لوسیا",
+VCT:"سنت وینسنت و گرنادین‌ها",
+WSM:"ساموآ",
+SMR:"سن مارینو",
+STP:"سائوتومه و پرنسیپ",
+SAU:"عربستان سعودی",
+SEN:"سنگال",
+SRB:"صربستان",
+SYC:"سیشل",
+SLE:"سیرالئون",
+SGP:"سنگاپور",
+SVK:"اسلواکی",
+SVN:"اسلوونی",
+SLB:"جزایر سلیمان",
+SOM:"سومالی",
+ZAF:"آفریقای جنوبی",
+SSD:"سودان جنوبی",
+ESP:"اسپانیا",
+LKA:"سریلانکا",
+SDN:"سودان",
+SUR:"سورینام",
+SWE:"سوئد",
+CHE:"سوئیس",
+SYR:"سوریه",
+TWN:"تایوان",
+TJK:"تاجیکستان",
+TZA:"تانزانیا",
+THA:"تایلند",
+TLS:"تیمور شرقی",
+TGO:"توگو",
+TON:"تونگا",
+TTO:"ترینیداد و توباگو",
+TUN:"تونس",
+TUR:"ترکیه",
+TKM:"ترکمنستان",
+TUV:"تووالو",
+UGA:"اوگاندا",
+UKR:"اوکراین",
+ARE:"امارات متحده عربی",
+GBR:"بریتانیا",
+USA:"ایالات متحده آمریکا",
+URY:"اروگوئه",
+UZB:"ازبکستان",
+VUT:"وانواتو",
+VAT:"واتیکان",
+VEN:"ونزوئلا",
+VNM:"ویتنام",
+YEM:"یمن",
+ZMB:"زامبیا",
+ZWE:"زیمبابوه",
+
+ESH:"صحرای غربی",
+XKX:"کوزوو",
+PSE:"فلسطین",
+CYN:"قبرس شمالی",
+GRL:"گرینلند",
+PRI:"پورتوریکو",
+GUM:"گوام",
+ASM:"ساموآی آمریکا",
+FLK:"جزایر فالکلند",
+BMU:"برمودا",
+FRO:"جزایر فارو",
+NCL:"کالدونیای جدید",
+PYF:"پلینزی فرانسه",
+REU:"رئونیون",
+MTQ:"مارتینیک",
+GLP:"گوادلوپ",
+ABW:"آروبا",
+CUW:"کوراسائو",
+BMU:"برمودا",
+HKG:"هنگ‌کنگ",
+MAC:"ماکائو"
+
+};
+
+
+/* =========================================================
+SPECIAL COUNTRY STATS
+========================================================= */
+
+const stats={
+
+IRN:{
+pop:"89.6M",
 gdp:"$413B",
-military:"84",
-economy:"71",
+mil:84,
+eco:71,
 oil:"9,300",
 stability:"78%"
 },
 
-usa:{
-name:"ایالات متحده آمریکا",
-type:"ابرقدرت • آمریکای شمالی",
-population:"342M",
+USA:{
+pop:"342M",
 gdp:"$29.2T",
-military:"97",
-economy:"98",
+mil:97,
+eco:98,
 oil:"22,400",
 stability:"82%"
 },
 
-china:{
-name:"چین",
-type:"ابرقدرت • شرق آسیا",
-population:"1.41B",
+CHN:{
+pop:"1.41B",
 gdp:"$18.7T",
-military:"92",
-economy:"94",
+mil:92,
+eco:94,
 oil:"5,100",
 stability:"89%"
 },
 
-russia:{
-name:"روسیه",
-type:"قدرت جهانی • اوراسیا",
-population:"144M",
+RUS:{
+pop:"144M",
 gdp:"$2.1T",
-military:"94",
-economy:"69",
+mil:94,
+eco:69,
 oil:"31,500",
 stability:"73%"
 },
 
-india:{
-name:"هند",
-type:"قدرت جهانی • جنوب آسیا",
-population:"1.45B",
+IND:{
+pop:"1.45B",
 gdp:"$4.1T",
-military:"78",
-economy:"82",
+mil:78,
+eco:82,
 oil:"4,600",
 stability:"76%"
 },
 
-turkey:{
-name:"ترکیه",
-type:"قدرت منطقه‌ای • اوراسیا",
-population:"86M",
-gdp:"$1.3T",
-military:"73",
-economy:"67",
-oil:"1,900",
-stability:"64%"
-},
-
-japan:{
-name:"ژاپن",
-type:"قدرت اقتصادی • شرق آسیا",
-population:"124M",
+JPN:{
+pop:"124M",
 gdp:"$4.2T",
-military:"70",
-economy:"91",
+mil:70,
+eco:91,
 oil:"800",
 stability:"91%"
 },
 
-brazil:{
-name:"برزیل",
-type:"قدرت منطقه‌ای • آمریکای جنوبی",
-population:"216M",
+DEU:{
+pop:"84M",
+gdp:"$4.7T",
+mil:73,
+eco:93,
+oil:"600",
+stability:"88%"
+},
+
+GBR:{
+pop:"69M",
+gdp:"$3.7T",
+mil:76,
+eco:91,
+oil:"2,700",
+stability:"84%"
+},
+
+FRA:{
+pop:"68M",
+gdp:"$3.2T",
+mil:78,
+eco:90,
+oil:"1,100",
+stability:"79%"
+},
+
+BRA:{
+pop:"216M",
 gdp:"$2.3T",
-military:"61",
-economy:"70",
+mil:61,
+eco:70,
 oil:"13,700",
 stability:"70%"
 },
 
-australia:{
-name:"استرالیا",
-type:"قدرت منطقه‌ای • اقیانوسیه",
-population:"27M",
-gdp:"$1.8T",
-military:"62",
-economy:"85",
-oil:"4,200",
-stability:"94%"
+TUR:{
+pop:"86M",
+gdp:"$1.3T",
+mil:73,
+eco:67,
+oil:"1,900",
+stability:"64%"
 },
 
-egypt:{
-name:"مصر",
-type:"قدرت منطقه‌ای • شمال آفریقا",
-population:"116M",
+SAU:{
+pop:"36M",
+gdp:"$1.1T",
+mil:77,
+eco:78,
+oil:"267,000",
+stability:"86%"
+},
+
+EGY:{
+pop:"116M",
 gdp:"$395B",
-military:"64",
-economy:"56",
+mil:64,
+eco:56,
 oil:"3,200",
 stability:"61%"
-},
-
-pakistan:{
-name:"پاکستان",
-type:"قدرت منطقه‌ای • جنوب آسیا",
-population:"251M",
-gdp:"$371B",
-military:"70",
-economy:"52",
-oil:"2,100",
-stability:"58%"
-},
-
-southKorea:{
-name:"کره جنوبی",
-type:"قدرت صنعتی • شرق آسیا",
-population:"51M",
-gdp:"$1.9T",
-military:"76",
-economy:"90",
-oil:"700",
-stability:"87%"
 }
 
 };
 
 
-/* =====================================================
-   COUNTRY CLICK
-===================================================== */
+/* =========================================================
+DEFAULT COUNTRY DATA
+========================================================= */
 
-document.querySelectorAll(".land").forEach(el=>{
+function getStats(code){
 
-el.addEventListener("click",()=>{
+if(stats[code])
+return stats[code];
 
-document.querySelectorAll(".land")
-.forEach(x=>x.classList.remove("selected"));
+return{
 
-el.classList.add("selected");
+pop:
+(Math.floor(
+Math.random()*900
+)+2)+"M",
 
-const d=countries[el.id] || {
-name:"کشور ناشناخته",
-type:"کشور مستقل",
-population:"نامشخص",
-gdp:"نامشخص",
-military:50,
-economy:50,
-oil:"1,000",
-stability:"60%"
+gdp:
+"$"+
+(Math.floor(
+Math.random()*900
+)+30)+"B",
+
+mil:
+Math.floor(
+Math.random()*60
+)+30,
+
+eco:
+Math.floor(
+Math.random()*60
+)+35,
+
+oil:
+Math.floor(
+Math.random()*9000
+)+300,
+
+stability:
+(Math.floor(
+Math.random()*35
+)+55)+"%"
+
 };
 
-document.getElementById("countryName").textContent=d.name;
-document.getElementById("countryType").textContent=d.type;
-document.getElementById("population").textContent=d.population;
-document.getElementById("gdp").textContent=d.gdp;
-document.getElementById("military").textContent=d.military;
-document.getElementById("economy").textContent=d.economy;
-document.getElementById("oilInfo").textContent=d.oil;
-document.getElementById("stability").textContent=d.stability;
-document.getElementById("selectedMap").textContent=d.name;
-
-});
-
-});
-
-
-/* =====================================================
-   ZOOM
-===================================================== */
-
-let zoomLevel=1;
-
-function zoom(amount){
-
-zoomLevel*=amount;
-
-if(zoomLevel<.75)zoomLevel=.75;
-if(zoomLevel>2.8)zoomLevel=2.8;
-
-document.getElementById("world").style.transform=
-`scale(${zoomLevel})`;
-
-}
-
-function resetZoom(){
-
-zoomLevel=1;
-
-document.getElementById("world").style.transform=
-"scale(1)";
-
 }
 
 
-/* =====================================================
-   GAME ECONOMY
-===================================================== */
+/* =========================================================
+MAP
+========================================================= */
 
-let money=125000;
-let oil=8420;
-let food=15800;
-let industry=72;
-let inflation=18.4;
+const map=L.map(
+"map",
+{
+zoomControl:true,
+minZoom:2,
+maxZoom:7,
+worldCopyJump:true
+}
+).setView(
+[25,35],
+2.35
+);
 
-let year=2026;
-let month=1;
 
-const months=[
-"ژانویه","فوریه","مارس","آوریل","مه","ژوئن",
-"ژوئیه","اوت","سپتامبر","اکتبر","نوامبر","دسامبر"
+L.tileLayer(
+"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+{
+attribution:"World Dominion",
+subdomains:"abcd",
+maxZoom:19
+}
+).addTo(map);
+
+
+/* =========================================================
+COUNTRY LAYER
+========================================================= */
+
+let countryLayer;
+
+function countryStyle(){
+
+return{
+
+fillColor:"#2b6687",
+
+fillOpacity:.62,
+
+color:"#071019",
+
+weight:1
+
+};
+
+}
+
+
+function highlight(e){
+
+e.target.setStyle({
+
+fillOpacity:.92,
+
+weight:2,
+
+color:"#ffffff"
+
+});
+
+}
+
+
+function resetHighlight(e){
+
+countryLayer.resetStyle(e.target);
+
+}
+
+
+function countryClick(e){
+
+const props=e.target.feature.properties;
+
+const code=
+props.ISO_A3 ||
+props.iso_a3 ||
+props.ADM0_A3 ||
+props.SOV_A3 ||
+"";
+
+selectCountry(
+code,
+props.ADMIN ||
+props.name ||
+"کشور"
+);
+
+}
+
+
+function onEachCountry(feature,layer){
+
+layer.on({
+
+mouseover:highlight,
+
+mouseout:resetHighlight,
+
+click:countryClick
+
+});
+
+}
+
+
+async function loadCountries(){
+
+try{
+
+const response=
+await fetch(
+"https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
+);
+
+const geo=
+await response.json();
+
+countryLayer=
+L.geoJSON(
+geo,
+{
+style:countryStyle,
+onEachFeature:onEachCountry
+}
+).addTo(map);
+
+document.getElementById(
+"loading"
+).style.display="none";
+
+}catch(error){
+
+document.getElementById(
+"loading"
+).innerHTML=`
+
+<b>
+خطا در دریافت نقشه
+</b>
+
+<span>
+اتصال اینترنت را بررسی کنید و صفحه را دوباره باز کنید.
+</span>
+
+`;
+
+}
+
+}
+
+loadCountries();
+
+
+/* =========================================================
+COUNTRY SELECTION
+========================================================= */
+
+function selectCountry(code,name){
+
+const fa=
+countryNames[code] ||
+name ||
+"کشور";
+
+const d=getStats(code);
+
+document.getElementById(
+"countryName"
+).textContent=fa;
+
+document.getElementById(
+"countryType"
+).textContent=
+"کشور مستقل • اطلاعات راهبردی";
+
+document.getElementById(
+"population"
+).textContent=d.pop;
+
+document.getElementById(
+"gdp"
+).textContent=d.gdp;
+
+document.getElementById(
+"military"
+).textContent=d.mil;
+
+document.getElementById(
+"economy"
+).textContent=d.eco;
+
+document.getElementById(
+"oilInfo"
+).textContent=d.oil;
+
+document.getElementById(
+"stability"
+).textContent=d.stability;
+
+document.getElementById(
+"mapSelected"
+).textContent=fa;
+
+game.selectedCountry=fa;
+
+}
+
+
+/* =========================================================
+STRATEGIC WATERWAYS
+========================================================= */
+
+const waterways=[
+
+{
+name:"تنگه هرمز",
+latlngs:[
+[26.70,56.15],
+[26.60,56.55],
+[26.55,57.00]
+],
+owners:"ایران / عمان",
+toll:1800,
+close:true,
+desc:
+"یکی از مهم‌ترین مسیرهای دریایی انرژی جهان. در بازی کنترل دو سوی آبراه اهمیت استراتژیک دارد."
+},
+
+{
+name:"تنگه مالاکا",
+latlngs:[
+[2.2,101.2],
+[2.0,101.8],
+[1.7,102.5],
+[1.4,103.2]
+],
+owners:"مالزی / اندونزی",
+toll:1400,
+close:true,
+desc:
+"مسیر اصلی کشتیرانی بین اقیانوس هند و اقیانوس آرام."
+},
+
+{
+name:"کانال سوئز",
+latlngs:[
+[31.25,32.30],
+[30.8,32.35],
+[30.2,32.35]
+],
+owners:"مصر",
+toll:3200,
+close:true,
+desc:
+"کانال مصنوعی مهم بین دریای مدیترانه و دریای سرخ."
+},
+
+{
+name:"کانال پاناما",
+latlngs:[
+[9.3,-79.9],
+[9.1,-79.6],
+[8.95,-79.55]
+],
+owners:"پاناما",
+toll:2900,
+close:true,
+desc:
+"مسیر کلیدی میان اقیانوس اطلس و آرام."
+},
+
+{
+name:"بسفر",
+latlngs:[
+[41.15,29.05],
+[41.05,29.02],
+[40.95,29.00]
+],
+owners:"ترکیه",
+toll:1100,
+close:true,
+desc:
+"آبراه استراتژیک میان دریای سیاه و دریای مرمره."
+},
+
+{
+name:"داردانل",
+latlngs:[
+[40.4,26.4],
+[40.15,26.55],
+[39.95,26.65]
+],
+owners:"ترکیه",
+toll:950,
+close:true,
+desc:
+"مسیر اتصال دریای مرمره به دریای اژه."
+},
+
+{
+name:"باب‌المندب",
+latlngs:[
+[12.7,43.3],
+[12.5,43.5],
+[12.4,43.8]
+],
+owners:"یمن / جیبوتی / اریتره",
+toll:1000,
+close:true,
+desc:
+"گلوگاه ورودی دریای سرخ از سمت اقیانوس هند."
+},
+
+{
+name:"تنگه جبل‌الطارق",
+latlngs:[
+[36.05,-5.6],
+[35.98,-5.2],
+[35.92,-4.8]
+],
+owners:"اسپانیا / بریتانیا / مراکش",
+toll:1200,
+close:true,
+desc:
+"ورودی اقیانوس اطلس به دریای مدیترانه."
+},
+
+{
+name:"تنگه دانمارک",
+latlngs:[
+[57.9,10.7],
+[57.4,11.0],
+[56.9,11.4]
+],
+owners:"دانمارک",
+toll:700,
+close:true,
+desc:
+"مجموعه آبراه‌های مهم ورودی دریای بالتیک."
+},
+
+{
+name:"تنگه کرچ",
+latlngs:[
+[45.35,36.55],
+[45.2,36.6],
+[45.05,36.65]
+],
+owners:"روسیه / اوکراین",
+toll:600,
+close:true,
+desc:
+"آبراه میان دریای سیاه و دریای آزوف."
+},
+
+{
+name:"تنگه تایوان",
+latlngs:[
+[25.5,119.8],
+[24.6,119.4],
+[23.7,119.1]
+],
+owners:"چین / تایوان",
+toll:900,
+close:true,
+desc:
+"آبراه مهم شرق آسیا."
+},
+
+{
+name:"تنگه سوندا",
+latlngs:[
+[-5.85,105.8],
+[-6.0,105.95],
+[-6.15,106.1]
+],
+owners:"اندونزی",
+toll:650,
+close:true,
+desc:
+"مسیر دریایی میان جاوه و سوماترا."
+},
+
+{
+name:"تنگه لومبوک",
+latlngs:[
+[-8.25,115.7],
+[-8.45,115.8],
+[-8.7,115.85]
+],
+owners:"اندونزی",
+toll:800,
+close:true,
+desc:
+"آبراه مهم میان بالی و لومبوک."
+},
+
+{
+name:"تنگه ماکاسار",
+latlngs:[
+[1.0,117.4],
+[-1.0,117.3],
+[-3.0,117.2]
+],
+owners:"اندونزی",
+toll:500,
+close:true,
+desc:
+"مسیر دریایی مهم در مجمع‌الجزایر اندونزی."
+},
+
+{
+name:"تنگه تسوشیما",
+latlngs:[
+[34.7,129.0],
+[34.2,129.5],
+[33.7,130.0]
+],
+owners:"ژاپن / کره جنوبی",
+toll:850,
+close:true,
+desc:
+"آبراه راهبردی میان ژاپن و شبه‌جزیره کره."
+},
+
+{
+name:"تنگه برینگ",
+latlngs:[
+[65.9,-168.0],
+[65.7,-168.8],
+[65.5,-169.4]
+],
+owners:"روسیه / آمریکا",
+toll:500,
+close:false,
+desc:
+"آبراه میان روسیه و آلاسکا."
+},
+
+{
+name:"تنگه ماژلان",
+latlngs:[
+[-52.7,-70.0],
+[-53.1,-71.0],
+[-53.5,-72.0]
+],
+owners:"شیلی",
+toll:600,
+close:true,
+desc:
+"مسیر دریایی مهم در جنوب آمریکای جنوبی."
+},
+
+{
+name:"کانال کیل",
+latlngs:[
+[54.4,9.7],
+[54.2,9.5],
+[54.0,9.4]
+],
+owners:"آلمان",
+toll:400,
+close:true,
+desc:
+"کانال مصنوعی اتصال دریای شمال و بالتیک."
+},
+
+{
+name:"کانال کورینت",
+latlngs:[
+[37.95,22.95],
+[37.9,22.98],
+[37.85,23.0]
+],
+owners:"یونان",
+toll:300,
+close:true,
+desc:
+"کانال مهم کشتیرانی یونان."
+},
+
+{
+name:"تنگه اورسوند",
+latlngs:[
+[56.1,12.7],
+[55.8,12.6],
+[55.6,12.7]
+],
+owners:"دانمارک / سوئد",
+toll:450,
+close:true,
+desc:
+"آبراه مهم ورودی بالتیک."
+}
+
 ];
 
-function format(n){
-return Math.floor(n).toLocaleString("en-US");
+
+/* =========================================================
+DRAW WATERWAYS
+========================================================= */
+
+const waterLayer=
+L.layerGroup().addTo(map);
+
+waterways.forEach((w,index)=>{
+
+const line=
+L.polyline(
+w.latlngs,
+{
+color:"#39b9ff",
+weight:4,
+opacity:.85,
+dashArray:"7 6"
 }
+).addTo(waterLayer);
 
-function updateResources(){
-
-document.getElementById("money").textContent=
-"$"+format(money);
-
-document.getElementById("oil").textContent=
-format(oil);
-
-document.getElementById("food").textContent=
-format(food);
-
-document.getElementById("industry").textContent=
-industry;
-
-document.getElementById("inflation").textContent=
-inflation.toFixed(1)+"%";
-
+line.bindTooltip(
+w.name,
+{
+className:"waterway",
+direction:"top"
 }
+);
+
+line.bindPopup(`
+
+<div class="waterPopup">
+
+<h3>
+🌊 ${w.name}
+</h3>
+
+<p>
+<strong>کنترل فعلی:</strong>
+${w.owners}
+</p>
+
+<p>
+<strong>عوارض پایه:</strong>
+$${w.toll.toLocaleString()}
+</p>
+
+<p>
+${w.desc}
+</p>
+
+<button
+class="waterBtn"
+onclick="manageWaterway(${index})">
+
+مدیریت آبراه
+
+</button>
+
+</div>
+
+`);
+
+});
 
 
-/* =====================================================
-   TURN SYSTEM
-===================================================== */
+/* =========================================================
+WATERWAY MANAGEMENT
+========================================================= */
 
-function nextTurn(){
+function manageWaterway(index){
 
-month++;
+const w=waterways[index];
 
-if(month>12){
-month=1;
-year++;
-}
+openCustomModal(
+"🌊 مدیریت "+w.name,
 
-/*
-درآمد عمداً پایین نگه داشته شده.
-اقتصاد باید رشد کند، نه اینکه بازیکن بعد از سه ماه
-به بانک مرکزی جهان تبدیل شود.
-*/
-
-let taxIncome=4300;
-let industryIncome=1700;
-let tradeIncome=900;
-
-let maintenance=
-950+
-(industry*15);
-
-let armyCost=1350;
-
-let totalIncome=
-taxIncome+
-industryIncome+
-tradeIncome;
-
-let totalCost=
-maintenance+
-armyCost;
-
-money+=totalIncome-totalCost;
-
-oil-=180;
-food-=320;
-
-if(oil<0)oil=0;
-if(food<0)food=0;
-
-inflation+=
-(money>180000 ? .4 : -.08);
-
-if(inflation<5)inflation=5;
-if(inflation>40)inflation=40;
-
-document.getElementById("date").textContent=
-months[month-1]+" "+year;
-
-updateResources();
-
-addEvent(
-`<strong>گزارش اقتصادی:</strong>
-درآمد ${format(totalIncome)}$،
-هزینه ${format(totalCost)}$.
 `
+
+<div class="grid">
+
+<div class="item">
+
+<h4>
+وضعیت آبراه
+</h4>
+
+<p>
+
+کنترل فعلی:
+${w.owners}
+
+<br>
+
+عوارض:
+$${w.toll.toLocaleString()}
+
+<br>
+
+اهمیت راهبردی:
+بسیار بالا
+
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+درآمد احتمالی
+</h4>
+
+<p>
+
+در صورت کنترل کامل آبراه،
+کشتی‌های تجاری عبوری می‌توانند
+عوارض پرداخت کنند.
+
+</p>
+
+<button
+onclick="collectToll('${w.name}',${w.toll})">
+
+دریافت عوارض
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+کنترل ترافیک
+</h4>
+
+<p>
+
+در این شبیه‌سازی می‌توانید
+سطح عبور تجاری را مدیریت کنید.
+
+</p>
+
+<button
+onclick="controlTraffic('${w.name}')">
+
+مدیریت ترافیک
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+بستن آبراه
+
+</h4>
+
+<p>
+
+بستن آبراه پیامدهای شدید
+دیپلماتیک و اقتصادی دارد.
+
+</p>
+
+<button
+onclick="closeWater('${w.name}')">
+
+بستن آبراه
+
+</button>
+
+</div>
+
+</div>
+
+`
+
 );
 
 }
 
 
-/* =====================================================
-   EVENTS
-===================================================== */
+/* =========================================================
+TOLL
+========================================================= */
 
-function addEvent(text){
+function collectToll(name,value){
 
-const box=document.getElementById("events");
-
-const e=document.createElement("div");
-
-e.className="event";
-e.innerHTML=text;
-
-box.appendChild(e);
-
-while(box.children.length>7)
-box.removeChild(box.children[1]);
-
-}
-
-
-/* =====================================================
-   ACTIONS
-===================================================== */
-
-function trade(){
-
-if(money<5000){
-alert("برای امضای قرارداد تجاری حداقل 5,000 دلار بودجه لازم است.");
-return;
-}
-
-money-=5000;
+game.money+=value;
 
 addEvent(
-"<strong>دیپلماسی:</strong> قرارداد تجاری جدید امضا شد."
+`<strong>تجارت دریایی:</strong>
+$${value.toLocaleString()}
+عوارض از ${name} دریافت شد.`
 );
 
-updateResources();
+updateUI();
+
+closeModal();
 
 }
 
-function diplomacy(){
+
+/* =========================================================
+TRAFFIC
+========================================================= */
+
+function controlTraffic(name){
 
 addEvent(
-"<strong>دیپلماسی:</strong> هیئت سیاسی برای مذاکره اعزام شد."
+`<strong>آبراه:</strong>
+ترافیک تجاری ${name} تنظیم شد.`
 );
 
 }
 
-function sanction(){
 
-if(money<2500){
-alert("اجرای برنامه تحریم هزینه عملیاتی دارد.");
-return;
-}
+/* =========================================================
+CLOSE WATER
+========================================================= */
 
-money-=2500;
+function closeWater(name){
 
 addEvent(
-"<strong>تحریم:</strong> بسته اقتصادی جدید فعال شد."
+`<strong>بحران جهانی:</strong>
+دستور بستن ${name}
+ثبت شد.`
 );
 
-updateResources();
-
-}
-
-function militaryAction(){
-
-if(oil<500){
-alert("سوخت کافی برای عملیات نظامی وجود ندارد.");
-return;
-}
-
-if(money<8000){
-alert("بودجه عملیاتی کافی نیست.");
-return;
-}
-
-money-=8000;
-oil-=500;
-
-addEvent(
-"<strong>ارتش:</strong> عملیات نظامی در حالت آماده‌باش قرار گرفت."
+alert(
+"این تصمیم در نسخه فعلی به‌صورت رویداد بازی ثبت می‌شود و در سیستم دیپلماسی پیشرفته می‌تواند پیامدهای گسترده داشته باشد."
 );
 
-updateResources();
-
 }
 
 
-/* =====================================================
-   PANELS
-===================================================== */
+/* =========================================================
+PANELS
+========================================================= */
+
+function openPanel(id){
 
 const panels={
 
@@ -1301,259 +2822,492 @@ title:"💰 اقتصاد و بودجه",
 
 html:`
 
-<div class="biggrid">
+<div class="grid">
 
-<div class="unit">
-<h4>💵 بودجه دولت</h4>
+<div class="item">
+
+<h4>
+💵 بودجه دولت
+</h4>
+
 <p>
-درآمد مالیاتی ماهانه: $4,300<br>
-درآمد صنعتی: $1,700<br>
-درآمد تجارت: $900<br>
-هزینه نگهداری: $2,030
+
+خزانه:
+$${game.money.toLocaleString()}
+
+<br>
+
+درآمد مالیاتی ماهانه:
+$4,300
+
+<br>
+
+درآمد صنعتی:
+$1,700
+
+<br>
+
+هزینه نگهداری:
+$3,030
+
 </p>
+
 </div>
 
-<div class="unit">
-<h4>📈 سیاست مالی</h4>
+
+<div class="item">
+
+<h4>
+📈 اقتصاد کلان
+</h4>
+
 <p>
-مالیات فعلی: 18%<br>
-رشد اقتصادی: 2.1%<br>
-تورم: ${inflation.toFixed(1)}%
+
+تورم:
+${game.inflation.toFixed(1)}%
+
+<br>
+
+رشد:
+2.1%
+
+<br>
+
+بیکاری:
+8.2%
+
 </p>
-<button onclick="changeTax()">افزایش مالیات</button>
+
 </div>
 
-<div class="unit">
-<h4>🌾 کشاورزی</h4>
+
+<div class="item">
+
+<h4>
+🌾 کشاورزی
+</h4>
+
 <p>
-تولید غذا: 15,800 واحد<br>
-مصرف ماهانه: 320 واحد
+
+مزارع:
+${game.buildings.farm}
+
+<br>
+
+تولید غذا:
+${game.food.toLocaleString()}
+
 </p>
-<button onclick="build('farm')">ساخت مزرعه - $12,000</button>
+
+<button
+onclick="build('farm')">
+
+ساخت مزرعه - $12,000
+
+</button>
+
 </div>
 
-<div class="unit">
-<h4>🏭 صنعت</h4>
+
+<div class="item">
+
+<h4>
+🏭 تولید
+</h4>
+
 <p>
-ظرفیت صنعتی: ${industry}<br>
-کارخانه‌ها ظرفیت درآمد و تولید را افزایش می‌دهند.
+
+ظرفیت صنعتی:
+${game.industry}
+
+<br>
+
+کارخانه‌ها:
+${game.buildings.factory}
+
 </p>
-<button onclick="build('factory')">ساخت کارخانه - $25,000</button>
+
+<button
+onclick="build('factory')">
+
+ساخت کارخانه - $25,000
+
+</button>
+
 </div>
 
 </div>
+
 `
 
 },
 
-army:{
-
-title:"⚔️ نیروهای مسلح",
-
-html:`
-
-<div class="biggrid">
-
-<div class="unit">
-<h4>🪖 نیروی زمینی</h4>
-<p>
-تانک اصلی: Leopard 2A7<br>
-تانک بومی: Karrar<br>
-زرهی: 1,240<br>
-توپخانه: 680<br>
-آمادگی: 81%
-</p>
-<button onclick="buyUnit('ground')">خرید تجهیزات - $18,000</button>
-</div>
-
-<div class="unit">
-<h4>✈️ نیروی هوایی</h4>
-<p>
-F-35 Lightning II<br>
-F-15 Eagle<br>
-F-16 Fighting Falcon<br>
-Su-35<br>
-جنگنده‌های عملیاتی: 146
-</p>
-<button onclick="buyUnit('air')">خرید هواپیما - $32,000</button>
-</div>
-
-<div class="unit">
-<h4>🚁 هوانوردی تاکتیکی</h4>
-<p>
-AH-64 Apache<br>
-Mi-28<br>
-UH-60<br>
-بالگردهای عملیاتی: 84
-</p>
-<button onclick="buyUnit('heli')">خرید بالگرد - $16,000</button>
-</div>
-
-<div class="unit">
-<h4>🛩️ پهپادها</h4>
-<p>
-MQ-9 Reaper<br>
-Bayraktar TB2<br>
-Shahed-136<br>
-پهپادهای شناسایی و رزمی: 390
-</p>
-<button onclick="buyUnit('drone')">توسعه پهپاد - $7,500</button>
-</div>
-
-<div class="unit">
-<h4>🛡 پدافند هوایی</h4>
-<p>
-S-300<br>
-Patriot<br>
-سامانه‌های کوتاه‌برد<br>
-آمادگی پدافند: 88%
-</p>
-<button onclick="buyUnit('defense')">تقویت پدافند - $20,000</button>
-</div>
-
-<div class="unit">
-<h4>🚀 موشکی</h4>
-<p>
-سامانه‌های موشکی برد کوتاه و متوسط<br>
-این بخش صرفاً به‌صورت آماری در شبیه‌سازی بازی مدل شده است.
-</p>
-<button onclick="buyUnit('missile')">تحقیق موشکی - $22,000</button>
-</div>
-
-</div>
-`
-
-},
-
-air:{
-
-title:"✈️ نیروی هوایی",
-
-html:`
-
-<div class="biggrid">
-
-<div class="unit">
-<h4>F-35 Lightning II</h4>
-<p>
-نسل پنجم<br>
-پنهانکار<br>
-ماموریت چندمنظوره<br>
-سطح فناوری: بسیار بالا
-</p>
-<button onclick="buyPlane('F-35',90000)">خرید اسکادران - $90,000</button>
-</div>
-
-<div class="unit">
-<h4>F-15 Eagle</h4>
-<p>
-جنگنده برتری هوایی<br>
-برد عملیاتی بالا<br>
-توان حمل تسلیحات سنگین
-</p>
-<button onclick="buyPlane('F-15',55000)">خرید اسکادران - $55,000</button>
-</div>
-
-<div class="unit">
-<h4>F-16 Fighting Falcon</h4>
-<p>
-جنگنده چندمنظوره<br>
-هزینه نگهداری متوسط<br>
-قابلیت استفاده گسترده
-</p>
-<button onclick="buyPlane('F-16',38000)">خرید اسکادران - $38,000</button>
-</div>
-
-<div class="unit">
-<h4>Su-35</h4>
-<p>
-جنگنده سنگین<br>
-برد بالا<br>
-مانورپذیری بالا
-</p>
-<button onclick="buyPlane('Su-35',48000)">خرید اسکادران - $48,000</button>
-</div>
-
-</div>
-`
-
-},
-
-navy:{
-
-title:"⚓ نیروی دریایی",
-
-html:`
-
-<div class="biggrid">
-
-<div class="unit">
-<h4>🚢 ناوشکن</h4>
-<p>
-ناوشکن‌های موشک‌انداز<br>
-قدرت دریایی: 67
-</p>
-<button onclick="buyUnit('ship')">ساخت ناوشکن - $70,000</button>
-</div>
-
-<div class="unit">
-<h4>🛥 ناوچه</h4>
-<p>
-گشت دریایی و اسکورت تجاری
-</p>
-<button onclick="buyUnit('frigate')">ساخت ناوچه - $35,000</button>
-</div>
-
-<div class="unit">
-<h4>⚓ زیردریایی</h4>
-<p>
-عملیات دریایی پنهان<br>
-هزینه نگهداری بالا
-</p>
-<button onclick="buyUnit('sub')">ساخت زیردریایی - $80,000</button>
-</div>
-
-</div>
-`
-
-},
 
 industry:{
 
-title:"🏭 صنعت و کارخانه‌ها",
+title:"🏭 زیرساخت و کارخانه‌ها",
 
 html:`
 
-<div class="biggrid">
+<div class="grid">
 
-<div class="unit">
-<h4>🏭 کارخانه فولاد</h4>
-<p>ظرفیت صنعتی +4</p>
-<button onclick="build('steel')">ساخت - $22,000</button>
-</div>
+<div class="item">
 
-<div class="unit">
-<h4>🏗 کارخانه خودرو</h4>
-<p>ظرفیت صنعتی +5<br>درآمد صنعتی +250</p>
-<button onclick="build('auto')">ساخت - $30,000</button>
-</div>
+<h4>
+🏭 کارخانه فولاد
+</h4>
 
-<div class="unit">
-<h4>✈️ صنایع هوافضا</h4>
-<p>ظرفیت فناوری نظامی +5</p>
-<button onclick="build('aero')">ساخت - $55,000</button>
-</div>
+<p>
+تولید مواد اولیه صنعتی.
+</p>
 
-<div class="unit">
-<h4>🛢 پالایشگاه نفت</h4>
-<p>مصرف نفت داخلی کاهش می‌یابد.</p>
-<button onclick="build('refinery')">ساخت - $42,000</button>
-</div>
+<button
+onclick="build('steel')">
+
+ساخت - $22,000
+
+</button>
 
 </div>
+
+
+<div class="item">
+
+<h4>
+🚗 کارخانه خودرو
+</h4>
+
+<p>
+تولید صنعتی و اشتغال.
+</p>
+
+<button
+onclick="build('auto')">
+
+ساخت - $30,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+💻 کارخانه الکترونیک
+</h4>
+
+<p>
+تولید تجهیزات الکترونیکی
+و افزایش فناوری.
+</p>
+
+<button
+onclick="build('electronics')">
+
+ساخت - $38,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+🛢 پالایشگاه
+</h4>
+
+<p>
+تبدیل نفت خام به فرآورده.
+</p>
+
+<button
+onclick="build('refinery')">
+
+ساخت - $42,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+⚡ نیروگاه
+</h4>
+
+<p>
+ظرفیت انرژی کشور را افزایش می‌دهد.
+</p>
+
+<button
+onclick="build('power')">
+
+ساخت - $35,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+🚢 بندر تجاری
+</h4>
+
+<p>
+ظرفیت تجارت دریایی را افزایش می‌دهد.
+</p>
+
+<button
+onclick="build('port')">
+
+ساخت - $45,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+✈️ فرودگاه بین‌المللی
+</h4>
+
+<p>
+ظرفیت حمل‌ونقل و تجارت هوایی.
+</p>
+
+<button
+onclick="build('airport')">
+
+ساخت - $40,000
+
+</button>
+
+</div>
+
+</div>
+
 `
 
 },
+
+
+military:{
+
+title:"⚔️ صنایع نظامی",
+
+html:`
+
+<div class="grid">
+
+<div class="item">
+
+<h4>
+🏭 کارخانه تجهیزات زمینی
+</h4>
+
+<p>
+تولید تجهیزات زرهی و پشتیبانی
+در سطح آماری بازی.
+</p>
+
+<button
+onclick="build('military')">
+
+ساخت - $55,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+✈️ صنایع هوافضا
+</h4>
+
+<p>
+
+توسعه ظرفیت صنعت هوایی.
+
+<br><br>
+
+نمونه تجهیزات درخت فناوری:
+F-35
+<br>
+F-15
+<br>
+F-16
+<br>
+Su-35
+
+</p>
+
+<button
+onclick="build('aerospace')">
+
+ساخت - $70,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+🛩️ مرکز پهپادی
+</h4>
+
+<p>
+
+درخت فناوری پهپادی شامل
+سامانه‌های شناسایی و رزمی
+در سطح شبیه‌سازی.
+
+</p>
+
+<button
+onclick="build('drone')">
+
+ساخت - $32,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+🛡 مرکز پدافند
+</h4>
+
+<p>
+
+افزایش آمادگی دفاع هوایی.
+
+</p>
+
+<button
+onclick="build('defense')">
+
+ساخت - $48,000
+
+</button>
+
+</div>
+
+</div>
+
+`
+
+},
+
+
+university:{
+
+title:"🎓 دانشگاه و تحقیقات",
+
+html:`
+
+<div class="grid">
+
+<div class="item">
+
+<h4>
+🎓 دانشگاه ملی
+</h4>
+
+<p>
+افزایش ظرفیت آموزش،
+تحقیق و نیروی متخصص.
+</p>
+
+<button
+onclick="build('university')">
+
+ساخت - $28,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+🔬 مرکز تحقیقات پیشرفته
+</h4>
+
+<p>
+سرمایه‌گذاری در فناوری
+اقتصادی و صنعتی.
+</p>
+
+<button
+onclick="research()">
+
+شروع تحقیق - $20,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+🤖 هوش مصنوعی
+</h4>
+
+<p>
+فناوری مدیریت و اتوماسیون.
+</p>
+
+<button
+onclick="researchAI()">
+
+تحقیق - $35,000
+
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+⚡ انرژی پیشرفته
+</h4>
+
+<p>
+کاهش هزینه انرژی
+و افزایش بهره‌وری.
+</p>
+
+<button
+onclick="researchEnergy()">
+
+تحقیق - $25,000
+
+</button>
+
+</div>
+
+</div>
+
+`
+
+},
+
 
 bank:{
 
@@ -1561,109 +3315,242 @@ title:"🏦 بانک مرکزی",
 
 html:`
 
-<div class="biggrid">
+<div class="grid">
 
-<div class="unit">
-<h4>📊 نرخ بهره</h4>
+<div class="item">
+
+<h4>
+📊 سیاست پولی
+</h4>
+
 <p>
-نرخ فعلی: 18%<br>
-نرخ بهره بالا تورم را کنترل می‌کند ولی رشد اقتصادی را کاهش می‌دهد.
+
+تورم:
+${game.inflation.toFixed(1)}%
+
+<br>
+
+نرخ بهره:
+18%
+
 </p>
-<button onclick="interest()">تغییر نرخ بهره</button>
+
+<button
+onclick="antiInflation()">
+
+برنامه ضدتورم - $10,000
+
+</button>
+
 </div>
 
-<div class="unit">
-<h4>💵 ذخایر ارزی</h4>
+
+<div class="item">
+
+<h4>
+💵 ذخایر ارزی
+</h4>
+
 <p>
-ذخایر ارزی: $38.4B<br>
-ذخایر برای بحران‌های اقتصادی حیاتی هستند.
+ذخایر برای مقابله با
+شوک‌های اقتصادی.
 </p>
-<button onclick="reserve()">افزایش ذخایر - $15,000</button>
+
+<button
+onclick="reserve()">
+
+افزایش ذخایر - $15,000
+
+</button>
+
 </div>
 
-<div class="unit">
-<h4>📉 کنترل تورم</h4>
+
+<div class="item">
+
+<h4>
+🏦 بانک توسعه
+</h4>
+
 <p>
-تورم فعلی: ${inflation.toFixed(1)}%
+تأمین مالی پروژه‌های
+زیرساختی بزرگ.
 </p>
-<button onclick="fightInflation()">برنامه ضدتورم - $10,000</button>
+
+<button
+onclick="developmentBank()">
+
+تأسیس بانک - $60,000
+
+</button>
+
 </div>
 
 </div>
+
 `
 
 },
 
-research:{
 
-title:"🔬 تحقیقات و فناوری",
+waterways:{
+
+title:"🌊 آبراه‌های استراتژیک جهان",
 
 html:`
 
-<div class="biggrid">
+<div class="grid">
 
-<div class="unit">
-<h4>رادار و سنسورها</h4>
-<p>افزایش آگاهی اطلاعاتی</p>
-<button onclick="research(12000,'رادار')">تحقیق - $12,000</button>
+${waterways.map(
+(w,i)=>`
+
+<div class="item">
+
+<h4>
+🌊 ${w.name}
+</h4>
+
+<p>
+
+کنترل:
+${w.owners}
+
+<br>
+
+عوارض:
+$${w.toll.toLocaleString()}
+
+</p>
+
+<button
+onclick="manageWaterway(${i})">
+
+مدیریت
+
+</button>
+
 </div>
 
-<div class="unit">
-<h4>هوش مصنوعی</h4>
-<p>بهبود مدیریت اقتصادی و نظامی</p>
-<button onclick="research(25000,'هوش مصنوعی')">تحقیق - $25,000</button>
-</div>
-
-<div class="unit">
-<h4>صنایع هوافضا</h4>
-<p>افزایش سطح فناوری هوایی</p>
-<button onclick="research(30000,'هوافضا')">تحقیق - $30,000</button>
-</div>
-
-<div class="unit">
-<h4>فناوری انرژی</h4>
-<p>کاهش مصرف منابع</p>
-<button onclick="research(18000,'انرژی')">تحقیق - $18,000</button>
-</div>
+`
+).join("")}
 
 </div>
+
 `
 
 },
 
-diplomacy:{
 
-title:"🤝 دیپلماسی جهانی",
+countries:{
+
+title:"🌍 کشورهای جهان",
 
 html:`
 
-<div class="biggrid">
+<p style="
+font-size:10px;
+color:#8da1b5;
+margin-bottom:12px;
+line-height:1.8">
 
-<div class="unit">
-<h4>🇨🇳 چین</h4>
-<p>روابط: 62 / 100<br>تجارت: بالا</p>
-<button onclick="diplomaticAction('چین')">مذاکره</button>
+نقشه شامل بیش از ۲۰۰ کشور، قلمرو و جزیره
+از داده جغرافیایی جهان است.
+روی هر کشور در نقشه کلیک کنید تا اطلاعات آن نمایش داده شود.
+
+</p>
+
+<div class="grid">
+
+${Object.entries(countryNames)
+.map(
+([code,name])=>`
+
+<div class="item">
+
+<h4>
+${name}
+</h4>
+
+<p>
+کد:
+${code}
+</p>
+
 </div>
 
-<div class="unit">
-<h4>🇷🇺 روسیه</h4>
-<p>روابط: 41 / 100<br>همکاری دفاعی: متوسط</p>
-<button onclick="diplomaticAction('روسیه')">مذاکره</button>
-</div>
-
-<div class="unit">
-<h4>🇺🇸 آمریکا</h4>
-<p>روابط: -25 / 100<br>تجارت: محدود</p>
-<button onclick="diplomaticAction('آمریکا')">مذاکره</button>
-</div>
-
-<div class="unit">
-<h4>🇹🇷 ترکیه</h4>
-<p>روابط: 48 / 100<br>مرز زمینی</p>
-<button onclick="diplomaticAction('ترکیه')">مذاکره</button>
-</div>
+`
+).join("")}
 
 </div>
+
+`
+
+},
+
+
+trade:{
+
+title:"🚢 تجارت جهانی",
+
+html:`
+
+<div class="grid">
+
+<div class="item">
+
+<h4>
+🛢 انرژی
+</h4>
+
+<p>
+نفت و گاز مهم‌ترین کالاهای
+راهبردی بازی هستند.
+</p>
+
+<button onclick="tradeEvent()">
+بازار انرژی
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+🌾 غذا
+</h4>
+
+<p>
+کشورهای کشاورزی‌محور
+می‌توانند صادرکننده غذا باشند.
+</p>
+
+<button onclick="foodTrade()">
+بازار غذا
+</button>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+🏭 کالاهای صنعتی
+</h4>
+
+<p>
+ظرفیت صنعتی بیشتر یعنی
+توان صادرات بیشتر.
+</p>
+
+<button onclick="industrialTrade()">
+بازار صنعتی
+</button>
+
+</div>
+
+</div>
+
 `
 
 }
@@ -1671,240 +3558,151 @@ html:`
 };
 
 
-/* =====================================================
-   OPEN PANEL
-===================================================== */
+if(!panels[id])
+return;
 
-function openPanel(id){
+openCustomModal(
+panels[id].title,
+panels[id].html
+);
 
-const p=panels[id];
+}
 
-if(!p)return;
 
-document.getElementById("modalTitle").textContent=p.title;
+/* =========================================================
+CUSTOM MODAL
+========================================================= */
 
-document.getElementById("modalBody").innerHTML=p.html;
+function openCustomModal(title,html){
 
-document.getElementById("modal").classList.add("show");
+document.getElementById(
+"modalTitle"
+).textContent=title;
+
+document.getElementById(
+"modalBody"
+).innerHTML=html;
+
+document.getElementById(
+"modal"
+).classList.add("show");
 
 }
 
 function closeModal(){
 
-document.getElementById("modal").classList.remove("show");
+document.getElementById(
+"modal"
+).classList.remove("show");
 
 }
 
-document.getElementById("modal").addEventListener("click",e=>{
+document.getElementById(
+"modal"
+).addEventListener(
+"click",
+e=>{
 
 if(e.target.id==="modal")
 closeModal();
 
-});
+}
+);
 
 
-/* =====================================================
-   BUILDING
-===================================================== */
+/* =========================================================
+BUILD SYSTEM
+========================================================= */
+
+const buildCosts={
+
+farm:12000,
+
+factory:25000,
+
+steel:22000,
+
+auto:30000,
+
+electronics:38000,
+
+refinery:42000,
+
+power:35000,
+
+port:45000,
+
+airport:40000,
+
+military:55000,
+
+aerospace:70000,
+
+drone:32000,
+
+defense:48000,
+
+university:28000
+
+};
+
 
 function build(type){
 
-let cost=25000;
+const cost=
+buildCosts[type] ||
+25000;
 
-if(type==="farm")cost=12000;
-if(type==="steel")cost=22000;
-if(type==="auto")cost=30000;
-if(type==="aero")cost=55000;
-if(type==="refinery")cost=42000;
-
-if(money<cost){
+if(game.money<cost){
 
 alert(
-"بودجه کافی نیست.\n"+
-"هزینه موردنیاز: $"+format(cost)
+"بودجه کافی نیست.\n\n"+
+"هزینه: $"+
+cost.toLocaleString()
 );
 
 return;
 
 }
 
-money-=cost;
+game.money-=cost;
 
-industry+=
-type==="farm"?1:
+game.industry+=
 type==="steel"?4:
 type==="auto"?5:
-type==="aero"?3:
-type==="refinery"?2:2;
+type==="electronics"?4:
+type==="factory"?3:
+type==="power"?2:
+type==="aerospace"?3:
+type==="military"?2:
+type==="university"?1:
+1;
+
+if(type==="farm")
+game.food+=900;
+
+if(type==="refinery")
+game.oil+=600;
+
+game.buildings[type]=
+(game.buildings[type]||0)+1;
 
 addEvent(
-"<strong>ساخت‌وساز:</strong> پروژه جدید تکمیل شد."
+"<strong>زیرساخت:</strong> پروژه جدید ساخته شد."
 );
 
-updateResources();
-
-openPanel("industry");
+updateUI();
 
 }
 
 
-/* =====================================================
-   MILITARY PURCHASES
-===================================================== */
+/* =========================================================
+RESEARCH
+========================================================= */
 
-function buyUnit(type){
+function research(){
 
-const prices={
-ground:18000,
-air:32000,
-heli:16000,
-drone:7500,
-defense:20000,
-missile:22000,
-ship:70000,
-frigate:35000,
-sub:80000
-};
-
-const cost=prices[type]||15000;
-
-if(money<cost){
-
-alert(
-"بودجه نظامی کافی نیست.\nهزینه: $"+
-format(cost)
-);
-
-return;
-
-}
-
-money-=cost;
-
-addEvent(
-"<strong>وزارت دفاع:</strong> تجهیزات جدید به نیروهای مسلح اضافه شد."
-);
-
-updateResources();
-
-}
-
-
-/* =====================================================
-   AIRCRAFT
-===================================================== */
-
-function buyPlane(name,cost){
-
-if(money<cost){
-
-alert("بودجه کافی نیست.");
-
-return;
-
-}
-
-money-=cost;
-
-addEvent(
-`<strong>نیروی هوایی:</strong> یک اسکادران ${name} سفارش داده شد.`
-);
-
-updateResources();
-
-}
-
-
-/* =====================================================
-   CENTRAL BANK
-===================================================== */
-
-function changeTax(){
-
-if(money<1000){
-
-alert("اجرای اصلاح مالیاتی هزینه اداری دارد.");
-
-return;
-
-}
-
-money-=1000;
-
-addEvent(
-"<strong>اقتصاد:</strong> نرخ مالیات افزایش یافت."
-);
-
-updateResources();
-
-}
-
-function interest(){
-
-inflation-=1.2;
-
-if(inflation<5)inflation=5;
-
-addEvent(
-"<strong>بانک مرکزی:</strong> سیاست پولی انقباضی اجرا شد."
-);
-
-updateResources();
-
-}
-
-function reserve(){
-
-if(money<15000){
-
-alert("بودجه کافی برای افزایش ذخایر ارزی وجود ندارد.");
-
-return;
-
-}
-
-money-=15000;
-
-addEvent(
-"<strong>بانک مرکزی:</strong> ذخایر ارزی افزایش یافت."
-);
-
-updateResources();
-
-}
-
-function fightInflation(){
-
-if(money<10000){
-
-alert("بودجه کافی نیست.");
-
-return;
-
-}
-
-money-=10000;
-
-inflation-=2;
-
-if(inflation<5)inflation=5;
-
-addEvent(
-"<strong>بانک مرکزی:</strong> برنامه ضدتورم اجرا شد."
-);
-
-updateResources();
-
-}
-
-
-/* =====================================================
-   RESEARCH
-===================================================== */
-
-function research(cost,name){
-
-if(money<cost){
+if(game.money<20000){
 
 alert("بودجه تحقیقاتی کافی نیست.");
 
@@ -1912,32 +3710,509 @@ return;
 
 }
 
-money-=cost;
+game.money-=20000;
+
+game.industry+=2;
 
 addEvent(
-`<strong>تحقیقات:</strong> پروژه ${name} آغاز شد.`
+"<strong>دانشگاه:</strong> پروژه تحقیقاتی جدید آغاز شد."
 );
 
-updateResources();
+updateUI();
+
+}
+
+function researchAI(){
+
+if(game.money<35000){
+
+alert("بودجه کافی نیست.");
+
+return;
+
+}
+
+game.money-=35000;
+
+addEvent(
+"<strong>فناوری:</strong> پروژه هوش مصنوعی آغاز شد."
+);
+
+updateUI();
+
+}
+
+function researchEnergy(){
+
+if(game.money<25000){
+
+alert("بودجه کافی نیست.");
+
+return;
+
+}
+
+game.money-=25000;
+
+game.oil+=200;
+
+addEvent(
+"<strong>انرژی:</strong> فناوری بهره‌وری انرژی توسعه یافت."
+);
+
+updateUI();
 
 }
 
 
-/* =====================================================
-   DIPLOMACY
-===================================================== */
+/* =========================================================
+BANK
+========================================================= */
 
-function diplomaticAction(country){
+function antiInflation(){
+
+if(game.money<10000){
+
+alert("بودجه کافی نیست.");
+
+return;
+
+}
+
+game.money-=10000;
+
+game.inflation-=1.8;
+
+if(game.inflation<4)
+game.inflation=4;
 
 addEvent(
-`<strong>دیپلماسی:</strong> مذاکره با ${country} آغاز شد.`
+"<strong>بانک مرکزی:</strong> برنامه ضدتورم اجرا شد."
+);
+
+updateUI();
+
+}
+
+function reserve(){
+
+if(game.money<15000){
+
+alert("بودجه کافی نیست.");
+
+return;
+
+}
+
+game.money-=15000;
+
+addEvent(
+"<strong>بانک مرکزی:</strong> ذخایر ارزی افزایش یافت."
+);
+
+updateUI();
+
+}
+
+function developmentBank(){
+
+if(game.money<60000){
+
+alert("سرمایه کافی نیست.");
+
+return;
+
+}
+
+game.money-=60000;
+
+addEvent(
+"<strong>بانک مرکزی:</strong> بانک توسعه تأسیس شد."
+);
+
+updateUI();
+
+}
+
+
+/* =========================================================
+DIPLOMACY
+========================================================= */
+
+function tradeCountry(){
+
+if(game.money<5000){
+
+alert("بودجه مذاکره تجاری کافی نیست.");
+
+return;
+
+}
+
+game.money-=5000;
+
+addEvent(
+`<strong>تجارت:</strong>
+قرارداد تجاری با
+${game.selectedCountry}
+امضا شد.`
+);
+
+updateUI();
+
+}
+
+function diplomacy(){
+
+addEvent(
+`<strong>دیپلماسی:</strong>
+مذاکره با
+${game.selectedCountry}
+آغاز شد.`
 );
 
 }
 
-updateResources();
+function inspectCountry(){
+
+openCustomModal(
+
+"🔎 اطلاعات کامل",
+
+`
+
+<div class="grid">
+
+<div class="item">
+
+<h4>
+کشور
+</h4>
+
+<p>
+
+${game.selectedCountry}
+
+<br>
+
+GDP:
+${document.getElementById("gdp").textContent}
+
+<br>
+
+جمعیت:
+${document.getElementById("population").textContent}
+
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+قدرت
+</h4>
+
+<p>
+
+قدرت نظامی:
+${document.getElementById("military").textContent}
+
+<br>
+
+اقتصاد:
+${document.getElementById("economy").textContent}
+
+<br>
+
+ثبات:
+${document.getElementById("stability").textContent}
+
+</p>
+
+</div>
+
+</div>
+
+`
+
+);
+
+}
+
+function militaryAction(){
+
+addEvent(
+`<strong>ارتش:</strong>
+وضعیت نظامی در رابطه با
+${game.selectedCountry}
+بررسی شد.`
+);
+
+}
+
+
+/* =========================================================
+TRADE
+========================================================= */
+
+function tradeEvent(){
+
+addEvent(
+"<strong>بازار انرژی:</strong> قیمت جهانی نفت تغییر کرد."
+);
+
+}
+
+function foodTrade(){
+
+if(game.food<500){
+
+alert("ذخیره غذایی کافی نیست.");
+
+return;
+
+}
+
+game.food-=500;
+
+game.money+=1500;
+
+addEvent(
+"<strong>کشاورزی:</strong> محموله غذایی صادر شد."
+);
+
+updateUI();
+
+}
+
+function industrialTrade(){
+
+if(game.industry<20){
+
+alert("ظرفیت صنعتی کافی نیست.");
+
+return;
+
+}
+
+game.money+=2500;
+
+addEvent(
+"<strong>صنعت:</strong> کالاهای صنعتی صادر شدند."
+);
+
+updateUI();
+
+}
+
+
+/* =========================================================
+TURN
+========================================================= */
+
+const monthNames=[
+"ژانویه",
+"فوریه",
+"مارس",
+"آوریل",
+"مه",
+"ژوئن",
+"ژوئیه",
+"اوت",
+"سپتامبر",
+"اکتبر",
+"نوامبر",
+"دسامبر"
+];
+
+
+function nextTurn(){
+
+game.month++;
+
+if(game.month>12){
+
+game.month=1;
+
+game.year++;
+
+}
+
+
+/*
+درآمد بسیار کنترل‌شده است.
+هزینه زیرساخت و نگهداری باعث می‌شود
+بازیکن مجبور شود اقتصاد را توسعه دهد.
+*/
+
+const tax=4300;
+
+const industryIncome=
+1700+
+game.industry*18;
+
+const tradeIncome=
+Math.floor(
+game.buildings.port*
+350
+);
+
+const maintenance=
+2500+
+game.industry*12;
+
+const income=
+tax+
+industryIncome+
+tradeIncome;
+
+const net=
+income-maintenance;
+
+game.money+=net;
+
+game.oil-=180;
+
+game.food-=320;
+
+if(game.oil<0)
+game.oil=0;
+
+if(game.food<0)
+game.food=0;
+
+
+/* تورم */
+
+if(net>12000)
+game.inflation+=.35;
+else
+game.inflation-=.08;
+
+if(game.inflation<4)
+game.inflation=4;
+
+if(game.inflation>45)
+game.inflation=45;
+
+
+document.getElementById(
+"date"
+).textContent=
+monthNames[game.month-1]
++" "
++game.year;
+
+
+addEvent(
+
+`<strong>گزارش ماهانه:</strong>
+درآمد:
+$${income.toLocaleString()}
+|
+هزینه:
+$${maintenance.toLocaleString()}
+|
+خالص:
+$${net.toLocaleString()}`
+
+);
+
+updateUI();
+
+}
+
+
+/* =========================================================
+UI
+========================================================= */
+
+function updateUI(){
+
+document.getElementById(
+"money"
+).textContent=
+"$"+
+Math.floor(game.money)
+.toLocaleString();
+
+document.getElementById(
+"oil"
+).textContent=
+Math.floor(game.oil)
+.toLocaleString();
+
+document.getElementById(
+"food"
+).textContent=
+Math.floor(game.food)
+.toLocaleString();
+
+document.getElementById(
+"industry"
+).textContent=
+Math.floor(game.industry);
+
+document.getElementById(
+"industrySide"
+).textContent=
+Math.floor(game.industry);
+
+document.getElementById(
+"industryBar"
+).style.width=
+Math.min(
+100,
+game.industry
+)+"%";
+
+document.getElementById(
+"inflation"
+).textContent=
+game.inflation.toFixed(1)
++"%";
+
+}
+
+
+/* =========================================================
+EVENT LOG
+========================================================= */
+
+function addEvent(text){
+
+const box=
+document.getElementById("events");
+
+const div=
+document.createElement("div");
+
+div.className="event";
+
+div.innerHTML=text;
+
+box.appendChild(div);
+
+while(box.children.length>8)
+box.removeChild(box.children[1]);
+
+}
+
+
+/* =========================================================
+INITIAL
+========================================================= */
+
+updateUI();
+
+selectCountry(
+"IRN",
+"ایران"
+);
 
 </script>
 
 </body>
-    </html>
+   </html>
