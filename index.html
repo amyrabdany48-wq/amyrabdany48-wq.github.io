@@ -2,408 +2,382 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Empire Horizon</title>
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>World Map</title>
 
 <style>
+
 *{
     box-sizing:border-box;
     -webkit-tap-highlight-color:transparent;
 }
 
-body{
+html,body{
     margin:0;
-    background:#08131d;
-    color:#fff;
-    font-family:Tahoma,Arial,sans-serif;
-}
-
-/* =========================
-   صفحه انتخاب کشور
-========================= */
-
-#countryPage{
-    min-height:100vh;
-    padding:20px;
-}
-
-.logo{
-    text-align:center;
-    font-size:28px;
-    font-weight:bold;
-    color:#4bd7ff;
-    margin:15px 0 5px;
-}
-
-.desc{
-    text-align:center;
-    color:#8fa8ba;
-    font-size:12px;
-    margin-bottom:20px;
-}
-
-.search{
     width:100%;
-    max-width:600px;
-    display:block;
-    margin:auto;
-    padding:12px;
-    background:#0c202f;
-    border:1px solid #27465c;
+    height:100%;
+    overflow:hidden;
+    font-family:Tahoma,Arial,sans-serif;
+    background:#08131d;
     color:white;
-    border-radius:8px;
-    outline:none;
 }
 
-.countries{
-    max-width:900px;
-    margin:15px auto;
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+#app{
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+}
+
+/* -----------------------------
+   نوار بالا
+----------------------------- */
+
+.topbar{
+    height:64px;
+    flex-shrink:0;
+    background:#0a1b28;
+    border-bottom:1px solid #29475b;
+    display:flex;
+    align-items:center;
     gap:7px;
+    padding:7px;
+    z-index:10;
 }
 
-.country{
-    background:#0c2233;
-    border:1px solid #27485f;
-    color:white;
-    border-radius:8px;
-    padding:12px 5px;
-    min-height:70px;
-}
-
-.country:hover{
-    background:#12344b;
-}
-
-.flag{
-    font-size:22px;
-    display:block;
-    margin-bottom:5px;
-}
-
-
-/* =========================
-   بازی
-========================= */
-
-#game{
-    display:none;
-    min-height:100vh;
-}
-
-.top{
-    padding:6px;
-    background:#091923;
-    border-bottom:1px solid #254357;
-}
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(6,1fr);
-    gap:4px;
-}
-
-.stat{
-    background:#0c2232;
-    border:1px solid #1d3c51;
+.info{
+    flex:1;
+    min-width:0;
+    background:#102a3b;
+    border:1px solid #294a5e;
     border-radius:7px;
+    padding:5px;
     text-align:center;
-    padding:5px 2px;
     font-size:9px;
 }
 
-.stat b{
+.info b{
     display:block;
-    font-size:12px;
     margin-top:3px;
+    font-size:11px;
 }
 
+/* -----------------------------
+   بخش نقشه
+----------------------------- */
 
-/* =========================
-   نقشه ساده
-========================= */
-
-.mapBox{
+#mapArea{
     position:relative;
-    background:#091b27;
+    flex:1;
+    min-height:0;
     overflow:hidden;
+    background:#b8dced;
 }
 
 #map{
     width:100%;
-    height:650px;
+    height:100%;
     display:block;
     touch-action:none;
+    cursor:grab;
 }
 
-/*
- فقط خطوط ساده
- هیچ شکل تزئینی
- هیچ دایره
- هیچ مستطیل برای کشورها
-*/
+#map.dragging{
+    cursor:grabbing;
+}
 
-.countryLine{
-    fill:#10293a;
-    stroke:#7191a4;
-    stroke-width:1.4;
+/* آب */
+
+.ocean{
+    fill:#b8dced;
+}
+
+/* کشور */
+
+.country{
+    stroke:#263c47;
+    stroke-width:.55;
     vector-effect:non-scaling-stroke;
     cursor:pointer;
+    transition:filter .1s;
 }
 
-.countryLine:hover{
-    fill:#173d52;
+.country:hover{
+    filter:brightness(1.15);
 }
 
-.countryName{
-    fill:#dceaf2;
-    font-size:11px;
-    text-anchor:middle;
+/* کشور انتخاب شده */
+
+.country.selected{
+    stroke:#ffffff;
+    stroke-width:2;
+    vector-effect:non-scaling-stroke;
+}
+
+/* نام کشور */
+
+.label{
     pointer-events:none;
+    user-select:none;
+    fill:#182b34;
+    font-size:9px;
+    font-weight:bold;
+    text-anchor:middle;
+    paint-order:stroke;
+    stroke:#ffffff;
+    stroke-width:2px;
+    stroke-opacity:.55;
 }
 
-
-/* =========================
+/* -----------------------------
    کنترل نقشه
-========================= */
+----------------------------- */
 
-.mapControls{
+.mapButtons{
     position:absolute;
-    top:8px;
     left:8px;
+    top:8px;
     display:flex;
+    flex-direction:column;
     gap:5px;
     z-index:5;
 }
 
-.mapControls button{
+.mapButtons button{
     width:38px;
-    height:35px;
-    background:#0c2638;
-    color:white;
-    border:1px solid #31556c;
+    height:38px;
     border-radius:7px;
+    border:1px solid #395b6d;
+    background:#092131e8;
+    color:white;
+    font-size:18px;
 }
 
-
-/* =========================
-   منوی پایین
-========================= */
-
-.menu{
-    padding:8px;
-    background:#081722;
-    border-top:1px solid #254357;
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:5px;
+.mapButtons button:active{
+    transform:scale(.94);
 }
 
-.menu button{
-    padding:9px 4px;
-    background:#0d293c;
-    color:white;
-    border:1px solid #294b60;
-    border-radius:7px;
+/* -----------------------------
+   پنل کشور
+----------------------------- */
+
+#countryPanel{
+    position:absolute;
+    left:10px;
+    bottom:10px;
+    width:240px;
+    max-width:calc(100% - 20px);
+    background:#091c2aeF;
+    border:1px solid #36566a;
+    border-radius:10px;
+    padding:10px;
+    display:none;
+    z-index:6;
+    box-shadow:0 8px 25px #0008;
+}
+
+#countryPanel h3{
+    margin:0 0 8px;
+    font-size:15px;
+}
+
+.countryRow{
+    display:flex;
+    justify-content:space-between;
+    background:#102b3c;
+    border-radius:6px;
+    padding:7px;
+    margin-top:5px;
     font-size:10px;
 }
 
+/* -----------------------------
+   پایین
+----------------------------- */
 
-/* =========================
-   پنل
-========================= */
+.bottom{
+    height:55px;
+    flex-shrink:0;
+    background:#081722;
+    border-top:1px solid #294456;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:5px;
+    padding:6px;
+}
 
-#panel{
-    display:none;
-    position:fixed;
+.bottom button{
+    border:1px solid #294a5d;
+    border-radius:7px;
+    background:#102b3d;
+    color:white;
+    font-size:10px;
+}
+
+.bottom button:active{
+    transform:scale(.97);
+}
+
+/* -----------------------------
+   لودینگ
+----------------------------- */
+
+#loading{
+    position:absolute;
     inset:0;
-    background:#000b;
-    z-index:50;
+    z-index:30;
+    background:#091721;
+    display:flex;
     align-items:center;
     justify-content:center;
-    padding:12px;
+    flex-direction:column;
+    gap:12px;
 }
 
-.panel{
-    width:min(650px,100%);
-    max-height:90vh;
-    overflow:auto;
-    background:#091c2b;
-    border:1px solid #31536b;
-    border-radius:10px;
-    padding:13px;
+.loader{
+    width:35px;
+    height:35px;
+    border:3px solid #345365;
+    border-top-color:#5bd5ff;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
 }
 
-.close{
-    float:left;
-    background:#47232b;
-    color:white;
-    border:0;
-    padding:6px 10px;
-    border-radius:6px;
-}
-
-.row{
-    background:#0e293c;
-    padding:9px;
-    border-radius:6px;
-    margin:5px 0;
-    display:flex;
-    justify-content:space-between;
-    font-size:11px;
-}
-
-.actions{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:5px;
-    margin-top:8px;
-}
-
-.actions button{
-    padding:10px;
-    background:#123149;
-    color:white;
-    border:1px solid #31546a;
-    border-radius:7px;
-}
-
-
-/* =========================
-   موبایل
-========================= */
-
-@media(max-width:700px){
-
-    .stats{
-        grid-template-columns:repeat(3,1fr);
-    }
-
-    #map{
-        height:500px;
-    }
-
-    .menu{
-        grid-template-columns:repeat(4,1fr);
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
     }
 }
 
-@media(max-width:430px){
-
-    #map{
-        height:420px;
-    }
-
-    .menu button{
-        font-size:9px;
-        padding:8px 2px;
-    }
-
-    .countries{
-        grid-template-columns:repeat(2,1fr);
-    }
+#loadingText{
+    font-size:12px;
+    color:#b7ccd8;
 }
+
+/* -----------------------------
+   صفحه خطا
+----------------------------- */
+
+#error{
+    display:none;
+    position:absolute;
+    inset:0;
+    z-index:40;
+    background:#091721;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:25px;
+}
+
+#error div{
+    max-width:400px;
+}
+
+#error h2{
+    color:#ffb1b1;
+}
+
+#error p{
+    font-size:12px;
+    color:#b9c9d1;
+    line-height:1.8;
+}
+
+@media(max-width:600px){
+
+    .topbar{
+        height:58px;
+    }
+
+    .info{
+        font-size:8px;
+    }
+
+    .info b{
+        font-size:10px;
+    }
+
+    .bottom{
+        height:52px;
+    }
+
+    #countryPanel{
+        width:220px;
+    }
+
+}
+
 </style>
 </head>
 
 <body>
 
+<div id="app">
 
-<!-- =====================================================
-     انتخاب کشور
-===================================================== -->
+    <!-- ==========================
+         اطلاعات بالا
+    =========================== -->
 
-<div id="countryPage">
+    <div class="topbar">
 
-    <div class="logo">
-        🌍 EMPIRE HORIZON
-    </div>
+        <div class="info">
+            💰 پول
+            <b id="money">50,000</b>
+        </div>
 
-    <div class="desc">
-        کشور خود را انتخاب کنید
-    </div>
+        <div class="info">
+            🏭 تولید
+            <b id="production">100</b>
+        </div>
 
-    <input
-        id="search"
-        class="search"
-        placeholder="جستجوی کشور..."
-        oninput="searchCountry()"
-    >
+        <div class="info">
+            📈 تورم
+            <b id="inflation">4%</b>
+        </div>
 
-    <div
-        id="countries"
-        class="countries"
-    ></div>
-
-</div>
-
-
-
-<!-- =====================================================
-     GAME
-===================================================== -->
-
-<div id="game">
-
-    <div class="top">
-
-        <div class="stats">
-
-            <div class="stat">
-                💰 پول
-                <b id="money">50000</b>
-            </div>
-
-            <div class="stat">
-                🏭 تولید
-                <b id="production">100</b>
-            </div>
-
-            <div class="stat">
-                📈 تورم
-                <b id="inflation">4%</b>
-            </div>
-
-            <div class="stat">
-                ⛏ منابع
-                <b id="resources">100</b>
-            </div>
-
-            <div class="stat">
-                🛡 ارتش
-                <b id="army">25</b>
-            </div>
-
-            <div class="stat">
-                📅 زمان
-                <b id="time">روز 1</b>
-            </div>
-
+        <div class="info">
+            📅 زمان
+            <b id="date">روز 1</b>
         </div>
 
     </div>
 
 
-    <!-- =========================
-         MAP
-    ========================= -->
+    <!-- ==========================
+         نقشه
+    =========================== -->
 
-    <div class="mapBox">
+    <div id="mapArea">
 
-        <div class="mapControls">
+        <div id="loading">
 
-            <button onclick="zoom(1.15)">
-                +
-            </button>
+            <div class="loader"></div>
 
-            <button onclick="zoom(.87)">
-                −
-            </button>
+            <div id="loadingText">
+                در حال ساخت نقشه جهان...
+            </div>
 
-            <button onclick="resetMap()">
-                ⟳
-            </button>
+        </div>
+
+
+        <div id="error">
+
+            <div>
+
+                <h2>نقشه بارگذاری نشد</h2>
+
+                <p>
+                    اتصال اینترنت را بررسی کن و دوباره صفحه را باز کن.
+                </p>
+
+                <button onclick="location.reload()">
+                    تلاش دوباره
+                </button>
+
+            </div>
 
         </div>
 
@@ -411,1458 +385,784 @@ body{
         <svg
             id="map"
             viewBox="0 0 1200 650"
-            preserveAspectRatio="xMidYMid meet"
-        >
-
-            <!--
-                نقشه فقط از خطوط مرزی ساده تشکیل شده.
-            -->
-
-            <g id="world">
-
-
-                <!-- آمریکای شمالی -->
-
-                <path
-                    class="countryLine"
-                    data-name="کانادا"
-                    onclick="countryClick('کانادا')"
-                    d="
-                    M70 120
-                    L120 80
-                    L190 65
-                    L270 80
-                    L330 120
-                    L300 170
-                    L250 160
-                    L205 180
-                    L150 160
-                    L100 175
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="200"
-                    y="125"
-                >
-                    کانادا
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="آمریکا"
-                    onclick="countryClick('آمریکا')"
-                    d="
-                    M100 175
-                    L150 160
-                    L205 180
-                    L250 160
-                    L300 170
-                    L290 225
-                    L250 245
-                    L205 235
-                    L165 250
-                    L125 220
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="205"
-                    y="205"
-                >
-                    آمریکا
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="مکزیک"
-                    onclick="countryClick('مکزیک')"
-                    d="
-                    M165 250
-                    L205 235
-                    L250 245
-                    L275 275
-                    L245 315
-                    L205 305
-                    L175 285
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="220"
-                    y="275"
-                >
-                    مکزیک
-                </text>
-
-
-
-                <!-- آمریکای جنوبی -->
-
-                <path
-                    class="countryLine"
-                    data-name="برزیل"
-                    onclick="countryClick('برزیل')"
-                    d="
-                    M330 320
-                    L380 285
-                    L450 300
-                    L490 345
-                    L480 405
-                    L440 455
-                    L390 470
-                    L350 430
-                    L325 380
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="405"
-                    y="375"
-                >
-                    برزیل
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="آرژانتین"
-                    onclick="countryClick('آرژانتین')"
-                    d="
-                    M365 450
-                    L410 460
-                    L420 510
-                    L395 560
-                    L360 535
-                    L345 490
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="385"
-                    y="500"
-                >
-                    آرژانتین
-                </text>
-
-
-
-                <!-- اروپا -->
-
-                <path
-                    class="countryLine"
-                    data-name="انگلستان"
-                    onclick="countryClick('انگلستان')"
-                    d="
-                    M535 150
-                    L555 125
-                    L570 150
-                    L560 185
-                    L540 190
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="550"
-                    y="145"
-                >
-                    انگلیس
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="فرانسه"
-                    onclick="countryClick('فرانسه')"
-                    d="
-                    M540 190
-                    L585 180
-                    L615 205
-                    L600 245
-                    L550 240
-                    L530 215
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="570"
-                    y="215"
-                >
-                    فرانسه
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="آلمان"
-                    onclick="countryClick('آلمان')"
-                    d="
-                    M615 175
-                    L650 175
-                    L670 205
-                    L650 235
-                    L615 225
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="640"
-                    y="205"
-                >
-                    آلمان
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="اسپانیا"
-                    onclick="countryClick('اسپانیا')"
-                    d="
-                    M510 240
-                    L550 238
-                    L575 265
-                    L535 285
-                    L500 265
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="535"
-                    y="260"
-                >
-                    اسپانیا
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="ایتالیا"
-                    onclick="countryClick('ایتالیا')"
-                    d="
-                    M630 240
-                    L660 235
-                    L685 270
-                    L665 310
-                    L645 280
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="655"
-                    y="270"
-                >
-                    ایتالیا
-                </text>
-
-
-
-                <!-- روسیه -->
-
-                <path
-                    class="countryLine"
-                    data-name="روسیه"
-                    onclick="countryClick('روسیه')"
-                    d="
-                    M650 90
-                    L720 55
-                    L810 60
-                    L900 75
-                    L990 110
-                    L1040 145
-                    L970 170
-                    L890 150
-                    L810 165
-                    L740 150
-                    L680 130
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="840"
-                    y="115"
-                >
-                    روسیه
-                </text>
-
-
-
-                <!-- خاورمیانه -->
-
-                <path
-                    class="countryLine"
-                    data-name="ترکیه"
-                    onclick="countryClick('ترکیه')"
-                    d="
-                    M650 225
-                    L710 215
-                    L750 240
-                    L710 265
-                    L660 255
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="700"
-                    y="240"
-                >
-                    ترکیه
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="عراق"
-                    onclick="countryClick('عراق')"
-                    d="
-                    M690 270
-                    L730 260
-                    L755 300
-                    L725 330
-                    L690 315
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="720"
-                    y="295"
-                >
-                    عراق
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="ایران"
-                    onclick="countryClick('ایران')"
-                    d="
-                    M735 255
-                    L790 240
-                    L830 270
-                    L810 325
-                    L755 330
-                    L725 295
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="775"
-                    y="285"
-                >
-                    ایران
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="عربستان"
-                    onclick="countryClick('عربستان')"
-                    d="
-                    M710 330
-                    L770 315
-                    L815 350
-                    L785 415
-                    L730 400
-                    L700 360
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="755"
-                    y="365"
-                >
-                    عربستان
-                </text>
-
-
-
-                <!-- آسیا -->
-
-                <path
-                    class="countryLine"
-                    data-name="چین"
-                    onclick="countryClick('چین')"
-                    d="
-                    M825 180
-                    L900 165
-                    L965 200
-                    L950 275
-                    L890 300
-                    L835 270
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="895"
-                    y="235"
-                >
-                    چین
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="هند"
-                    onclick="countryClick('هند')"
-                    d="
-                    M825 315
-                    L875 300
-                    L905 350
-                    L880 430
-                    L840 390
-                    L815 345
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="855"
-                    y="350"
-                >
-                    هند
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="ژاپن"
-                    onclick="countryClick('ژاپن')"
-                    d="
-                    M1000 220
-                    L1020 205
-                    L1035 240
-                    L1015 270
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="1018"
-                    y="225"
-                >
-                    ژاپن
-                </text>
-
-
-
-                <!-- آفریقا -->
-
-                <path
-                    class="countryLine"
-                    data-name="مصر"
-                    onclick="countryClick('مصر')"
-                    d="
-                    M630 280
-                    L675 270
-                    L705 300
-                    L690 350
-                    L650 365
-                    L625 330
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="665"
-                    y="320"
-                >
-                    مصر
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="الجزایر"
-                    onclick="countryClick('الجزایر')"
-                    d="
-                    M545 275
-                    L625 270
-                    L640 315
-                    L600 345
-                    L550 325
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="590"
-                    y="305"
-                >
-                    الجزایر
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="نیجریه"
-                    onclick="countryClick('نیجریه')"
-                    d="
-                    M555 350
-                    L610 340
-                    L630 390
-                    L590 420
-                    L550 395
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="590"
-                    y="380"
-                >
-                    نیجریه
-                </text>
-
-
-                <path
-                    class="countryLine"
-                    data-name="آفریقای جنوبی"
-                    onclick="countryClick('آفریقای جنوبی')"
-                    d="
-                    M600 450
-                    L655 440
-                    L690 485
-                    L660 540
-                    L610 520
-                    L585 480
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="635"
-                    y="490"
-                >
-                    آفریقای جنوبی
-                </text>
-
-
-
-                <!-- استرالیا -->
-
-                <path
-                    class="countryLine"
-                    data-name="استرالیا"
-                    onclick="countryClick('استرالیا')"
-                    d="
-                    M900 470
-                    L970 445
-                    L1045 465
-                    L1080 515
-                    L1040 560
-                    L960 555
-                    L900 520
-                    Z
-                    "
-                />
-
-                <text
-                    class="countryName"
-                    x="985"
-                    y="510"
-                >
-                    استرالیا
-                </text>
-
-            </g>
+            preserveAspectRatio="xMidYMid meet">
+
+            <rect
+                class="ocean"
+                x="0"
+                y="0"
+                width="1200"
+                height="650">
+            </rect>
+
+            <g id="world"></g>
+
+            <g id="labels"></g>
 
         </svg>
 
+
+        <!-- کنترل -->
+
+        <div class="mapButtons">
+
+            <button id="zoomIn">+</button>
+
+            <button id="zoomOut">−</button>
+
+            <button id="reset">⌂</button>
+
+        </div>
+
+
+        <!-- اطلاعات کشور -->
+
+        <div id="countryPanel">
+
+            <h3 id="selectedName">
+                کشور
+            </h3>
+
+            <div class="countryRow">
+                <span>جمعیت</span>
+                <b id="population">---</b>
+            </div>
+
+            <div class="countryRow">
+                <span>اقتصاد</span>
+                <b id="economy">---</b>
+            </div>
+
+            <div class="countryRow">
+                <span>تورم</span>
+                <b id="countryInflation">---</b>
+            </div>
+
+        </div>
+
     </div>
 
 
-    <!-- =========================
-         منو
-    ========================= -->
+    <!-- ==========================
+         پایین
+    =========================== -->
 
-    <div class="menu">
+    <div class="bottom">
 
-        <button onclick="army()">
-            🛡 ارتش
-        </button>
-
-        <button onclick="store()">
-            🛒 فروشگاه
-        </button>
-
-        <button onclick="economy()">
+        <button onclick="alert('بخش اقتصاد در نسخه بعدی')">
             💰 اقتصاد
         </button>
 
-        <button onclick="world()">
-            🌍 جهان
+        <button onclick="alert('بخش کشورها در نسخه بعدی')">
+            🌍 کشورها
+        </button>
+
+        <button onclick="alert('بخش دیپلماسی در نسخه بعدی')">
+            🤝 دیپلماسی
+        </button>
+
+        <button onclick="alert('بخش مدیریت در نسخه بعدی')">
+            ⚙️ مدیریت
         </button>
 
     </div>
 
 </div>
-
-
-
-<!-- =====================================================
-     PANEL
-===================================================== -->
-
-<div id="panel">
-
-    <div class="panel">
-
-        <button
-            class="close"
-            onclick="closePanel()"
-        >
-            ✕
-        </button>
-
-        <div id="panelContent"></div>
-
-    </div>
-
-</div>
-
 
 
 <script>
 
-/* =====================================================
- کشورها
-===================================================== */
+/* =========================================================
+   تنظیمات نقشه
+========================================================= */
 
-const countries=[
-"ایران",
-"عراق",
-"افغانستان",
-"پاکستان",
-"ترکیه",
-"آمریکا",
-"کانادا",
-"مکزیک",
-"برزیل",
-"آرژانتین",
-"انگلستان",
-"فرانسه",
-"آلمان",
-"ایتالیا",
-"اسپانیا",
-"روسیه",
-"چین",
-"ژاپن",
-"هند",
-"کره جنوبی",
-"کره شمالی",
-"مصر",
-"الجزایر",
-"نیجریه",
-"آفریقای جنوبی",
-"عربستان",
-"امارات",
-"قطر",
-"عمان",
-"سوریه",
-"اوکراین",
-"لهستان",
-"سوئد",
-"نروژ",
-"فنلاند",
-"یونان",
-"هلند",
-"بلژیک",
-"سوئیس",
-"اتریش",
-"استرالیا",
-"نیوزیلند",
-"اندونزی",
-"ویتنام",
-"تایلند",
-"قزاقستان",
-"مغولستان",
-"شیلی",
-"پرو",
-"کلمبیا",
-"ونزوئلا"
+/*
+ داده واقعی مرز کشورها.
+
+ این فایل بر پایه Natural Earth است.
+ نسخه 50m برای بازی سبک‌تر انتخاب شده.
+*/
+
+const GEO_URL =
+"https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson/ne_50m_admin_0_countries.geojson";
+
+
+/* =========================================================
+   عناصر
+========================================================= */
+
+const svg =
+    document.getElementById("map");
+
+const world =
+    document.getElementById("world");
+
+const labels =
+    document.getElementById("labels");
+
+const loading =
+    document.getElementById("loading");
+
+const errorBox =
+    document.getElementById("error");
+
+
+/* =========================================================
+   رنگ کشورها
+========================================================= */
+
+const colors = [
+
+"#4e79a7",
+"#59a14f",
+"#e15759",
+"#f28e2b",
+"#b07aa1",
+"#76b7b2",
+"#edc948",
+"#ff9da7",
+"#9c755f",
+"#bab0ab",
+"#2f6b8a",
+"#3d8b5a",
+"#a84d4d",
+"#7c5aa6",
+"#c47d22",
+"#4c9a9a",
+"#8c6d31",
+"#6b7c93",
+"#a05a5a",
+"#527a5c"
 ];
 
 
-/* =====================================================
- بازی
-===================================================== */
+/* =========================================================
+   تبدیل طول و عرض جغرافیایی به صفحه
+========================================================= */
 
-let game={
-    country:"",
-    money:50000,
-    production:100,
-    inflation:4,
-    resources:100,
-    army:25,
-    day:1,
-    month:1,
-    year:2026,
-    paused:false
-};
+function project(lon,lat){
 
+    /*
+       نمایش ساده Mercator
 
-/* =====================================================
- ساخت لیست کشورها
-===================================================== */
+       طول جغرافیایی:
+       -180 تا 180
 
-function renderCountries(){
+       عرض جغرافیایی:
+       حدود -85 تا 85
+    */
 
-    const box=
-        document.getElementById("countries");
+    const x =
+        (lon + 180) / 360 * 1200;
 
-    box.innerHTML="";
 
-    countries.forEach(
-        country=>{
+    let rad =
+        lat * Math.PI / 180;
 
-            const button=
-                document.createElement("button");
 
-            button.className="country";
-
-            button.dataset.name=country;
-
-            button.innerHTML=
-                `<span class="flag">🌐</span>
-                 <b>${country}</b>`;
-
-            button.onclick=
-                ()=>{
-                    startGame(country);
-                };
-
-            box.appendChild(button);
-        }
-    );
-}
-
-
-/* =====================================================
- جستجو
-===================================================== */
-
-function searchCountry(){
-
-    const value=
-        document
-        .getElementById("search")
-        .value
-        .toLowerCase();
-
-    document
-    .querySelectorAll(".country")
-    .forEach(
-        button=>{
-
-            button.style.display=
-                button.dataset.name
-                .toLowerCase()
-                .includes(value)
-                ?
-                "block"
-                :
-                "none";
-        }
-    );
-}
-
-
-/* =====================================================
- شروع
-===================================================== */
-
-function startGame(country){
-
-    game.country=country;
-
-    document
-    .getElementById("countryPage")
-    .style.display="none";
-
-    document
-    .getElementById("game")
-    .style.display="block";
-
-    save();
-
-    update();
-
-}
-
-
-/* =====================================================
- بروزرسانی
-===================================================== */
-
-function update(){
-
-    document
-    .getElementById("money")
-    .textContent=
-        Math.floor(game.money)
-        .toLocaleString();
-
-    document
-    .getElementById("production")
-    .textContent=
-        Math.floor(game.production);
-
-    document
-    .getElementById("inflation")
-    .textContent=
-        game.inflation.toFixed(2)+"%";
-
-    document
-    .getElementById("resources")
-    .textContent=
-        Math.floor(game.resources);
-
-    document
-    .getElementById("army")
-    .textContent=
-        Math.floor(game.army);
-
-    document
-    .getElementById("time")
-    .textContent=
-        "روز "+
-        game.day;
-
-}
-
-
-/* =====================================================
- زمان
-===================================================== */
-
-setInterval(
-    ()=>{
-
-        if(
-            !game.country ||
-            game.paused
-        )
-            return;
-
-        game.day++;
-
-        if(
-            game.day>30
-        ){
-
-            game.day=1;
-
-            game.month++;
-
-        }
-
-        if(
-            game.month>12
-        ){
-
-            game.month=1;
-
-            game.year++;
-
-        }
-
-
-        /*
-         درآمد بسیار محدود
-        */
-
-        let income=
-            game.production*
-            0.8;
-
-        income*=
-            Math.max(
-                0.25,
-                1-game.inflation/100
-            );
-
-
-        /*
-         هزینه ارتش
-        */
-
-        let armyCost=
-            game.army*2;
-
-
-        game.money+=
-            income-armyCost;
-
-
-        /*
-         تغییر تورم
-        */
-
-        if(
-            game.money<10000
-        )
-            game.inflation+=0.04;
-
-        if(
-            game.money>100000
-        )
-            game.inflation-=0.015;
-
-        game.inflation=
-            Math.max(
-                0.5,
-                Math.min(
-                    50,
-                    game.inflation
-                )
-            );
-
-
-        /*
-         منابع
-        */
-
-        game.resources+=
-            game.production*.01;
-
-
-        update();
-
-    },
-    1000
-);
-
-
-/* =====================================================
- کلیک کشور
-===================================================== */
-
-function countryClick(name){
-
-    if(!game.country)
-        return;
-
-    showPanel(`
-
-        <h2>🌍 ${name}</h2>
-
-        <div class="row">
-            <span>کشور شما</span>
-            <b>${game.country}</b>
-        </div>
-
-        <div class="row">
-            <span>وضعیت</span>
-            <b>کشور مستقل</b>
-        </div>
-
-        <div class="row">
-            <span>تعامل</span>
-            <b>فعال</b>
-        </div>
-
-        <div class="actions">
-
-            <button
-                onclick="alert('پیشنهاد معامله ارسال شد')"
-            >
-                🚢 معامله
-            </button>
-
-            <button
-                onclick="alert('رابطه دیپلماتیک ایجاد شد')"
-            >
-                🤝 دیپلماسی
-            </button>
-
-            <button
-                onclick="alert('تحریم اعمال شد')"
-            >
-                🚫 تحریم
-            </button>
-
-            <button
-                onclick="alert('بررسی اطلاعات کشور')"
-            >
-                📊 اطلاعات
-            </button>
-
-        </div>
-
-    `);
-
-}
-
-
-/* =====================================================
- ارتش
-===================================================== */
-
-function army(){
-
-    showPanel(`
-
-        <h2>🛡 ارتش</h2>
-
-        <div class="row">
-            <span>قدرت ارتش</span>
-            <b>${Math.floor(game.army)}</b>
-        </div>
-
-        <div class="row">
-            <span>هزینه نگهداری</span>
-            <b>${Math.floor(game.army*2)}</b>
-        </div>
-
-        <div class="actions">
-
-            <button
-                onclick="buyUnit(1)"
-            >
-                🛡 واحد زمینی
-            </button>
-
-            <button
-                onclick="buyUnit(2)"
-            >
-                ✈️ نیروی هوایی
-            </button>
-
-            <button
-                onclick="buyUnit(3)"
-            >
-                🚢 نیروی دریایی
-            </button>
-
-            <button
-                onclick="buyUnit(4)"
-            >
-                🛰 واحد شناسایی
-            </button>
-
-        </div>
-
-    `);
-
-}
-
-
-/* =====================================================
- خرید ارتش
-===================================================== */
-
-function buyUnit(type){
-
-    const prices={
-        1:3000,
-        2:6000,
-        3:8000,
-        4:2500
-    };
-
-    const power={
-        1:1,
-        2:2,
-        3:2.5,
-        4:.5
-    };
-
-    const cost=
-        prices[type]*
-        (1+game.inflation/100);
-
-    if(
-        game.money<cost
-    ){
-
-        alert("پول کافی نیست.");
-
-        return;
-    }
-
-    game.money-=cost;
-
-    game.army+=power[type];
-
-    update();
-
-    army();
-
-}
-
-
-/* =====================================================
- فروشگاه
-===================================================== */
-
-function store(){
-
-    showPanel(`
-
-        <h2>🛒 فروشگاه</h2>
-
-        <div class="row">
-            <span>بودجه</span>
-            <b>${Math.floor(game.money)}</b>
-        </div>
-
-        <div class="actions">
-
-            <button
-                onclick="buyItem(5000,3)"
-            >
-                🛡 تجهیزات زمینی
-            </button>
-
-            <button
-                onclick="buyItem(9000,5)"
-            >
-                ✈️ تجهیزات هوایی
-            </button>
-
-            <button
-                onclick="buyItem(12000,6)"
-            >
-                🚢 تجهیزات دریایی
-            </button>
-
-            <button
-                onclick="buyItem(4000,1)"
-            >
-                🛰 تجهیزات اطلاعاتی
-            </button>
-
-            <button
-                onclick="buildInfrastructure()"
-            >
-                🏗 زیرساخت
-            </button>
-
-            <button
-                onclick="buildFactory()"
-            >
-                🏭 کارخانه
-            </button>
-
-        </div>
-
-    `);
-
-}
-
-
-/* =====================================================
- خرید آیتم
-===================================================== */
-
-function buyItem(price,power){
-
-    const cost=
-        price*
-        (1+game.inflation/100);
-
-    if(
-        game.money<cost
-    ){
-
-        alert("پول کافی نیست.");
-
-        return;
-    }
-
-    game.money-=cost;
-
-    game.army+=power;
-
-    update();
-
-    store();
-
-}
-
-
-/* =====================================================
- اقتصاد
-===================================================== */
-
-function economy(){
-
-    showPanel(`
-
-        <h2>💰 اقتصاد</h2>
-
-        <div class="row">
-            <span>خزانه</span>
-            <b>${Math.floor(game.money)}</b>
-        </div>
-
-        <div class="row">
-            <span>تورم</span>
-            <b>${game.inflation.toFixed(2)}%</b>
-        </div>
-
-        <div class="row">
-            <span>تولید</span>
-            <b>${Math.floor(game.production)}</b>
-        </div>
-
-        <div class="row">
-            <span>منابع</span>
-            <b>${Math.floor(game.resources)}</b>
-        </div>
-
-    `);
-
-}
-
-
-/* =====================================================
- زیرساخت
-===================================================== */
-
-function buildInfrastructure(){
-
-    const cost=
-        10000*
-        (1+game.inflation/100);
-
-    if(
-        game.money<cost
-    ){
-
-        alert("پول کافی نیست.");
-
-        return;
-    }
-
-    game.money-=cost;
-
-    game.production+=5;
-
-    game.inflation+=.1;
-
-    update();
-
-    store();
-
-}
-
-
-/* =====================================================
- کارخانه
-===================================================== */
-
-function buildFactory(){
-
-    const cost=
-        18000*
-        (1+game.inflation/100);
-
-    if(
-        game.money<cost
-    ){
-
-        alert("پول کافی نیست.");
-
-        return;
-    }
-
-    game.money-=cost;
-
-    game.production+=10;
-
-    game.inflation+=.2;
-
-    update();
-
-    store();
-
-}
-
-
-/* =====================================================
- اطلاعات جهان
-===================================================== */
-
-function world(){
-
-    let html=
-        "<h2>🌍 جهان</h2>";
-
-    countries.forEach(
-        country=>{
-
-            html+=`
-
-                <div class="row">
-
-                    <span>
-                        🌐 ${country}
-                    </span>
-
-                    <button
-                        onclick="countryClick('${country}')"
-                    >
-                        اطلاعات
-                    </button>
-
-                </div>
-
-            `;
-
-        }
-    );
-
-    showPanel(html);
-
-}
-
-
-/* =====================================================
- پنل
-===================================================== */
-
-function showPanel(html){
-
-    document
-    .getElementById("panelContent")
-    .innerHTML=html;
-
-    document
-    .getElementById("panel")
-    .style.display="flex";
-
-}
-
-
-function closePanel(){
-
-    document
-    .getElementById("panel")
-    .style.display="none";
-
-}
-
-
-/* =====================================================
- نقشه
-===================================================== */
-
-let scale=1;
-
-let tx=0;
-
-let ty=0;
-
-
-function zoom(value){
-
-    scale*=value;
-
-    scale=
-        Math.max(
-            .7,
-            Math.min(
-                2.5,
-                scale
+    let merc =
+        Math.log(
+            Math.tan(
+                Math.PI / 4 + rad / 2
             )
         );
 
-    applyMap();
+
+    const max =
+        4.0;
+
+
+    let y =
+        325 -
+        (merc / max) * 260;
+
+
+    return [x,y];
 
 }
 
 
-function resetMap(){
+/* =========================================================
+   تبدیل GeoJSON به SVG Path
+========================================================= */
 
-    scale=1;
+function ringToPath(ring){
 
-    tx=0;
+    let path="";
 
-    ty=0;
+    for(
+        let i=0;
+        i<ring.length;
+        i++
+    ){
 
-    applyMap();
+        const point =
+            project(
+                ring[i][0],
+                ring[i][1]
+            );
+
+
+        if(i===0){
+
+            path +=
+                "M"+
+                point[0].toFixed(2)+
+                " "+
+                point[1].toFixed(2);
+
+        }else{
+
+            path +=
+                "L"+
+                point[0].toFixed(2)+
+                " "+
+                point[1].toFixed(2);
+
+        }
+
+    }
+
+    return path+"Z";
 
 }
 
 
-function applyMap(){
+/* =========================================================
+   Polygon
+========================================================= */
+
+function polygonToPath(polygon){
+
+    let result="";
+
+    for(
+        let i=0;
+        i<polygon.length;
+        i++
+    ){
+
+        result +=
+            ringToPath(
+                polygon[i]
+            );
+
+    }
+
+    return result;
+
+}
+
+
+/* =========================================================
+   MultiPolygon
+========================================================= */
+
+function multiPolygonToPath(multi){
+
+    let result="";
+
+    for(
+        let i=0;
+        i<multi.length;
+        i++
+    ){
+
+        result +=
+            polygonToPath(
+                multi[i]
+            );
+
+    }
+
+    return result;
+
+}
+
+
+/* =========================================================
+   مرکز تقریبی کشور
+========================================================= */
+
+function getCenter(feature){
+
+    let coords =
+        feature.geometry.coordinates;
+
+    let points=[];
+
+
+    function collect(obj){
+
+        if(
+            typeof obj[0] === "number"
+        ){
+
+            points.push(obj);
+
+            return;
+
+        }
+
+        for(
+            let i=0;
+            i<obj.length;
+            i++
+        ){
+
+            collect(obj[i]);
+
+        }
+
+    }
+
+    collect(coords);
+
+
+    if(points.length===0){
+
+        return [600,325];
+
+    }
+
+
+    let lon=0;
+
+    let lat=0;
+
+    let count=
+        Math.min(
+            points.length,
+            300
+        );
+
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        lon += points[i][0];
+
+        lat += points[i][1];
+
+    }
+
+
+    lon/=count;
+
+    lat/=count;
+
+
+    return project(lon,lat);
+
+}
+
+
+/* =========================================================
+   ساخت نقشه
+========================================================= */
+
+function drawMap(data){
+
+    world.innerHTML="";
+
+    labels.innerHTML="";
+
+
+    const features =
+        data.features || [];
+
+
+    features.forEach(
+        (feature,index)=>{
+
+            if(
+                !feature.geometry
+            )
+                return;
+
+
+            const type =
+                feature.geometry.type;
+
+
+            let pathData="";
+
+
+            if(
+                type === "Polygon"
+            ){
+
+                pathData =
+                    polygonToPath(
+                        feature.geometry.coordinates
+                    );
+
+            }
+
+
+            if(
+                type === "MultiPolygon"
+            ){
+
+                pathData =
+                    multiPolygonToPath(
+                        feature.geometry.coordinates
+                    );
+
+            }
+
+
+            if(!pathData)
+                return;
+
+
+            const path =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "path"
+                );
+
+
+            path.setAttribute(
+                "d",
+                pathData
+            );
+
+
+            path.classList.add(
+                "country"
+            );
+
+
+            const name =
+                feature.properties &&
+                (
+                    feature.properties.NAME ||
+                    feature.properties.name ||
+                    feature.properties.ADMIN
+                )
+                ||
+                "کشور";
+
+
+            path.dataset.name=name;
+
+
+            path.style.fill =
+                colors[
+                    index % colors.length
+                ];
+
+
+            path.addEventListener(
+                "click",
+                function(event){
+
+                    event.stopPropagation();
+
+                    selectCountry(
+                        name,
+                        path
+                    );
+
+                }
+            );
+
+
+            world.appendChild(path);
+
+
+            /*
+               فقط برای کشورهای بزرگ
+               نام نمایش داده می‌شود.
+            */
+
+            const center =
+                getCenter(feature);
+
+
+            const label =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "text"
+                );
+
+
+            label.setAttribute(
+                "x",
+                center[0]
+            );
+
+
+            label.setAttribute(
+                "y",
+                center[1]
+            );
+
+
+            label.classList.add(
+                "label"
+            );
+
+
+            label.textContent=name;
+
+
+            labels.appendChild(label);
+
+        }
+    );
+
+
+    loading.style.display="none";
+
+}
+
+
+/* =========================================================
+   انتخاب کشور
+========================================================= */
+
+let selectedPath=null;
+
+
+function selectCountry(
+    name,
+    path
+){
+
+    if(selectedPath){
+
+        selectedPath.classList.remove(
+            "selected"
+        );
+
+    }
+
+
+    selectedPath=path;
+
+
+    path.classList.add(
+        "selected"
+    );
+
 
     document
-    .getElementById("world")
-    .setAttribute(
+    .getElementById("selectedName")
+    .textContent=
+        "🌍 "+name;
+
+
+    /*
+       اطلاعات نمونه برای فعلاً
+    */
+
+    const population =
+        Math.floor(
+            5+
+            Math.random()*140
+        );
+
+
+    const economy =
+        Math.floor(
+            20+
+            Math.random()*980
+        );
+
+
+    const inflation =
+        (
+            1+
+            Math.random()*12
+        ).toFixed(1);
+
+
+    document
+    .getElementById("population")
+    .textContent=
+        population+" میلیون";
+
+
+    document
+    .getElementById("economy")
+    .textContent=
+        economy+" میلیارد";
+
+
+    document
+    .getElementById("countryInflation")
+    .textContent=
+        inflation+"%";
+
+
+    document
+    .getElementById("countryPanel")
+    .style.display="block";
+
+}
+
+
+/* =========================================================
+   بارگذاری
+========================================================= */
+
+async function loadMap(){
+
+    try{
+
+        const response =
+            await fetch(
+                GEO_URL,
+                {
+                    cache:"force-cache"
+                }
+            );
+
+
+        if(!response.ok){
+
+            throw new Error(
+                "Map download failed"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        drawMap(data);
+
+
+    }catch(e){
+
+        console.error(e);
+
+        loading.style.display="none";
+
+        errorBox.style.display="flex";
+
+    }
+
+}
+
+
+loadMap();
+
+
+/* =========================================================
+   زوم
+========================================================= */
+
+let scale=1;
+
+let offsetX=0;
+
+let offsetY=0;
+
+
+function applyTransform(){
+
+    world.setAttribute(
         "transform",
-        `translate(${tx} ${ty})
-         scale(${scale})`
+        `
+        translate(${offsetX} ${offsetY})
+        scale(${scale})
+        `
+    );
+
+
+    labels.setAttribute(
+        "transform",
+        `
+        translate(${offsetX} ${offsetY})
+        scale(${scale})
+        `
     );
 
 }
 
 
-/* =====================================================
- حرکت نقشه
-===================================================== */
+document
+.getElementById("zoomIn")
+.addEventListener(
+    "click",
+    ()=>{
+        scale=Math.min(
+            5,
+            scale*1.25
+        );
+
+        applyTransform();
+    }
+);
+
+
+document
+.getElementById("zoomOut")
+.addEventListener(
+    "click",
+    ()=>{
+        scale=Math.max(
+            1,
+            scale/1.25
+        );
+
+        applyTransform();
+    }
+);
+
+
+document
+.getElementById("reset")
+.addEventListener(
+    "click",
+    ()=>{
+
+        scale=1;
+
+        offsetX=0;
+
+        offsetY=0;
+
+        applyTransform();
+
+    }
+);
+
+
+/* =========================================================
+   حرکت نقشه با انگشت
+========================================================= */
 
 let dragging=false;
 
-let lastX=0;
+let startX=0;
 
-let lastY=0;
-
-const map=
-    document.getElementById("map");
+let startY=0;
 
 
-map.addEventListener(
+svg.addEventListener(
     "pointerdown",
     event=>{
 
         dragging=true;
 
-        lastX=event.clientX;
+        startX=event.clientX;
 
-        lastY=event.clientY;
+        startY=event.clientY;
 
-        map.setPointerCapture(
+        svg.classList.add(
+            "dragging"
+        );
+
+        svg.setPointerCapture(
             event.pointerId
         );
 
@@ -1870,75 +1170,102 @@ map.addEventListener(
 );
 
 
-map.addEventListener(
+svg.addEventListener(
     "pointermove",
     event=>{
 
         if(!dragging)
             return;
 
-        tx+=
-            event.clientX-lastX;
 
-        ty+=
-            event.clientY-lastY;
+        const dx =
+            event.clientX-startX;
 
-        lastX=event.clientX;
 
-        lastY=event.clientY;
+        const dy =
+            event.clientY-startY;
 
-        applyMap();
+
+        startX=event.clientX;
+
+        startY=event.clientY;
+
+
+        offsetX +=
+            dx / svg.clientWidth * 1200;
+
+
+        offsetY +=
+            dy / svg.clientHeight * 650;
+
+
+        applyTransform();
 
     }
 );
 
 
-map.addEventListener(
+svg.addEventListener(
     "pointerup",
-    ()=>{
+    event=>{
+
         dragging=false;
+
+        svg.classList.remove(
+            "dragging"
+        );
+
+        try{
+
+            svg.releasePointerCapture(
+                event.pointerId
+            );
+
+        }catch(e){}
+
     }
 );
 
 
-map.addEventListener(
+svg.addEventListener(
     "pointercancel",
     ()=>{
         dragging=false;
+        svg.classList.remove(
+            "dragging"
+        );
     }
 );
 
 
-/* =====================================================
- ذخیره
-===================================================== */
+/* =========================================================
+   اطلاعات اولیه بازی
+========================================================= */
 
-function save(){
+let money=50000;
 
-    localStorage.setItem(
-        "empire_horizon_save",
-        JSON.stringify(game)
-    );
+let production=100;
 
-}
+let inflation=4;
+
+let day=1;
 
 
 setInterval(
     ()=>{
-        if(game.country)
-            save();
+
+        day++;
+
+        document
+        .getElementById("date")
+        .textContent=
+            "روز "+day;
+
     },
-    10000
+    5000
 );
-
-
-/* =====================================================
- اجرای اولیه
-===================================================== */
-
-renderCountries();
 
 </script>
 
 </body>
- </html>
+                    </html>
