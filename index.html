@@ -1,371 +1,1467 @@
-<!doctype html>
-<html lang="fa" dir="rtl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>WW میدان نبرد - بازی تحت وب</title>
-  <style>
-    :root{
-      --bg:#10100f;
-      --paper:#e7dcc7;
-      --ink:#221f1a;
-      --accent:#c9a86a;
-      --danger:#e25b4a;
-      --ok:#67d18b;
-      --muted:#9d927f;
-    }
-    html,body{
-      height:100%;
-      margin:0;
-      background: radial-gradient(1200px 800px at 50% 30%, #1a1a18 0%, #0e0e0d 60%, #080807 100%);
-      color: var(--paper);
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Arial;
-      overflow:hidden;
-    }
-    canvas{
-      display:block;
-      width:100vw;
-      height:100vh;
-      image-rendering: crisp-edges;
-      image-rendering: pixelated;
-      cursor: crosshair;
+<!-- فقط بخش فروشگاه را به کد قبلی اضافه/جایگزین کن -->
+
+<style>
+/* ================================
+   STORE BUTTON — پایین صفحه
+================================ */
+
+#storeBottomButton{
+    position:fixed;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(420px,88vw);
+    height:64px;
+    z-index:5000;
+
+    border:none;
+    border-radius:20px;
+
+    background:linear-gradient(135deg,#151b2e,#26345c);
+    color:#fff;
+
+    font-size:20px;
+    font-weight:900;
+
+    box-shadow:
+        0 12px 35px rgba(0,0,0,.45),
+        inset 0 1px 0 rgba(255,255,255,.15);
+
+    cursor:pointer;
+    transition:.2s;
+}
+
+#storeBottomButton:hover{
+    transform:translateX(-50%) translateY(-3px);
+}
+
+#storeBottomButton:active{
+    transform:translateX(-50%) scale(.97);
+}
+
+/* =================================
+   STORE MODAL
+================================= */
+
+#storeOverlay{
+    position:fixed;
+    inset:0;
+    z-index:10000;
+
+    background:rgba(3,6,15,.82);
+    backdrop-filter:blur(8px);
+
+    display:none;
+    align-items:center;
+    justify-content:center;
+
+    padding:15px;
+}
+
+#storeOverlay.active{
+    display:flex;
+}
+
+#storeWindow{
+    width:min(1200px,100%);
+    height:min(850px,94vh);
+
+    background:#101522;
+    color:#fff;
+
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:24px;
+
+    overflow:hidden;
+
+    box-shadow:0 25px 80px rgba(0,0,0,.65);
+
+    display:flex;
+    flex-direction:column;
+}
+
+/* HEADER */
+
+.storeHeader{
+    min-height:75px;
+    padding:14px 18px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+
+    background:linear-gradient(135deg,#17213b,#202d50);
+
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.storeTitle{
+    font-size:25px;
+    font-weight:1000;
+}
+
+.storeMoney{
+    background:rgba(0,0,0,.25);
+    padding:10px 15px;
+    border-radius:14px;
+    font-weight:900;
+}
+
+#closeStore{
+    width:45px;
+    height:45px;
+
+    border:none;
+    border-radius:14px;
+
+    background:#a92828;
+    color:white;
+
+    font-size:23px;
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+/* SEARCH */
+
+.storeTools{
+    padding:12px;
+    display:flex;
+    gap:10px;
+
+    background:#0d121e;
+
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+#storeSearch{
+    flex:1;
+
+    border:none;
+    outline:none;
+
+    padding:13px 16px;
+
+    border-radius:13px;
+
+    background:#1a2233;
+    color:#fff;
+
+    font-size:15px;
+}
+
+/* CATEGORIES */
+
+#storeCategories{
+    display:flex;
+    gap:8px;
+
+    padding:11px;
+
+    overflow-x:auto;
+
+    background:#0c111c;
+
+    scrollbar-width:none;
+}
+
+#storeCategories::-webkit-scrollbar{
+    display:none;
+}
+
+.storeCategory{
+    flex-shrink:0;
+
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;
+
+    padding:10px 14px;
+
+    background:#182033;
+    color:#dce4ff;
+
+    cursor:pointer;
+
+    font-weight:800;
+}
+
+.storeCategory.active{
+    background:#405aa0;
+    color:white;
+}
+
+/* ITEMS */
+
+#storeItems{
+    flex:1;
+
+    overflow-y:auto;
+
+    padding:15px;
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(auto-fill,minmax(230px,1fr));
+
+    gap:13px;
+}
+
+.storeItem{
+    background:linear-gradient(145deg,#182031,#111824);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:18px;
+
+    padding:15px;
+
+    min-height:210px;
+
+    display:flex;
+    flex-direction:column;
+
+    transition:.18s;
+}
+
+.storeItem:hover{
+    transform:translateY(-2px);
+    border-color:rgba(255,255,255,.2);
+}
+
+.storeItemIcon{
+    font-size:35px;
+    margin-bottom:5px;
+}
+
+.storeItemName{
+    font-size:17px;
+    font-weight:1000;
+}
+
+.storeItemCategory{
+    font-size:12px;
+    opacity:.6;
+    margin:3px 0 8px;
+}
+
+.storeItemDescription{
+    font-size:13px;
+    line-height:1.7;
+    color:#cbd3e6;
+
+    flex:1;
+}
+
+.storeEffects{
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+
+    margin:8px 0;
+}
+
+.storeEffect{
+    background:rgba(255,255,255,.06);
+
+    padding:4px 7px;
+
+    border-radius:7px;
+
+    font-size:11px;
+}
+
+.storeBottom{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    gap:8px;
+}
+
+.storePrice{
+    font-weight:1000;
+    color:#ffd76a;
+}
+
+.storeBuy{
+    border:none;
+
+    padding:9px 12px;
+
+    border-radius:10px;
+
+    background:#26734d;
+    color:white;
+
+    font-weight:900;
+
+    cursor:pointer;
+}
+
+.storeBuy:hover{
+    background:#2d8c5d;
+}
+
+.storeBuy.disabled{
+    background:#555;
+    opacity:.55;
+    cursor:not-allowed;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+    #storeBottomButton{
+        bottom:12px;
+        height:58px;
+        font-size:18px;
     }
 
-    .overlay{
-      position: fixed;
-      inset: 0;
-      pointer-events:none;
+    #storeWindow{
+        height:96vh;
+        border-radius:18px;
     }
 
-    .hud{
-      position:absolute;
-      left: 14px;
-      top: 12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      pointer-events:none;
-      user-select:none;
-      text-shadow: 0 2px 8px rgba(0,0,0,.7);
-      font-size:14px;
-    }
-    .hud .row{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .bar{
-      width: 220px;
-      height: 12px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 999px;
-      overflow:hidden;
-      box-shadow: inset 0 2px 10px rgba(0,0,0,.35);
-    }
-    .bar > i{
-      display:block;
-      height:100%;
-      width:50%;
-      background: linear-gradient(90deg, rgba(255,255,255,.2), rgba(255,255,255,.05));
-    }
-    .bar.health > i{
-      background: linear-gradient(90deg, rgba(103,209,139,.95), rgba(103,209,139,.35));
-    }
-    .bar.stamina > i{
-      background: linear-gradient(90deg, rgba(201,168,106,.95), rgba(201,168,106,.35));
+    .storeHeader{
+        min-height:65px;
     }
 
-    .topright{
-      position:absolute;
-      right:14px;
-      top:12px;
-      text-align:left;
-      user-select:none;
-      pointer-events:none;
-      font-size:13px;
-      color: rgba(231,220,199,.92);
-      text-shadow: 0 2px 10px rgba(0,0,0,.8);
-      line-height: 1.5;
-    }
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(255,255,255,.12);
-      margin-bottom:6px;
-    }
-    .kbd{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      padding: 2px 6px;
-      border-radius: 6px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.14);
-      color: rgba(255,255,255,.9);
-      font-size: 12px;
+    .storeTitle{
+        font-size:20px;
     }
 
-    .centerModal{
-      position:absolute;
-      inset:0;
-      display:grid;
-      place-items:center;
-      pointer-events:auto;
-    }
-    .panel{
-      width:min(780px, calc(100vw - 28px));
-      background: linear-gradient(180deg, rgba(20,20,18,.92), rgba(10,10,9,.92));
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 18px;
-      padding: 18px 18px 16px;
-      box-shadow: 0 30px 120px rgba(0,0,0,.6);
-      backdrop-filter: blur(6px);
-    }
-    .panel h1{
-      margin: 0 0 8px;
-      font-size: 20px;
-      letter-spacing:.2px;
-      color: rgba(231,220,199,.95);
-    }
-    .panel p{
-      margin: 8px 0;
-      color: rgba(231,220,199,.88);
-      line-height: 1.75;
-      font-size: 14px;
-    }
-    .panel .grid{
-      display:grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 14px;
-      margin-top: 12px;
-    }
-    @media (max-width: 760px){
-      .panel .grid{ grid-template-columns: 1fr; }
-    }
-    .btnRow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top: 12px;
-    }
-    button{
-      appearance:none;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.92);
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-      font-weight:600;
-      letter-spacing:.2px;
-    }
-    button:hover{ background: rgba(255,255,255,.10); }
-    button.primary{
-      background: linear-gradient(180deg, rgba(201,168,106,.26), rgba(201,168,106,.12));
-      border-color: rgba(201,168,106,.32);
-    }
-    button.danger{
-      background: linear-gradient(180deg, rgba(226,91,74,.20), rgba(226,91,74,.10));
-      border-color: rgba(226,91,74,.32);
-    }
-    .small{
-      font-size:12px;
-      color: rgba(231,220,199,.78);
+    #storeItems{
+        grid-template-columns:1fr;
+        padding:10px;
     }
 
-    .toast{
-      position:absolute;
-      left:50%;
-      bottom: 16px;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.45);
-      border: 1px solid rgba(255,255,255,.12);
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      color: rgba(231,220,199,.9);
-      pointer-events:none;
-      opacity:0;
-      transition: opacity .25s ease;
-      backdrop-filter: blur(6px);
+    .storeItem{
+        min-height:180px;
     }
-    .toast.show{ opacity:1; }
+}
+</style>
 
-    /* فیلتر سینمایی/سپیا */
-    .film{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(1200px 800px at 50% 40%, rgba(255,255,255,.06), transparent 60%),
-        radial-gradient(900px 600px at 50% 55%, rgba(0,0,0,.0), rgba(0,0,0,.45) 72%),
-        linear-gradient(0deg, rgba(201,168,106,.05), rgba(0,0,0,0));
-      mix-blend-mode: screen;
-      opacity:.75;
-    }
-    .grain{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background-image:
-        repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, rgba(0,0,0,0) 1px 3px);
-      opacity:.25;
-      mix-blend-mode: overlay;
-      filter: blur(.2px);
-    }
-  </style>
-</head>
-<body>
-  <canvas id="c"></canvas>
 
-  <div class="overlay">
-    <div class="hud" id="hud" style="display:none;">
-      <div class="row">
-        <span>سلامتی</span>
-        <span class="bar health"><i id="hpBar"></i></span>
-        <span id="hpText">100</span>
-      </div>
-      <div class="row">
-        <span>استقامت</span>
-        <span class="bar stamina"><i id="stBar"></i></span>
-        <span id="stText">100</span>
-      </div>
-      <div class="row">
-        <span>خشاب:</span> <b id="ammoText">12/12</b>
-        <span> | </span>
-        <span>نارنجک:</span> <b id="grenText">2</b>
-        <span> | </span>
-        <span>امتیاز:</span> <b id="scoreText">0</b>
-      </div>
-    </div>
+<!-- =========================================
+     دکمه بزرگ فروشگاه
+     این دکمه پایین صفحه است و روی نقشه
+     قرار نمی‌گیرد
+========================================= -->
 
-    <div class="topright" id="topright" style="display:none;">
-      <div class="chip">موج: <b id="waveText">1</b> | دشمن باقی‌مانده: <b id="leftText">0</b></div>
-      <div class="chip">
-        <span class="kbd">WASD</span> حرکت
-        <span class="kbd">Shift</span> دویدن
-        <span class="kbd">Mouse</span> نشانه‌گیری/شلیک
-        <span class="kbd">R</span> پرکردن
-        <span class="kbd">G</span> نارنجک
-        <span class="kbd">P</span> توقف
-        <span class="kbd">M</span> بی‌صدا
-      </div>
-    </div>
+<button id="storeBottomButton">
+    🛒 فروشگاه بزرگ
+</button>
 
-    <div class="centerModal" id="menu">
-      <div class="panel">
-        <h1>میدان نبرد (سبک جنگ جهانی) — بازی HTML/Canvas</h1>
-        <p>
-          شما یک سرباز در منطقه‌ی گل‌آلود و خاکریزها هستید. موج‌های دشمن نزدیک می‌شوند.
-          زنده بمانید، موج‌ها را پاک کنید و امتیاز بگیرید.
-        </p>
 
-        <div class="grid">
-          <div>
-            <p><b>کنترل‌ها</b></p>
-            <p class="small">
-              <span class="kbd">WASD</span> حرکت • <span class="kbd">Shift</span> دویدن (استقامت مصرف می‌شود) •
-              کلیک چپ شلیک • <span class="kbd">R</span> پرکردن خشاب • <span class="kbd">G</span> نارنجک •
-              <span class="kbd">P</span> توقف/ادامه • <span class="kbd">M</span> بی‌صدا/با صدا
-            </p>
-            <p class="small">
-              نکته: وقتی خشاب خالی شود، به‌صورت خودکار پرکردن شروع می‌شود (اگر گلوله داشته باشید).
-            </p>
-          </div>
-          <div>
-            <p><b>دشمن‌ها</b></p>
-            <p class="small">
-              • سرباز: سریع‌تر، جان کمتر<br>
-              • تک‌تیرانداز: دورتر می‌ایستد و شلیک می‌کند<br>
-              • تانک سبک: کند، جان زیاد، تیر سنگین
-            </p>
-            <p class="small">
-              هر موج سخت‌تر می‌شود. با پاک‌کردن موج، کمی مهمات/نارنجک پاداش می‌گیرید.
-            </p>
-          </div>
+<!-- =========================================
+     پنجره فروشگاه
+========================================= -->
+
+<div id="storeOverlay">
+
+    <div id="storeWindow">
+
+        <div class="storeHeader">
+
+            <div class="storeTitle">
+                🏪 فروشگاه امپراتوری
+            </div>
+
+            <div class="storeMoney">
+                💰 <span id="storeMoneyValue">0</span>
+            </div>
+
+            <button id="closeStore">×</button>
+
         </div>
 
-        <div class="btnRow">
-          <button class="primary" id="startBtn">شروع بازی</button>
-          <button id="howBtn">راهنما کوتاه</button>
-          <button id="muteBtn">صدا: روشن</button>
+
+        <div class="storeTools">
+
+            <input
+                id="storeSearch"
+                type="text"
+                placeholder="🔎 جستجو در فروشگاه..."
+            >
+
         </div>
-        <p class="small" id="hintLine">برای بهترین تجربه: مرورگر Chrome/Edge/Firefox.</p>
-      </div>
+
+
+        <div id="storeCategories"></div>
+
+
+        <div id="storeItems"></div>
+
     </div>
 
-    <div class="centerModal" id="gameover" style="display:none;">
-      <div class="panel">
-        <h1>شکست خوردید</h1>
-        <p id="finalLine">امتیاز شما: 0</p>
-        <div class="btnRow">
-          <button class="primary" id="retryBtn">تلاش دوباره</button>
-          <button class="danger" id="backBtn">بازگشت به منو</button>
-        </div>
-        <p class="small">می‌توانید سطح سختی را با دوام آوردن بیشتر بالا ببرید!</p>
-      </div>
-    </div>
+</div>
 
-    <div class="toast" id="toast">...</div>
-
-    <div class="film"></div>
-    <div class="grain"></div>
-  </div>
 
 <script>
-(() => {
-  // ========= Helpers =========
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const lerp  = (a, b, t) => a + (b - a) * t;
-  const rand  = (a=0, b=1) => a + Math.random() * (b - a);
-  const randi = (a, b) => Math.floor(rand(a, b+1));
-  const dist2 = (ax, ay, bx, by) => {
-    const dx = ax - bx, dy = ay - by;
-    return dx*dx + dy*dy;
-  };
-  const len = (x, y) => Math.hypot(x, y);
-  const norm = (x, y) => {
-    const l = Math.hypot(x, y) || 1;
-    return [x/l, y/l];
-  };
+/* =========================================================
+   WORLD EMPIRE — STORE SYSTEM
+   فقط سیستم فروشگاه
+========================================================= */
 
-  // ========= Canvas =========
-  const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d', { alpha: false });
-  let W=0, H=0, DPR=1;
-  function resize(){
-    DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    W = Math.floor(window.innerWidth * DPR);
-    H = Math.floor(window.innerHeight * DPR);
-    canvas.width = W;
-    canvas.height = H;
-  }
-  window.addEventListener('resize', resize);
-  resize();
+(function(){
 
-  // ========= UI Elements =========
-  const hud = document.getElementById('hud');
-  const topright = document.getElementById('topright');
-  const menu = document.getElementById('menu');
-  const gameover = document.getElementById('gameover');
-  const startBtn = document.getElementById('startBtn');
-  const retryBtn = document.getElementById('retryBtn');
-  const backBtn = document.getElementById('backBtn');
-  const muteBtn = document.getElementById('muteBtn');
-  const howBtn = document.getElementById('howBtn');
-  const toast = document.getElementById('toast');
+"use strict";
 
-  const hpBar = document.getElementById('hpBar');
-  const stBar = document.getElementById('stBar');
-  const hpText = document.getElementById('hpText');
-  const stText = document.getElementById('stText');
-  const ammoText = document.getElementById('ammoText');
-  const grenText = document.getElementById('grenText');
-  const scoreText = document.getElementById('scoreText');
-  const waveText = document.getElementById('waveText');
-  const leftText = document.getElementById('leftText');
-  const finalLine = document.getElementById('finalLine');
+
+/* ---------------------------------------------------------
+   دسترسی امن به game قبلی
+--------------------------------------------------------- */
+
+if(typeof game === "undefined"){
+    window.game = {
+        treasury:10000,
+        production:100,
+        population:100,
+        reputation:50,
+        army:1000,
+        cities:3,
+        defense:0,
+        technology:0,
+        stability:70,
+        food:100,
+        energy:100,
+        industry:100,
+        trade:50,
+        inventory:{}
+    };
+}
+
+
+/* ---------------------------------------------------------
+   مقادیر پیش‌فرض
+--------------------------------------------------------- */
+
+game.inventory = game.inventory || {};
+
+if(typeof game.treasury !== "number")
+    game.treasury = 10000;
+
+
+/* =========================================================
+   دسته‌بندی‌ها
+========================================================= */
+
+const storeCategories = [
+
+    {
+        id:"all",
+        name:"همه",
+        icon:"🛒"
+    },
+
+    {
+        id:"resources",
+        name:"منابع",
+        icon:"⛏️"
+    },
+
+    {
+        id:"food",
+        name:"غذا و کشاورزی",
+        icon:"🌾"
+    },
+
+    {
+        id:"energy",
+        name:"انرژی",
+        icon:"⚡"
+    },
+
+    {
+        id:"industry",
+        name:"صنعت",
+        icon:"🏭"
+    },
+
+    {
+        id:"infrastructure",
+        name:"زیرساخت",
+        icon:"🏗️"
+    },
+
+    {
+        id:"technology",
+        name:"فناوری",
+        icon:"💻"
+    },
+
+    {
+        id:"transport",
+        name:"حمل‌ونقل",
+        icon:"🚆"
+    },
+
+    {
+        id:"trade",
+        name:"تجارت",
+        icon:"📦"
+    },
+
+    {
+        id:"population",
+        name:"رفاه و جمعیت",
+        icon:"🏙️"
+    },
+
+    {
+        id:"defense",
+        name:"دفاعی",
+        icon:"🛡️"
+    },
+
+    {
+        id:"special",
+        name:"پروژه‌های ویژه",
+        icon:"⭐"
+    }
+
+];
+
+
+/* =========================================================
+   داده‌های پایه فروشگاه
+========================================================= */
+
+const storeBases = [
+
+    {
+        category:"resources",
+        icon:"⛏️",
+        names:[
+            "ذخیره آهن",
+            "ذخیره مس",
+            "ذخیره زغال‌سنگ",
+            "ذخیره آلومینیوم",
+            "ذخیره مواد معدنی",
+            "معدن توسعه‌یافته",
+            "مرکز استخراج",
+            "قرارداد مواد خام"
+        ],
+        base:450,
+        effects:{
+            production:8
+        }
+    },
+
+    {
+        category:"food",
+        icon:"🌾",
+        names:[
+            "مزرعه پیشرفته",
+            "سیلوی غلات",
+            "مرکز کشاورزی",
+            "گلخانه صنعتی",
+            "آبیاری هوشمند",
+            "انبار مواد غذایی",
+            "قرارداد غلات",
+            "مرکز دامداری"
+        ],
+        base:400,
+        effects:{
+            food:15,
+            population:2
+        }
+    },
+
+    {
+        category:"energy",
+        icon:"⚡",
+        names:[
+            "نیروگاه خورشیدی",
+            "نیروگاه بادی",
+            "نیروگاه حرارتی",
+            "مرکز ذخیره انرژی",
+            "شبکه برق",
+            "پست برق",
+            "مرکز انرژی پاک",
+            "شبکه انتقال انرژی"
+        ],
+        base:700,
+        effects:{
+            energy:20,
+            production:5
+        }
+    },
+
+    {
+        category:"industry",
+        icon:"🏭",
+        names:[
+            "کارخانه فولاد",
+            "کارخانه قطعات",
+            "مجتمع صنعتی",
+            "کارخانه خودرو",
+            "مرکز تولید",
+            "کارخانه پیشرفته",
+            "مجتمع پتروشیمی",
+            "شهرک صنعتی"
+        ],
+        base:900,
+        effects:{
+            production:18,
+            industry:12
+        }
+    },
+
+    {
+        category:"infrastructure",
+        icon:"🏗️",
+        names:[
+            "شبکه جاده‌ای",
+            "پل بزرگ",
+            "تونل راهبردی",
+            "راه‌آهن",
+            "مرکز شهری",
+            "شبکه فاضلاب",
+            "توسعه شهری",
+            "مرکز خدمات عمومی"
+        ],
+        base:800,
+        effects:{
+            cities:1,
+            population:4
+        }
+    },
+
+    {
+        category:"technology",
+        icon:"💻",
+        names:[
+            "مرکز تحقیقاتی",
+            "آزمایشگاه فناوری",
+            "دانشگاه پیشرفته",
+            "مرکز هوش مصنوعی",
+            "شبکه ارتباطی",
+            "مرکز داده",
+            "آزمایشگاه رباتیک",
+            "پارک فناوری"
+        ],
+        base:1200,
+        effects:{
+            technology:15,
+            production:8
+        }
+    },
+
+    {
+        category:"transport",
+        icon:"🚆",
+        names:[
+            "ایستگاه قطار",
+            "خط راه‌آهن",
+            "مرکز لجستیک",
+            "پایانه بار",
+            "فرودگاه",
+            "بندر تجاری",
+            "شبکه حمل‌ونقل",
+            "مرکز توزیع"
+        ],
+        base:1000,
+        effects:{
+            trade:12,
+            production:7
+        }
+    },
+
+    {
+        category:"trade",
+        icon:"📦",
+        names:[
+            "قرارداد صادرات",
+            "قرارداد واردات",
+            "بازار منطقه‌ای",
+            "مرکز تجارت",
+            "دفتر بازرگانی",
+            "اتحادیه تجاری",
+            "قرارداد بلندمدت",
+            "شبکه صادرات"
+        ],
+        base:850,
+        effects:{
+            treasury:700,
+            trade:15
+        }
+    },
+
+    {
+        category:"population",
+        icon:"🏙️",
+        names:[
+            "مسکن عمومی",
+            "بیمارستان",
+            "مدرسه",
+            "دانشگاه",
+            "پارک شهری",
+            "مرکز درمانی",
+            "شبکه آب‌رسانی",
+            "مرکز رفاه"
+        ],
+        base:650,
+        effects:{
+            population:10,
+            reputation:4,
+            stability:5
+        }
+    },
+
+    {
+        category:"defense",
+        icon:"🛡️",
+        names:[
+            "مرکز فرماندهی",
+            "مرکز پدافندی",
+            "پایگاه مرزی",
+            "مرکز دیده‌بانی",
+            "شبکه دفاعی",
+            "مرکز آموزش ارتش",
+            "قرارگاه لجستیک",
+            "مرکز امنیتی"
+        ],
+        base:1100,
+        effects:{
+            defense:18,
+            army:250
+        }
+    },
+
+    {
+        category:"special",
+        icon:"⭐",
+        names:[
+            "پایتخت اقتصادی",
+            "پروژه ملی",
+            "ابرپروژه صنعتی",
+            "مرکز نوآوری",
+            "شهر آینده",
+            "منطقه آزاد تجاری",
+            "پروژه ملی انرژی",
+            "طرح توسعه بزرگ"
+        ],
+        base:2500,
+        effects:{
+            treasury:1200,
+            production:25,
+            reputation:8,
+            technology:10
+        }
+    }
+
+];
+
+
+/* =========================================================
+   تولید صدها آیتم
+========================================================= */
+
+let storeItems = [];
+
+const levels = [
+    "استاندارد",
+    "پیشرفته",
+    "توسعه‌یافته",
+    "مدرن",
+    "ممتاز",
+    "پیشرفته پلاس",
+    "نسل جدید",
+    "نسخه ویژه",
+    "سطح ملی",
+    "سطح راهبردی"
+];
+
+
+let itemNumber = 0;
+
+
+storeBases.forEach(base => {
+
+    base.names.forEach(name => {
+
+        levels.forEach((level,levelIndex) => {
+
+            itemNumber++;
+
+            const multiplier =
+                1 + (levelIndex * 0.42);
+
+            const cost =
+                Math.round(
+                    base.base * multiplier
+                );
+
+            const effects = {};
+
+            Object.keys(base.effects).forEach(key => {
+
+                effects[key] =
+                    Math.max(
+                        1,
+                        Math.round(
+                            base.effects[key] *
+                            (1 + levelIndex * 0.22)
+                        )
+                    );
+
+            });
+
+
+            storeItems.push({
+
+                id:"store_" + itemNumber,
+
+                name:
+                    name +
+                    " — " +
+                    level,
+
+                category:base.category,
+
+                icon:base.icon,
+
+                cost:cost,
+
+                level:levelIndex + 1,
+
+                effects:effects,
+
+                description:
+                    "این پروژه باعث توسعه " +
+                    getCategoryName(base.category) +
+                    " کشور شما می‌شود و مزایای دائمی ایجاد می‌کند."
+
+            });
+
+        });
+
+    });
+
+});
+
+
+/* =========================================================
+   دسته‌بندی
+========================================================= */
+
+function getCategoryName(id){
+
+    const item =
+        storeCategories.find(
+            c => c.id === id
+        );
+
+    return item ?
+        item.name :
+        "کشور";
+
+}
+
+
+/* =========================================================
+   نمایش دسته‌بندی‌ها
+========================================================= */
+
+const categoriesBox =
+    document.getElementById("storeCategories");
+
+
+function renderCategories(){
+
+    categoriesBox.innerHTML = "";
+
+    storeCategories.forEach(category => {
+
+        const button =
+            document.createElement("button");
+
+        button.className =
+            "storeCategory";
+
+        button.dataset.category =
+            category.id;
+
+        button.textContent =
+            category.icon +
+            " " +
+            category.name;
+
+        if(category.id === "all"){
+            button.classList.add("active");
+        }
+
+        categoriesBox.appendChild(button);
+
+    });
+
+}
+
+
+renderCategories();
+
+
+/* =========================================================
+   فرمت پول
+========================================================= */
+
+function formatMoney(value){
+
+    return Number(value || 0)
+        .toLocaleString("fa-IR");
+
+}
+
+
+/* =========================================================
+   افکت‌های آیتم
+========================================================= */
+
+function effectsHTML(effects){
+
+    return Object.entries(effects)
+        .map(([key,value]) => {
+
+            const names = {
+
+                treasury:"💰 خزانه",
+
+                production:"🏭 تولید",
+
+                population:"👥 جمعیت",
+
+                reputation:"⭐ اعتبار",
+
+                army:"⚔️ ارتش",
+
+                defense:"🛡️ دفاع",
+
+                technology:"🧠 فناوری",
+
+                stability:"😊 ثبات",
+
+                food:"🌾 غذا",
+
+                energy:"⚡ انرژی",
+
+                industry:"🏭 صنعت",
+
+                trade:"📦 تجارت",
+
+                cities:"🏙️ شهر"
+
+            };
+
+            return `
+                <span class="storeEffect">
+                    ${names[key] || key}
+                    +${formatMoney(value)}
+                </span>
+            `;
+
+        })
+        .join("");
+
+}
+
+
+/* =========================================================
+   نمایش آیتم‌ها
+========================================================= */
+
+let activeCategory = "all";
+
+
+function renderStore(){
+
+    const container =
+        document.getElementById("storeItems");
+
+    const search =
+        document
+            .getElementById("storeSearch")
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    let filtered =
+        storeItems.filter(item => {
+
+            const categoryOK =
+                activeCategory === "all" ||
+                item.category === activeCategory;
+
+            const searchOK =
+                !search ||
+                item.name
+                    .toLowerCase()
+                    .includes(search) ||
+                item.description
+                    .toLowerCase()
+                    .includes(search);
+
+            return categoryOK && searchOK;
+
+        });
+
+
+    container.innerHTML = "";
+
+
+    if(filtered.length === 0){
+
+        container.innerHTML = `
+            <div style="
+                grid-column:1/-1;
+                text-align:center;
+                padding:50px;
+                opacity:.6;
+                font-size:18px;
+            ">
+                چیزی پیدا نشد.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    const fragment =
+        document.createDocumentFragment();
+
+
+    filtered.forEach(item => {
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "storeItem";
+
+
+        const owned =
+            game.inventory[item.id] || 0;
+
+
+        const canBuy =
+            Number(game.treasury || 0) >= item.cost;
+
+
+        card.innerHTML = `
+
+            <div class="storeItemIcon">
+                ${item.icon}
+            </div>
+
+            <div class="storeItemName">
+                ${item.name}
+            </div>
+
+            <div class="storeItemCategory">
+                ${getCategoryName(item.category)}
+                • سطح ${item.level}
+            </div>
+
+            <div class="storeItemDescription">
+                ${item.description}
+            </div>
+
+            <div class="storeEffects">
+                ${effectsHTML(item.effects)}
+            </div>
+
+            <div style="
+                font-size:11px;
+                opacity:.55;
+                margin-bottom:7px;
+            ">
+                مالکیت: ${owned}
+            </div>
+
+            <div class="storeBottom">
+
+                <div class="storePrice">
+                    💰 ${formatMoney(item.cost)}
+                </div>
+
+                <button
+                    class="storeBuy ${canBuy ? "" : "disabled"}"
+                    data-buy="${item.id}"
+                    ${canBuy ? "" : "disabled"}
+                >
+                    خرید
+                </button>
+
+            </div>
+
+        `;
+
+
+        fragment.appendChild(card);
+
+    });
+
+
+    container.appendChild(fragment);
+
+}
+
+
+/* =========================================================
+   دسته‌بندی کلیک
+========================================================= */
+
+categoriesBox.addEventListener(
+    "click",
+    function(event){
+
+        const button =
+            event.target.closest(
+                ".storeCategory"
+            );
+
+        if(!button) return;
+
+
+        activeCategory =
+            button.dataset.category;
+
+
+        document
+            .querySelectorAll(
+                ".storeCategory"
+            )
+            .forEach(btn => {
+
+                btn.classList.remove(
+                    "active"
+                );
+
+            });
+
+
+        button.classList.add(
+            "active"
+        );
+
+
+        renderStore();
+
+    }
+);
+
+
+/* =========================================================
+   جستجو
+========================================================= */
+
+document
+    .getElementById("storeSearch")
+    .addEventListener(
+        "input",
+        renderStore
+    );
+
+
+/* =========================================================
+   خرید آیتم
+========================================================= */
+
+function buyStoreItem(id){
+
+    const item =
+        storeItems.find(
+            x => x.id === id
+        );
+
+    if(!item) return;
+
+
+    if(Number(game.treasury || 0) < item.cost){
+
+        showStoreMessage(
+            "❌ موجودی خزانه کافی نیست."
+        );
+
+        return;
+
+    }
+
+
+    game.treasury -= item.cost;
+
+
+    game.inventory[item.id] =
+        (game.inventory[item.id] || 0) + 1;
+
+
+    Object.entries(item.effects)
+        .forEach(([key,value]) => {
+
+            if(typeof game[key] !== "number"){
+                game[key] = 0;
+            }
+
+            game[key] += value;
+
+        });
+
+
+    updateStoreMoney();
+
+    renderStore();
+
+
+    /* بروزرسانی رابط بازی قبلی */
+
+    if(typeof updateUI === "function"){
+        try{
+            updateUI();
+        }catch(e){}
+    }
+
+    if(typeof updateStats === "function"){
+        try{
+            updateStats();
+        }catch(e){}
+    }
+
+    if(typeof renderStats === "function"){
+        try{
+            renderStats();
+        }catch(e){}
+    }
+
+
+    /* ذخیره بازی */
+
+    try{
+
+        localStorage.setItem(
+            "worldEmpireSave",
+            JSON.stringify(game)
+        );
+
+    }catch(e){}
+
+
+    showStoreMessage(
+        "✅ " +
+        item.name +
+        " خریداری شد."
+    );
+
+}
+
+
+/* =========================================================
+   کلیک خرید
+========================================================= */
+
+document
+    .getElementById("storeItems")
+    .addEventListener(
+        "click",
+        function(event){
+
+            const button =
+                event.target.closest(
+                    "[data-buy]"
+                );
+
+            if(!button) return;
+
+
+            buyStoreItem(
+                button.dataset.buy
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   پیام فروشگاه
+========================================================= */
+
+let messageTimer = null;
+
+
+function showStoreMessage(text){
+
+    let box =
+        document.getElementById(
+            "storeMessage"
+        );
+
+
+    if(!box){
+
+        box =
+            document.createElement("div");
+
+        box.id =
+            "storeMessage";
+
+        box.style.cssText = `
+            position:fixed;
+            left:50%;
+            bottom:95px;
+            transform:translateX(-50%);
+            z-index:20000;
+            background:#182033;
+            color:#fff;
+            padding:13px 20px;
+            border-radius:13px;
+            box-shadow:0 10px 30px rgba(0,0,0,.4);
+            font-weight:900;
+            border:1px solid rgba(255,255,255,.12);
+            max-width:90vw;
+            text-align:center;
+        `;
+
+        document.body.appendChild(box);
+
+    }
+
+
+    box.textContent = text;
+
+    box.style.display =
+        "block";
+
+
+    clearTimeout(messageTimer);
+
+
+    messageTimer =
+        setTimeout(
+            () => {
+                box.style.display =
+                    "none";
+            },
+            2200
+        );
+
+}
+
+
+/* =========================================================
+   موجودی خزانه
+========================================================= */
+
+function updateStoreMoney(){
+
+    document
+        .getElementById(
+            "storeMoneyValue"
+        )
+        .textContent =
+        formatMoney(
+            game.treasury
+        );
+
+}
+
+
+/* =========================================================
+   باز کردن فروشگاه
+========================================================= */
+
+const storeOverlay =
+    document.getElementById(
+        "storeOverlay"
+    );
+
+
+document
+    .getElementById(
+        "storeBottomButton"
+    )
+    .addEventListener(
+        "click",
+        function(){
+
+            updateStoreMoney();
+
+            renderStore();
+
+            storeOverlay.classList.add(
+                "active"
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   بستن فروشگاه
+========================================================= */
+
+document
+    .getElementById(
+        "closeStore"
+    )
+    .addEventListener(
+        "click",
+        function(){
+
+            storeOverlay.classList.remove(
+                "active"
+            );
+
+        }
+    );
+
+
+storeOverlay.addEventListener(
+    "click",
+    function(event){
+
+        if(event.target === storeOverlay){
+
+            storeOverlay.classList.remove(
+                "active"
+            );
+
+        }
+
+    }
+);
+
+
+/* ESC */
+
+document.addEventListener(
+    "keydown",
+    function(event){
+
+        if(event.key === "Escape"){
+
+            storeOverlay.classList.remove(
+                "active"
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   شروع
+========================================================= */
+
+updateStoreMoney();
+
+renderStore();
+
+})();
+  </script>
