@@ -2,9 +2,8 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<meta name="theme-color" content="#07111f">
-<title>WORLD EMPIRE</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WORLD EMPIRE — Geo Strategy</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
@@ -16,737 +15,283 @@
 
 html,body{
     margin:0;
-    padding:0;
     width:100%;
     height:100%;
     overflow:hidden;
     font-family:Tahoma,Arial,sans-serif;
-    background:#07111f;
+    background:#07111d;
     color:#fff;
 }
 
-button,input,select{
+button,
+input,
+select{
     font-family:inherit;
 }
 
 button{
     cursor:pointer;
+    border:0;
 }
 
-.hidden{
-    display:none!important;
+#app{
+    width:100%;
+    height:100%;
+    position:relative;
+    overflow:hidden;
 }
-
-/* =========================================================
-   LOADING / COUNTRY SELECT
-========================================================= */
 
 #countryScreen{
     position:fixed;
     inset:0;
-    z-index:99999;
-    overflow-y:auto;
+    z-index:10000;
     background:
-        radial-gradient(circle at 15% 15%,rgba(0,180,255,.18),transparent 30%),
-        radial-gradient(circle at 85% 85%,rgba(0,255,180,.12),transparent 30%),
-        linear-gradient(145deg,#06101e,#0a1425 50%,#03141b);
-    padding:25px 15px 40px;
+        radial-gradient(circle at 50% 20%,rgba(36,111,180,.25),transparent 35%),
+        linear-gradient(145deg,#030913,#0a1727 55%,#06101c);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
 }
 
-.country-wrap{
-    width:min(100%,900px);
-    margin:auto;
+.countryBox{
+    width:min(920px,100%);
+    height:min(88vh,850px);
+    background:rgba(8,19,32,.96);
+    border:1px solid rgba(91,171,235,.28);
+    border-radius:24px;
+    box-shadow:0 25px 80px rgba(0,0,0,.55);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
 }
 
-.logo{
-    text-align:center;
-    margin:15px 0 25px;
+.countryHeader{
+    padding:24px 22px 16px;
+    background:linear-gradient(180deg,rgba(25,65,101,.45),transparent);
+    flex-shrink:0;
 }
 
-.logo h1{
+.countryHeader h1{
     margin:0;
-    font-size:clamp(32px,8vw,62px);
-    letter-spacing:3px;
-    font-weight:900;
+    font-size:28px;
 }
 
-.logo h1 span{
-    color:#19bfff;
+.countryHeader p{
+    margin:8px 0 0;
+    color:#a9bdd0;
+    font-size:13px;
 }
 
-.logo p{
-    margin:12px 0 0;
-    color:#aabbd0;
+.countrySearch{
+    margin-top:18px;
+    width:100%;
+    height:48px;
+    border-radius:14px;
+    border:1px solid #29455d;
+    background:#071421;
+    color:white;
+    padding:0 16px;
+    outline:none;
+    font-size:14px;
+}
+
+.countrySearch:focus{
+    border-color:#39a9ff;
+}
+
+.countryList{
+    flex:1;
+    overflow-y:auto;
+    padding:16px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+    gap:10px;
+}
+
+.countryCard{
+    min-height:74px;
+    background:linear-gradient(145deg,#102235,#0b1827);
+    border:1px solid #1e3b53;
+    color:#fff;
+    border-radius:15px;
+    padding:13px;
+    text-align:right;
+    transition:.15s;
+}
+
+.countryCard:hover,
+.countryCard:active{
+    transform:translateY(-2px);
+    border-color:#35a9ff;
+    background:#132b42;
+}
+
+.countryCard strong{
+    display:block;
+    font-size:14px;
+    margin-bottom:5px;
+}
+
+.countryCard small{
+    color:#7f9db4;
+    font-size:11px;
+}
+
+.countryFooter{
+    padding:14px 18px;
+    border-top:1px solid #1c3449;
+    color:#7592a9;
+    font-size:11px;
+    text-align:center;
+    flex-shrink:0;
+}
+
+#gameScreen{
+    width:100%;
+    height:100%;
+    display:none;
+    position:relative;
+}
+
+#topbar{
+    position:absolute;
+    z-index:1200;
+    top:0;
+    right:0;
+    left:0;
+    min-height:70px;
+    padding:8px;
+    background:rgba(5,14,24,.94);
+    border-bottom:1px solid #1d3448;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    overflow-x:auto;
+    scrollbar-width:none;
+}
+
+#topbar::-webkit-scrollbar{
+    display:none;
+}
+
+.brand{
+    min-width:145px;
+    padding:8px 12px;
+    border-left:1px solid #20394e;
+}
+
+.brand b{
+    display:block;
+    color:#52bdff;
     font-size:15px;
 }
 
-.search-box{
-    position:relative;
-    margin:20px 0;
+.brand span{
+    color:#708ba0;
+    font-size:10px;
 }
 
-.search-box input{
-    width:100%;
-    height:58px;
-    border-radius:18px;
-    border:1px solid #168dc2;
-    outline:none;
-    padding:0 55px 0 18px;
-    color:#fff;
-    background:rgba(16,31,52,.9);
-    font-size:16px;
-    box-shadow:0 0 18px rgba(0,177,255,.15);
+.stat{
+    min-width:92px;
+    padding:7px 9px;
+    border:1px solid #1b3449;
+    border-radius:10px;
+    background:#091725;
 }
 
-.search-box span{
-    position:absolute;
-    right:18px;
-    top:16px;
-    font-size:24px;
-}
-
-.country-status{
-    min-height:95px;
-    border:1px solid rgba(41,198,255,.25);
-    border-radius:22px;
-    padding:18px;
-    background:rgba(15,40,57,.72);
-    margin-bottom:18px;
-    text-align:center;
-}
-
-.country-status strong{
-    font-size:22px;
-}
-
-.country-status small{
+.stat label{
     display:block;
-    color:#9db0c4;
-    margin-top:8px;
+    color:#6d8ba0;
+    font-size:9px;
+    margin-bottom:4px;
 }
 
-.country-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(145px,1fr));
-    gap:10px;
-    max-height:47vh;
-    overflow-y:auto;
-    padding:3px;
-}
-
-.country-card{
-    border:1px solid rgba(255,255,255,.1);
-    background:rgba(19,31,49,.88);
-    border-radius:17px;
-    min-height:76px;
-    color:#fff;
-    padding:10px;
-    transition:.18s;
-}
-
-.country-card:active{
-    transform:scale(.97);
-}
-
-.country-card.selected{
-    border-color:#13baff;
-    background:linear-gradient(145deg,#103b5a,#0b263e);
-    box-shadow:0 0 20px rgba(0,186,255,.2);
-}
-
-.country-card .flag{
-    font-size:25px;
-}
-
-.country-card .name{
-    margin-top:5px;
-    font-size:13px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.start-btn{
-    width:100%;
-    height:62px;
-    margin-top:20px;
-    border:0;
-    border-radius:20px;
-    color:#fff;
-    font-size:19px;
-    font-weight:bold;
-    background:linear-gradient(135deg,#087db4,#0bbd93);
-    box-shadow:0 10px 30px rgba(0,180,210,.18);
-}
-
-.start-btn:disabled{
-    opacity:.35;
-    filter:grayscale(1);
-    box-shadow:none;
-}
-
-/* =========================================================
-   MAIN GAME
-========================================================= */
-
-#gameApp{
-    position:fixed;
-    inset:0;
-    display:none;
-    background:#07111f;
-}
-
-#gameApp.active{
-    display:block;
+.stat b{
+    font-size:12px;
 }
 
 #map{
     position:absolute;
-    inset:0;
-    z-index:1;
-    background:#08131e;
+    top:70px;
+    right:0;
+    left:0;
+    bottom:76px;
+    background:#081522;
 }
 
 .leaflet-container{
-    background:#08131e;
+    background:#081522;
+}
+
+.leaflet-control-zoom{
+    margin-top:82px!important;
 }
 
 .leaflet-control-attribution{
     font-size:8px!important;
+    opacity:.7;
 }
 
-.leaflet-control-zoom{
-    margin-top:85px!important;
-}
-
-/* =========================================================
-   TOP HUD
-========================================================= */
-
-.top-hud{
+#bottomDock{
     position:absolute;
-    top:8px;
-    left:8px;
-    right:8px;
-    z-index:1000;
-    pointer-events:none;
-}
-
-.hud-title{
-    width:max-content;
-    max-width:75%;
-    padding:8px 13px;
-    border-radius:13px;
-    background:rgba(5,13,24,.88);
-    border:1px solid rgba(46,190,255,.25);
-    backdrop-filter:blur(12px);
-    box-shadow:0 5px 25px rgba(0,0,0,.25);
-}
-
-.hud-title b{
-    color:#fff;
-}
-
-.hud-title span{
-    color:#18bdf4;
-}
-
-.stats-row{
-    margin-top:7px;
-    display:flex;
-    gap:6px;
-    overflow-x:auto;
-    pointer-events:auto;
-    scrollbar-width:none;
-}
-
-.stats-row::-webkit-scrollbar{
-    display:none;
-}
-
-.stat{
-    flex:0 0 auto;
-    min-width:95px;
-    padding:8px 10px;
-    border-radius:12px;
-    background:rgba(5,13,24,.9);
-    border:1px solid rgba(255,255,255,.09);
-    backdrop-filter:blur(12px);
-}
-
-.stat small{
-    display:block;
-    color:#91a6bd;
-    font-size:10px;
-}
-
-.stat strong{
-    display:block;
-    margin-top:3px;
-    font-size:13px;
-}
-
-.inflation-stat{
-    border-color:rgba(255,176,57,.28);
-}
-
-/* =========================================================
-   LEFT / RIGHT GAME CONTROLS
-========================================================= */
-
-.control-stack{
-    position:absolute;
-    z-index:1001;
-    left:10px;
-    top:150px;
-    display:flex;
-    flex-direction:column;
-    gap:7px;
-}
-
-.control-btn{
-    width:48px;
-    height:48px;
-    border:1px solid rgba(255,255,255,.13);
-    border-radius:14px;
-    background:rgba(7,17,31,.9);
-    color:#fff;
-    font-size:20px;
-    backdrop-filter:blur(10px);
-}
-
-.control-btn:active{
-    transform:scale(.94);
-}
-
-#targetPanel{
-    position:absolute;
-    z-index:1002;
-    right:10px;
-    top:150px;
-    width:min(300px,calc(100vw - 20px));
-    max-height:52vh;
-    overflow-y:auto;
-    background:rgba(5,13,24,.94);
-    border:1px solid rgba(20,177,239,.25);
-    border-radius:20px;
-    padding:15px;
-    backdrop-filter:blur(15px);
-    box-shadow:0 15px 45px rgba(0,0,0,.3);
-}
-
-.panel-title{
-    font-weight:bold;
-    font-size:16px;
-    margin-bottom:10px;
-}
-
-.target-name{
-    font-size:21px;
-    font-weight:bold;
-    margin-bottom:10px;
-}
-
-.info-line{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    padding:7px 0;
-    border-bottom:1px solid rgba(255,255,255,.06);
-    color:#afc1d5;
-    font-size:12px;
-}
-
-.info-line b{
-    color:#fff;
-}
-
-.action-grid{
+    z-index:1300;
+    right:0;
+    left:0;
+    bottom:0;
+    height:76px;
+    padding:8px;
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:7px;
-    margin-top:12px;
+    grid-template-columns:1fr 1fr 1fr 1fr;
+    gap:8px;
+    background:rgba(5,13,22,.97);
+    border-top:1px solid #1c3549;
 }
 
-.action{
-    border:1px solid rgba(255,255,255,.1);
-    border-radius:12px;
-    padding:10px 5px;
-    background:#102238;
-    color:#fff;
+.dockBtn{
+    border-radius:14px;
+    color:white;
+    background:linear-gradient(145deg,#10263a,#0b1928);
+    border:1px solid #24465e;
     font-size:11px;
+    font-weight:bold;
 }
 
-.action:active{
+.dockBtn:active{
     transform:scale(.97);
 }
 
-.action.danger{
-    background:#3a1820;
-    border-color:#8f3547;
+.dockBtn.store{
+    background:linear-gradient(145deg,#175d57,#0b3435);
+    border-color:#248f85;
 }
 
-/* =========================================================
-   BOTTOM BAR
-========================================================= */
-
-.bottom-area{
-    position:absolute;
-    z-index:1100;
-    left:0;
-    right:0;
-    bottom:0;
-    padding:8px 9px calc(8px + env(safe-area-inset-bottom));
-    pointer-events:none;
+.dockBtn.manage{
+    background:linear-gradient(145deg,#254f77,#122e49);
 }
 
-.bottom-buttons{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    pointer-events:auto;
+.dockBtn.war{
+    background:linear-gradient(145deg,#673d30,#38251f);
+    border-color:#8e5540;
 }
-
-.bottom-big-btn{
-    min-height:58px;
-    border:1px solid rgba(255,255,255,.13);
-    border-radius:18px;
-    color:#fff;
-    font-weight:bold;
-    font-size:15px;
-    background:rgba(6,15,27,.94);
-    backdrop-filter:blur(15px);
-    box-shadow:0 5px 25px rgba(0,0,0,.35);
-}
-
-.bottom-big-btn.store{
-    border-color:rgba(0,207,255,.4);
-    background:linear-gradient(135deg,rgba(4,61,91,.97),rgba(5,27,51,.97));
-}
-
-.bottom-big-btn.country{
-    border-color:rgba(0,232,175,.3);
-    background:linear-gradient(135deg,rgba(10,65,61,.97),rgba(7,29,39,.97));
-}
-
-.bottom-big-btn:active{
-    transform:scale(.98);
-}
-
-/* =========================================================
-   MODALS
-========================================================= */
-
-.modal{
-    position:fixed;
-    inset:0;
-    z-index:5000;
-    background:rgba(0,0,0,.66);
-    backdrop-filter:blur(7px);
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-}
-
-.modal-box{
-    width:min(100%,980px);
-    max-height:92vh;
-    overflow:hidden;
-    background:
-        radial-gradient(circle at 80% 0%,rgba(0,188,255,.08),transparent 35%),
-        #091525;
-    border:1px solid rgba(50,196,255,.2);
-    border-radius:27px 27px 0 0;
-    box-shadow:0 -20px 70px rgba(0,0,0,.55);
-    display:flex;
-    flex-direction:column;
-}
-
-.modal-header{
-    flex:0 0 auto;
-    padding:15px 17px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-}
-
-.modal-header h2{
-    margin:0;
-    font-size:20px;
-}
-
-.close-btn{
-    width:43px;
-    height:43px;
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:13px;
-    color:#fff;
-    background:#152337;
-    font-size:20px;
-}
-
-.modal-body{
-    overflow-y:auto;
-    padding:14px;
-}
-
-/* =========================================================
-   STORE
-========================================================= */
-
-.store-money{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    padding:13px;
-    border-radius:16px;
-    background:rgba(11,32,50,.9);
-    border:1px solid rgba(0,191,255,.14);
-    margin-bottom:12px;
-}
-
-.store-money b{
-    color:#48dcff;
-}
-
-.store-search{
-    width:100%;
-    height:50px;
-    border-radius:15px;
-    border:1px solid rgba(255,255,255,.1);
-    outline:none;
-    color:#fff;
-    background:#101f32;
-    padding:0 15px;
-    margin-bottom:10px;
-}
-
-.store-categories{
-    display:flex;
-    gap:7px;
-    overflow-x:auto;
-    scrollbar-width:none;
-    margin-bottom:13px;
-}
-
-.store-categories::-webkit-scrollbar{
-    display:none;
-}
-
-.category-btn{
-    flex:0 0 auto;
-    border:1px solid rgba(255,255,255,.1);
-    background:#122239;
-    color:#b9c9d9;
-    border-radius:13px;
-    padding:10px 13px;
-    font-size:12px;
-}
-
-.category-btn.active{
-    background:#084f72;
-    border-color:#14bff7;
-    color:#fff;
-}
-
-.store-grid{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:9px;
-}
-
-.store-card{
-    position:relative;
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:17px;
-    background:linear-gradient(145deg,#101f33,#0b1625);
-    padding:12px;
-    min-height:215px;
-}
-
-.store-card::before{
-    content:"";
-    position:absolute;
-    width:80px;
-    height:80px;
-    border-radius:50%;
-    background:rgba(16,191,255,.08);
-    left:-30px;
-    top:-30px;
-}
-
-.item-icon{
-    font-size:28px;
-    position:relative;
-}
-
-.item-name{
-    position:relative;
-    margin-top:6px;
-    font-weight:bold;
-    font-size:13px;
-    min-height:34px;
-}
-
-.item-category{
-    color:#7ea2bd;
-    font-size:10px;
-    margin-top:4px;
-}
-
-.item-desc{
-    color:#9eb0c2;
-    font-size:10px;
-    line-height:1.7;
-    margin:8px 0;
-    min-height:43px;
-}
-
-.item-effects{
-    font-size:10px;
-    line-height:1.8;
-    color:#bcd1df;
-    min-height:40px;
-}
-
-.item-buy{
-    width:100%;
-    margin-top:8px;
-    height:38px;
-    border:1px solid rgba(0,209,255,.2);
-    border-radius:11px;
-    background:#0b4864;
-    color:#fff;
-    font-size:11px;
-    font-weight:bold;
-}
-
-.item-buy:disabled{
-    opacity:.4;
-}
-
-.price{
-    color:#ffd36a;
-}
-
-.owned{
-    color:#71e0b5;
-}
-
-/* =========================================================
-   COUNTRY MANAGEMENT
-========================================================= */
-
-.management-grid{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:9px;
-}
-
-.manage-card{
-    border:1px solid rgba(255,255,255,.08);
-    background:#0e1d30;
-    border-radius:16px;
-    padding:13px;
-}
-
-.manage-card h3{
-    margin:0 0 10px;
-    font-size:14px;
-}
-
-.manage-card p{
-    margin:6px 0;
-    color:#9fb1c3;
-    font-size:11px;
-}
-
-.manage-card b{
-    color:#fff;
-}
-
-.manage-input{
-    width:100%;
-    height:40px;
-    border:1px solid rgba(255,255,255,.1);
-    background:#091525;
-    color:#fff;
-    border-radius:10px;
-    padding:0 10px;
-}
-
-.manage-action{
-    width:100%;
-    min-height:42px;
-    border:0;
-    border-radius:11px;
-    background:#164866;
-    color:#fff;
-    margin-top:8px;
-    font-size:11px;
-}
-
-/* =========================================================
-   DIPLOMACY
-========================================================= */
-
-.diplomacy-list{
-    display:grid;
-    gap:8px;
-}
-
-.dip-card{
-    border:1px solid rgba(255,255,255,.07);
-    background:#0e1d30;
-    border-radius:15px;
-    padding:12px;
-}
-
-.dip-card strong{
-    font-size:13px;
-}
-
-.dip-card p{
-    color:#91a7ba;
-    font-size:10px;
-    line-height:1.7;
-    margin:6px 0;
-}
-
-.dip-card button{
-    width:100%;
-    height:37px;
-    border:0;
-    border-radius:10px;
-    color:#fff;
-    background:#164866;
-}
-
-/* =========================================================
-   TOAST
-========================================================= */
 
 #toast{
     position:fixed;
-    z-index:99999;
+    z-index:10000;
     left:50%;
-    bottom:105px;
+    bottom:92px;
     transform:translateX(-50%) translateY(20px);
-    min-width:220px;
-    max-width:90%;
-    padding:13px 17px;
-    border-radius:14px;
-    background:rgba(7,15,27,.96);
-    border:1px solid rgba(30,198,255,.25);
-    text-align:center;
-    font-size:12px;
     opacity:0;
     pointer-events:none;
+    background:#091722;
+    border:1px solid #31516a;
+    border-radius:13px;
+    padding:11px 18px;
+    font-size:12px;
+    box-shadow:0 12px 40px rgba(0,0,0,.4);
     transition:.25s;
+    max-width:90%;
+    text-align:center;
 }
 
 #toast.show{
@@ -754,49 +299,418 @@ button{
     transform:translateX(-50%) translateY(0);
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
+.modal{
+    position:fixed;
+    inset:0;
+    z-index:5000;
+    background:rgba(0,0,0,.62);
+    backdrop-filter:blur(5px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:12px;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modalBox{
+    width:min(1000px,100%);
+    height:min(88vh,850px);
+    background:#091522;
+    border:1px solid #29475d;
+    border-radius:22px;
+    box-shadow:0 30px 90px rgba(0,0,0,.65);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+}
+
+.modalHead{
+    min-height:64px;
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-bottom:1px solid #1d3447;
+    background:#0c1b2a;
+}
+
+.modalHead h2{
+    flex:1;
+    margin:0;
+    font-size:18px;
+}
+
+.closeBtn{
+    width:38px;
+    height:38px;
+    border-radius:11px;
+    color:#fff;
+    background:#182b3b;
+    font-size:20px;
+}
+
+.modalBody{
+    flex:1;
+    overflow-y:auto;
+    padding:15px;
+}
+
+.sectionTitle{
+    margin:5px 0 12px;
+    font-size:14px;
+    color:#65c4ff;
+}
+
+.storeTop{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+}
+
+.storeSearch{
+    flex:1;
+    min-width:180px;
+    height:44px;
+    border-radius:12px;
+    border:1px solid #274257;
+    background:#06111c;
+    color:white;
+    padding:0 13px;
+    outline:none;
+}
+
+.moneyBadge{
+    height:44px;
+    display:flex;
+    align-items:center;
+    padding:0 14px;
+    background:#102b27;
+    border:1px solid #267a6c;
+    border-radius:12px;
+    font-size:12px;
+}
+
+.categories{
+    display:flex;
+    gap:7px;
+    overflow-x:auto;
+    padding-bottom:10px;
+    scrollbar-width:none;
+}
+
+.categories::-webkit-scrollbar{
+    display:none;
+}
+
+.catBtn{
+    white-space:nowrap;
+    padding:9px 13px;
+    border-radius:10px;
+    background:#0d1d2b;
+    border:1px solid #213c51;
+    color:#9bb0c1;
+    font-size:11px;
+}
+
+.catBtn.active{
+    background:#15547a;
+    border-color:#3aa8df;
+    color:white;
+}
+
+.storeGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+    gap:11px;
+}
+
+.item{
+    border:1px solid #1e3a4f;
+    border-radius:15px;
+    padding:13px;
+    background:linear-gradient(145deg,#0e2030,#0a1724);
+}
+
+.itemIcon{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#122b3f;
+    font-size:20px;
+    margin-bottom:9px;
+}
+
+.item h3{
+    margin:0 0 6px;
+    font-size:13px;
+}
+
+.item p{
+    margin:0 0 10px;
+    color:#7f9aac;
+    line-height:1.7;
+    font-size:10px;
+    min-height:35px;
+}
+
+.itemInfo{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:10px;
+    color:#8fa8ba;
+    margin-bottom:10px;
+}
+
+.buyBtn,
+.actionBtn{
+    width:100%;
+    min-height:39px;
+    border-radius:10px;
+    background:#14638c;
+    color:#fff;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.buyBtn:disabled{
+    opacity:.4;
+}
+
+.managementGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:11px;
+}
+
+.manageCard{
+    border:1px solid #203c52;
+    border-radius:15px;
+    background:#0c1b29;
+    padding:14px;
+}
+
+.manageCard h3{
+    margin:0 0 12px;
+    font-size:13px;
+    color:#68c5ff;
+}
+
+.manageValue{
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:5px;
+}
+
+.manageSub{
+    color:#718ca0;
+    font-size:10px;
+    margin-bottom:12px;
+}
+
+.range{
+    width:100%;
+}
+
+.actionRow{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+}
+
+.smallBtn{
+    min-height:37px;
+    border-radius:9px;
+    color:#fff;
+    background:#17344b;
+    border:1px solid #2a5068;
+    font-size:10px;
+}
+
+.danger{
+    background:#4c2929;
+    border-color:#754141;
+}
+
+.good{
+    background:#173d35;
+    border-color:#2d7566;
+}
+
+.diplomacyList{
+    display:grid;
+    gap:9px;
+}
+
+.dipCard{
+    border:1px solid #1e394d;
+    border-radius:13px;
+    padding:12px;
+    background:#0b1926;
+}
+
+.dipHeader{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:9px;
+}
+
+.dipHeader strong{
+    flex:1;
+    font-size:12px;
+}
+
+.relation{
+    font-size:10px;
+    color:#8faabd;
+}
+
+.dipActions{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+}
+
+.dipActions button{
+    min-height:34px;
+    border-radius:8px;
+    background:#142d40;
+    color:white;
+    font-size:9px;
+    border:1px solid #24475d;
+}
+
+#countryInfo{
+    position:absolute;
+    z-index:1400;
+    top:80px;
+    right:10px;
+    width:min(270px,calc(100% - 20px));
+    display:none;
+    background:rgba(7,18,29,.95);
+    border:1px solid #2b4b62;
+    border-radius:15px;
+    padding:12px;
+    box-shadow:0 15px 40px rgba(0,0,0,.35);
+}
+
+#countryInfo.show{
+    display:block;
+}
+
+#countryInfo h3{
+    margin:0 0 6px;
+    font-size:14px;
+}
+
+.infoLine{
+    display:flex;
+    justify-content:space-between;
+    color:#91a8ba;
+    font-size:10px;
+    padding:5px 0;
+    border-bottom:1px solid #162b3c;
+}
+
+.infoLine b{
+    color:white;
+}
+
+#mapMode{
+    position:absolute;
+    z-index:1400;
+    left:10px;
+    top:82px;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+
+.modeBtn{
+    width:40px;
+    height:40px;
+    border-radius:11px;
+    color:white;
+    background:rgba(7,18,29,.9);
+    border:1px solid #29475d;
+    font-size:16px;
+}
+
+.eventBox{
+    margin-top:12px;
+    padding:12px;
+    border:1px solid #27455a;
+    border-radius:12px;
+    background:#0a1926;
+    color:#91a7b7;
+    font-size:10px;
+    line-height:1.8;
+}
 
 @media(max-width:600px){
-    #targetPanel{
-        top:145px;
-        width:230px;
-        max-height:40vh;
-        padding:11px;
+    .brand{
+        min-width:125px;
     }
 
-    .control-stack{
-        top:145px;
+    .stat{
+        min-width:82px;
     }
 
-    .store-grid{
-        grid-template-columns:repeat(2,minmax(0,1fr));
+    #topbar{
+        min-height:64px;
     }
 
-    .store-card{
-        min-height:205px;
-        padding:10px;
+    #map{
+        top:64px;
+        bottom:72px;
     }
 
-    .management-grid{
-        grid-template-columns:1fr;
+    #bottomDock{
+        height:72px;
+    }
+
+    .dockBtn{
+        font-size:10px;
+    }
+
+    .modalBox{
+        height:94vh;
+        border-radius:18px;
+    }
+
+    .storeGrid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .managementGrid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .countryHeader h1{
+        font-size:22px;
+    }
+
+    .countryList{
+        grid-template-columns:1fr 1fr;
     }
 }
 
-@media(min-width:800px){
-    .modal{
-        align-items:center;
-        padding:25px;
+@media(max-width:390px){
+    .storeGrid,
+    .managementGrid{
+        grid-template-columns:1fr;
     }
 
-    .modal-box{
-        border-radius:25px;
-        max-height:88vh;
-    }
-
-    .store-grid{
-        grid-template-columns:repeat(4,minmax(0,1fr));
+    .countryList{
+        grid-template-columns:1fr;
     }
 }
 </style>
@@ -804,324 +718,273 @@ button{
 
 <body>
 
-<!-- =========================================================
-     COUNTRY SCREEN
-========================================================= -->
+<div id="app">
 
-<div id="countryScreen">
-    <div class="country-wrap">
+    <!-- انتخاب کشور -->
+    <section id="countryScreen">
+        <div class="countryBox">
+            <div class="countryHeader">
+                <h1>🌍 کشور خود را انتخاب کنید</h1>
+                <p>کشور انتخابی شما مرکز امپراتوری شما خواهد بود.</p>
+                <input
+                    id="countrySearch"
+                    class="countrySearch"
+                    placeholder="جستجوی کشور..."
+                    autocomplete="off">
+            </div>
 
-        <div class="logo">
-            <h1>WORLD <span>EMPIRE</span></h1>
-            <p>امپراتوری خودت را بساز، اقتصاد را مدیریت کن و جهان را فتح کن.</p>
+            <div id="countryList" class="countryList">
+                <!-- فوراً توسط JS پر می‌شود -->
+            </div>
+
+            <div class="countryFooter">
+                نقشه واقعی جهان پس از ورود به بازی بارگذاری می‌شود.
+            </div>
+        </div>
+    </section>
+
+    <!-- بازی -->
+    <section id="gameScreen">
+
+        <header id="topbar">
+
+            <div class="brand">
+                <b>🌍 WORLD EMPIRE</b>
+                <span id="playerCountryTop">در حال آماده‌سازی...</span>
+            </div>
+
+            <div class="stat">
+                <label>خزانه</label>
+                <b id="money">0</b>
+            </div>
+
+            <div class="stat">
+                <label>جمعیت</label>
+                <b id="population">0</b>
+            </div>
+
+            <div class="stat">
+                <label>تولید</label>
+                <b id="production">0</b>
+            </div>
+
+            <div class="stat">
+                <label>تورم</label>
+                <b id="inflation">0%</b>
+            </div>
+
+            <div class="stat">
+                <label>اعتبار</label>
+                <b id="reputation">0</b>
+            </div>
+
+            <div class="stat">
+                <label>قلمرو</label>
+                <b id="territories">1</b>
+            </div>
+
+            <div class="stat">
+                <label>قدرت</label>
+                <b id="power">0</b>
+            </div>
+
+            <div class="stat">
+                <label>سال</label>
+                <b id="year">2026</b>
+            </div>
+
+        </header>
+
+        <div id="map"></div>
+
+        <div id="mapMode">
+            <button class="modeBtn" data-mode="political">🌍</button>
+            <button class="modeBtn" data-mode="economy">💰</button>
+            <button class="modeBtn" data-mode="military">🛡️</button>
+            <button class="modeBtn" data-mode="development">🏙️</button>
         </div>
 
-        <div class="search-box">
-            <span>🔎</span>
-            <input id="countrySearch" type="text" placeholder="جستجوی کشور...">
+        <div id="countryInfo">
+            <h3 id="selectedName">کشور</h3>
+            <div class="infoLine">
+                <span>جمعیت</span>
+                <b id="selectedPopulation">-</b>
+            </div>
+            <div class="infoLine">
+                <span>تولید</span>
+                <b id="selectedProduction">-</b>
+            </div>
+            <div class="infoLine">
+                <span>قدرت</span>
+                <b id="selectedPower">-</b>
+            </div>
+            <div class="infoLine">
+                <span>رابطه</span>
+                <b id="selectedRelation">-</b>
+            </div>
         </div>
 
-        <div class="country-status">
-            <strong id="selectedCountryTitle">هیچ کشوری انتخاب نشده</strong>
-            <small id="selectedCountryInfo">ابتدا یک کشور انتخاب کن تا وارد بازی شوی.</small>
-        </div>
+        <nav id="bottomDock">
+            <button class="dockBtn store" id="openStore">🛒<br>فروشگاه</button>
+            <button class="dockBtn manage" id="openManage">🏛️<br>مدیریت کشور</button>
+            <button class="dockBtn war" id="openWar">⚔️<br>اقدام نظامی</button>
+            <button class="dockBtn" id="nextTurn">⏭️<br>پایان نوبت</button>
+        </nav>
 
-        <div id="countryLoading" style="text-align:center;padding:20px;color:#9eb4c8">
-            🌍 در حال آماده‌سازی کشورها...
-        </div>
-
-        <div id="countryGrid" class="country-grid"></div>
-
-        <button id="startGameBtn" class="start-btn" disabled>
-            🚀 شروع بازی
-        </button>
-
-    </div>
+    </section>
 </div>
-
-
-<!-- =========================================================
-     MAIN GAME
-========================================================= -->
-
-<div id="gameApp">
-
-    <div id="map"></div>
-
-    <div class="top-hud">
-
-        <div class="hud-title">
-            <b>WORLD <span>EMPIRE</span></b>
-            <small id="hudCountry">—</small>
-        </div>
-
-        <div class="stats-row">
-
-            <div class="stat">
-                <small>💰 خزانه</small>
-                <strong id="money">0</strong>
-            </div>
-
-            <div class="stat">
-                <small>👥 جمعیت</small>
-                <strong id="population">0</strong>
-            </div>
-
-            <div class="stat">
-                <small>🏭 تولید</small>
-                <strong id="production">0</strong>
-            </div>
-
-            <div class="stat inflation-stat">
-                <small>📈 تورم</small>
-                <strong id="inflation">0%</strong>
-            </div>
-
-            <div class="stat">
-                <small>⭐ اعتبار</small>
-                <strong id="reputation">0</strong>
-            </div>
-
-            <div class="stat">
-                <small>🏙 شهرها</small>
-                <strong id="cities">0</strong>
-            </div>
-
-            <div class="stat">
-                <small>🪖 ارتش</small>
-                <strong id="army">0</strong>
-            </div>
-
-            <div class="stat">
-                <small>📅 سال</small>
-                <strong id="year">1</strong>
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="control-stack">
-
-        <button class="control-btn" id="zoomWorld" title="نمایش جهان">🌍</button>
-        <button class="control-btn" id="modePolitical" title="سیاسی">🗺</button>
-        <button class="control-btn" id="modeEconomy" title="اقتصادی">💰</button>
-        <button class="control-btn" id="modeMilitary" title="نظامی">⚔️</button>
-        <button class="control-btn" id="nextTurn" title="سال بعد">⏩</button>
-
-    </div>
-
-
-    <div id="targetPanel">
-
-        <div class="panel-title">🎯 کشور انتخاب‌شده</div>
-
-        <div class="target-name" id="targetName">
-            کشور را روی نقشه انتخاب کن
-        </div>
-
-        <div id="targetInfo">
-            <div class="info-line">
-                <span>وضعیت</span>
-                <b>آماده</b>
-            </div>
-        </div>
-
-        <div class="action-grid">
-
-            <button class="action" id="tradeBtn">
-                🤝 تجارت
-            </button>
-
-            <button class="action" id="allianceBtn">
-                🛡 اتحاد
-            </button>
-
-            <button class="action" id="aidBtn">
-                🎁 کمک
-            </button>
-
-            <button class="action danger" id="warBtn">
-                ⚔️ حمله
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- فقط دو دکمه پایین صفحه -->
-    <div class="bottom-area">
-
-        <div class="bottom-buttons">
-
-            <button class="bottom-big-btn store" id="openStoreButton">
-                🛒 فروشگاه بزرگ
-            </button>
-
-            <button class="bottom-big-btn country" id="openManagementButton">
-                🏛 مدیریت کشور
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- =========================================================
-     STORE MODAL
-========================================================= -->
-
-<div id="storeModal" class="modal hidden">
-
-    <div class="modal-box">
-
-        <div class="modal-header">
-            <h2>🛒 فروشگاه امپراتوری</h2>
-
-            <button class="close-btn" id="closeStoreButton">
-                ✕
-            </button>
-        </div>
-
-        <div class="modal-body">
-
-            <div class="store-money">
-                <span>💰 موجودی خزانه</span>
-                <b id="storeMoney">0</b>
-            </div>
-
-            <input
-                id="storeSearch"
-                class="store-search"
-                type="text"
-                placeholder="🔎 جستجوی کالا..."
-            >
-
-            <div id="storeCategories" class="store-categories"></div>
-
-            <div id="storeGrid" class="store-grid"></div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- =========================================================
-     MANAGEMENT MODAL
-========================================================= -->
-
-<div id="managementModal" class="modal hidden">
-
-    <div class="modal-box">
-
-        <div class="modal-header">
-            <h2>🏛 مدیریت کشور</h2>
-
-            <button class="close-btn" id="closeManagementButton">
-                ✕
-            </button>
-        </div>
-
-        <div class="modal-body">
-
-            <div class="management-grid">
-
-                <div class="manage-card">
-                    <h3>🪖 ارتش</h3>
-                    <p>سرباز: <b id="mInfantry">0</b></p>
-                    <p>تانک: <b id="mTanks">0</b></p>
-                    <p>هواپیما: <b id="mFighters">0</b></p>
-                    <p>پهپاد: <b id="mDrones">0</b></p>
-                    <p>موشک: <b id="mMissiles">0</b></p>
-                </div>
-
-                <div class="manage-card">
-                    <h3>💰 مالیات</h3>
-                    <p>نرخ مالیات فعلی: <b id="taxValue">15%</b></p>
-
-                    <input
-                        id="taxInput"
-                        class="manage-input"
-                        type="range"
-                        min="0"
-                        max="40"
-                        value="15"
-                    >
-
-                    <p>
-                        مالیات بالاتر درآمد را افزایش می‌دهد،
-                        ولی می‌تواند اعتبار را کاهش دهد.
-                    </p>
-
-                    <button class="manage-action" id="applyTax">
-                        اعمال نرخ مالیات
-                    </button>
-                </div>
-
-                <div class="manage-card">
-                    <h3>📈 اقتصاد</h3>
-                    <p>تورم: <b id="mInflation">0%</b></p>
-                    <p>تولید: <b id="mProduction">0</b></p>
-                    <p>خزانه: <b id="mTreasury">0</b></p>
-                    <button class="manage-action" id="economicPolicy">
-                        سیاست اقتصادی
-                    </button>
-                </div>
-
-                <div class="manage-card">
-                    <h3>⭐ اعتبار کشور</h3>
-                    <p>اعتبار جهانی: <b id="mReputation">0</b></p>
-                    <p>روابط فعال: <b id="mRelations">0</b></p>
-                    <button class="manage-action" id="improveReputation">
-                        برنامه اعتبار ملی
-                    </button>
-                </div>
-
-                <div class="manage-card">
-                    <h3>🛡 امنیت</h3>
-                    <p>قدرت دفاعی: <b id="mDefense">0</b></p>
-                    <p>ثبات داخلی: <b id="mStability">0</b></p>
-                    <button class="manage-action" id="securityPolicy">
-                        تقویت امنیت
-                    </button>
-                </div>
-
-                <div class="manage-card">
-                    <h3>🌐 دیپلماسی</h3>
-                    <p>تعداد کشورها: <b id="mCountries">0</b></p>
-                    <p>متحدان: <b id="mAllies">0</b></p>
-                    <button class="manage-action" id="openDiplomacy">
-                        مدیریت روابط کشورها
-                    </button>
-                </div>
-
-            </div>
-
-            <div style="margin-top:14px">
-
-                <h3 style="font-size:15px">
-                    🌐 روابط دیپلماتیک با کشورها
-                </h3>
-
-                <div id="diplomacyList" class="diplomacy-list"></div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
 
 <div id="toast"></div>
 
+<!-- فروشگاه -->
+<div class="modal" id="storeModal">
+    <div class="modalBox">
+
+        <div class="modalHead">
+            <h2>🛒 فروشگاه امپراتوری</h2>
+            <div class="moneyBadge">
+                💰 <span id="storeMoney">0</span>
+            </div>
+            <button class="closeBtn" data-close="storeModal">×</button>
+        </div>
+
+        <div class="modalBody">
+
+            <div class="storeTop">
+                <input id="storeSearch" class="storeSearch" placeholder="جستجوی کالا...">
+            </div>
+
+            <div id="categories" class="categories"></div>
+
+            <div id="storeGrid" class="storeGrid"></div>
+
+        </div>
+    </div>
+</div>
+
+<!-- مدیریت کشور -->
+<div class="modal" id="manageModal">
+    <div class="modalBox">
+
+        <div class="modalHead">
+            <h2>🏛️ مدیریت کشور</h2>
+            <button class="closeBtn" data-close="manageModal">×</button>
+        </div>
+
+        <div class="modalBody">
+
+            <div class="sectionTitle">📊 وضعیت کشور</div>
+
+            <div class="managementGrid">
+
+                <div class="manageCard">
+                    <h3>💰 اقتصاد</h3>
+                    <div class="manageValue" id="manageMoney">0</div>
+                    <div class="manageSub">خزانه ملی</div>
+                    <div class="actionRow">
+                        <button class="smallBtn" id="economicStimulus">تحریک اقتصاد</button>
+                        <button class="smallBtn" id="fightInflation">کنترل تورم</button>
+                    </div>
+                </div>
+
+                <div class="manageCard">
+                    <h3>👥 جمعیت</h3>
+                    <div class="manageValue" id="managePopulation">0</div>
+                    <div class="manageSub">جمعیت کشور</div>
+                    <div class="actionRow">
+                        <button class="smallBtn good" id="investHealth">سلامت</button>
+                        <button class="smallBtn good" id="investEducation">آموزش</button>
+                    </div>
+                </div>
+
+                <div class="manageCard">
+                    <h3>🏭 تولید</h3>
+                    <div class="manageValue" id="manageProduction">0</div>
+                    <div class="manageSub">ظرفیت اقتصادی</div>
+                    <button class="smallBtn good" id="investIndustry">توسعه صنعت</button>
+                </div>
+
+                <div class="manageCard">
+                    <h3>🛡️ توان ملی</h3>
+                    <div class="manageValue" id="managePower">0</div>
+                    <div class="manageSub">توان دفاعی و آمادگی کشور</div>
+                    <button class="smallBtn" id="trainForces">افزایش آمادگی</button>
+                </div>
+
+                <div class="manageCard">
+                    <h3>📈 مالیات</h3>
+                    <div class="manageValue">
+                        <span id="taxValue">15</span>%
+                    </div>
+                    <div class="manageSub">نرخ مالیات</div>
+                    <input
+                        id="taxRange"
+                        class="range"
+                        type="range"
+                        min="5"
+                        max="35"
+                        value="15">
+                </div>
+
+                <div class="manageCard">
+                    <h3>🏙️ توسعه شهری</h3>
+                    <div class="manageValue" id="manageCities">1</div>
+                    <div class="manageSub">شهرهای توسعه‌یافته</div>
+                    <button class="smallBtn good" id="buildCity">ساخت شهر</button>
+                </div>
+
+                <div class="manageCard">
+                    <h3>🚢 زیرساخت</h3>
+                    <div class="manageValue" id="manageInfrastructure">20</div>
+                    <div class="manageSub">سطح زیرساخت</div>
+                    <button class="smallBtn" id="buildInfrastructure">توسعه زیرساخت</button>
+                </div>
+
+                <div class="manageCard">
+                    <h3>⭐ اعتبار</h3>
+                    <div class="manageValue" id="manageReputation">0</div>
+                    <div class="manageSub">اعتبار بین‌المللی</div>
+                    <button class="smallBtn" id="publicProgram">برنامه عمومی</button>
+                </div>
+
+            </div>
+
+            <div class="sectionTitle" style="margin-top:22px">
+                🤝 دیپلماسی جهانی
+            </div>
+
+            <div id="diplomacyList" class="diplomacyList"></div>
+
+            <div class="eventBox" id="eventLog">
+                رویدادهای کشور در اینجا نمایش داده می‌شوند.
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- جنگ -->
+<div class="modal" id="warModal">
+    <div class="modalBox">
+
+        <div class="modalHead">
+            <h2>⚔️ عملیات استراتژیک</h2>
+            <button class="closeBtn" data-close="warModal">×</button>
+        </div>
+
+        <div class="modalBody">
+
+            <div class="sectionTitle">انتخاب کشور هدف</div>
+
+            <div id="warTargets" class="diplomacyList"></div>
+
+            <div class="eventBox">
+                سیستم درگیری بازی کاملاً انتزاعی است و نتیجه بر اساس توان، آمادگی، اقتصاد، اعتبار و عوامل تصادفی محاسبه می‌شود.
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -1129,163 +992,203 @@ button{
 "use strict";
 
 /* =========================================================
-   WORLD EMPIRE
-   نسخه کامل
-   ساختار اصلی بازی + فروشگاه جدید
+   WORLD EMPIRE — GEOSTRATEGY
+   نسخه مستقل
 ========================================================= */
 
-const WORLD_URL =
+const GEOJSON_URL =
 "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
 
-const SAVE_KEY = "WORLD_EMPIRE_FINAL_SAVE_2026";
-
-let worldGeoJSON = null;
-let map = null;
-let worldLayer = null;
-
-let selectedCountryName = "";
-let selectedFeature = null;
-let targetCountryName = "";
-
-let currentMapMode = "political";
-
-let game = {
-    playerCountry:"",
-    treasury:8000,
-    population:25,
-    production:150,
-    inflation:4,
-    reputation:60,
-    cities:4,
-    army:12000,
-    year:1,
-
-    tax:15,
-    defense:45,
-    stability:75,
-
-    infantry:9000,
-    tanks:800,
-    fighters:150,
-    drones:250,
-    missiles:50,
-
-    countries:{},
-    ownedTerritories:[],
-    relations:{},
-    inventory:{},
-
-    statistics:{
-        wars:0,
-        wins:0,
-        losses:0,
-        purchases:0,
-        diplomaticActions:0
-    }
-};
-
-
 /* =========================================================
-   COUNTRY DATA
+   FALLBACK COUNTRIES
 ========================================================= */
 
-const fallbackCountries = [
-    "ایران",
-    "ترکیه",
-    "آذربایجان",
-    "عراق",
-    "ارمنستان",
-    "روسیه",
-    "چین",
-    "هند",
-    "ژاپن",
-    "کره جنوبی",
-    "آلمان",
-    "فرانسه",
-    "ایتالیا",
-    "اسپانیا",
-    "بریتانیا",
-    "هلند",
-    "سوئیس",
-    "لهستان",
-    "اوکراین",
-    "سوئد",
-    "نروژ",
-    "مصر",
-    "عربستان سعودی",
-    "امارات",
-    "قطر",
-    "پاکستان",
-    "افغانستان",
-    "اندونزی",
-    "استرالیا",
-    "کانادا",
-    "ایالات متحده",
-    "مکزیک",
-    "برزیل",
-    "آرژانتین",
-    "شیلی",
-    "آفریقای جنوبی",
-    "نیجریه",
-    "الجزایر",
-    "مراکش"
+const FALLBACK_COUNTRIES = [
+"Iran","Turkey","Azerbaijan","Armenia","Georgia","Russia",
+"Ukraine","Belarus","Kazakhstan","Uzbekistan","Turkmenistan",
+"Afghanistan","Pakistan","India","China","Mongolia","Japan",
+"South Korea","North Korea","Indonesia","Malaysia","Thailand",
+"Vietnam","Philippines","Saudi Arabia","Iraq","Syria","Jordan",
+"Israel","Lebanon","Egypt","Libya","Tunisia","Algeria","Morocco",
+"United States of America","Canada","Mexico","Brazil","Argentina",
+"Chile","Colombia","Peru","Venezuela","United Kingdom","Ireland",
+"France","Germany","Spain","Portugal","Italy","Greece","Netherlands",
+"Belgium","Switzerland","Austria","Poland","Romania","Bulgaria",
+"Serbia","Croatia","Norway","Sweden","Finland","Denmark",
+"Australia","New Zealand","South Africa","Nigeria","Ethiopia",
+"Kenya","Tanzania","Ghana","Angola","Sudan","Somalia"
 ];
 
-const flagMap = {
-    "Iran":"🇮🇷",
-    "Turkey":"🇹🇷",
-    "Azerbaijan":"🇦🇿",
-    "Iraq":"🇮🇶",
-    "Armenia":"🇦🇲",
-    "Russia":"🇷🇺",
-    "China":"🇨🇳",
-    "India":"🇮🇳",
-    "Japan":"🇯🇵",
-    "South Korea":"🇰🇷",
-    "Germany":"🇩🇪",
-    "France":"🇫🇷",
-    "Italy":"🇮🇹",
-    "Spain":"🇪🇸",
-    "United Kingdom":"🇬🇧",
-    "Netherlands":"🇳🇱",
-    "Switzerland":"🇨🇭",
-    "Poland":"🇵🇱",
-    "Ukraine":"🇺🇦",
-    "Sweden":"🇸🇪",
-    "Norway":"🇳🇴",
-    "Egypt":"🇪🇬",
-    "Saudi Arabia":"🇸🇦",
-    "United Arab Emirates":"🇦🇪",
-    "Qatar":"🇶🇦",
-    "Pakistan":"🇵🇰",
-    "Afghanistan":"🇦🇫",
-    "Indonesia":"🇮🇩",
-    "Australia":"🇦🇺",
-    "Canada":"🇨🇦",
-    "United States of America":"🇺🇸",
-    "Mexico":"🇲🇽",
-    "Brazil":"🇧🇷",
-    "Argentina":"🇦🇷",
-    "Chile":"🇨🇱",
-    "South Africa":"🇿🇦",
-    "Nigeria":"🇳🇬",
-    "Algeria":"🇩🇿",
-    "Morocco":"🇲🇦"
+/* =========================================================
+   GAME STATE
+========================================================= */
+
+const game = {
+
+    playerCountry:null,
+
+    money:150000,
+
+    population:25,
+
+    production:100,
+
+    inflation:4,
+
+    reputation:70,
+
+    power:100,
+
+    territories:1,
+
+    cities:1,
+
+    infrastructure:20,
+
+    education:20,
+
+    health:20,
+
+    readiness:70,
+
+    morale:75,
+
+    tax:15,
+
+    year:2026,
+
+    turn:1,
+
+    selectedCountry:null,
+
+    mapMode:"political",
+
+    countries:[],
+
+    countryData:{},
+
+    owned:{},
+
+    relations:{},
+
+    inventory:{},
+
+    events:[],
+
+    geoLayer:null,
+
+    map:null
 };
 
-function hashString(str){
-    let h = 0;
+/* =========================================================
+   STORE — 10 ITEMS PER CATEGORY
+========================================================= */
 
-    for(let i=0;i<str.length;i++){
-        h = ((h << 5) - h) + str.charCodeAt(i);
-        h |= 0;
-    }
+const STORE = [
 
-    return Math.abs(h);
-}
+/* منابع */
+{cat:"منابع",icon:"⛏️",name:"ذخایر معدنی",base:9000,effect:"production",value:10,desc:"افزایش ظرفیت تولید منابع."},
+{cat:"منابع",icon:"🪨",name:"مواد خام",base:7500,effect:"production",value:7,desc:"مواد اولیه برای اقتصاد کشور."},
+{cat:"منابع",icon:"🌲",name:"ذخایر طبیعی",base:6800,effect:"money",value:4500,desc:"درآمد دوره‌ای کشور را افزایش می‌دهد."},
+{cat:"منابع",icon:"💎",name:"منابع کمیاب",base:18000,effect:"reputation",value:4,desc:"اعتبار اقتصادی را افزایش می‌دهد."},
+{cat:"منابع",icon:"🧱",name:"مواد ساختمانی",base:6000,effect:"infrastructure",value:5,desc:"توسعه زیرساخت را آسان‌تر می‌کند."},
+{cat:"منابع",icon:"🌾",name:"ذخایر کشاورزی",base:7200,effect:"population",value:1,desc:"رشد جمعیت را تقویت می‌کند."},
+{cat:"منابع",icon:"💧",name:"ذخیره آب",base:8200,effect:"health",value:4,desc:"سلامت عمومی را افزایش می‌دهد."},
+{cat:"منابع",icon:"🧂",name:"منابع غذایی",base:6500,effect:"population",value:2,desc:"پایداری جمعیتی را افزایش می‌دهد."},
+{cat:"منابع",icon:"🛢️",name:"ذخایر انرژی",base:12000,effect:"production",value:14,desc:"توان تولید را بالا می‌برد."},
+{cat:"منابع",icon:"🔩",name:"فلزات صنعتی",base:10500,effect:"production",value:12,desc:"بازده صنایع را افزایش می‌دهد."},
+
+/* کشاورزی */
+{cat:"کشاورزی",icon:"🌱",name:"بذر اصلاح‌شده",base:5500,effect:"population",value:1,desc:"افزایش پایداری غذایی."},
+{cat:"کشاورزی",icon:"🚜",name:"تجهیزات کشاورزی",base:8500,effect:"production",value:9,desc:"افزایش تولید کشاورزی."},
+{cat:"کشاورزی",icon:"🌽",name:"کمک غذایی",base:6500,effect:"health",value:3,desc:"بهبود سلامت عمومی."},
+{cat:"کشاورزی",icon:"🏡",name:"مزرعه پیشرفته",base:12000,effect:"production",value:15,desc:"ظرفیت کشاورزی را افزایش می‌دهد."},
+{cat:"کشاورزی",icon:"💧",name:"سامانه آبیاری",base:9000,effect:"infrastructure",value:7,desc:"زیرساخت روستایی را افزایش می‌دهد."},
+{cat:"کشاورزی",icon:"🐄",name:"دامداری مدرن",base:10000,effect:"money",value:6500,desc:"درآمد ملی ایجاد می‌کند."},
+{cat:"کشاورزی",icon:"🍎",name:"زنجیره غذایی",base:7000,effect:"health",value:5,desc:"سلامت و ثبات کشور."},
+{cat:"کشاورزی",icon:"🌾",name:"انبار غلات",base:7600,effect:"money",value:5200,desc:"ذخیره اقتصادی کشور."},
+{cat:"کشاورزی",icon:"🏭",name:"صنایع غذایی",base:13500,effect:"production",value:13,desc:"تولید صنعتی غذایی."},
+{cat:"کشاورزی",icon:"🌍",name:"برنامه توسعه روستایی",base:11000,effect:"infrastructure",value:8,desc:"توسعه مناطق روستایی."},
+
+/* صنعت */
+{cat:"صنعت",icon:"🏭",name:"کارخانه عمومی",base:18000,effect:"production",value:20,desc:"ظرفیت تولید را افزایش می‌دهد."},
+{cat:"صنعت",icon:"⚙️",name:"خط تولید",base:15000,effect:"production",value:17,desc:"بازده کارخانه‌ها."},
+{cat:"صنعت",icon:"🔧",name:"مرکز تعمیرات",base:9000,effect:"readiness",value:5,desc:"آمادگی ملی را افزایش می‌دهد."},
+{cat:"صنعت",icon:"🏗️",name:"مجتمع صنعتی",base:25000,effect:"production",value:30,desc:"پروژه بزرگ صنعتی."},
+{cat:"صنعت",icon:"🚆",name:"صنعت حمل‌ونقل",base:19000,effect:"infrastructure",value:15,desc:"افزایش زیرساخت."},
+{cat:"صنعت",icon:"🏢",name:"منطقه صنعتی",base:22000,effect:"money",value:16000,desc:"درآمد اقتصادی جدید."},
+{cat:"صنعت",icon:"🔋",name:"مرکز انرژی",base:21000,effect:"production",value:25,desc:"افزایش توان انرژی."},
+{cat:"صنعت",icon:"🧪",name:"صنایع پیشرفته",base:30000,effect:"production",value:35,desc:"تولید با ارزش بالا."},
+{cat:"صنعت",icon:"📦",name:"مرکز لجستیک",base:14000,effect:"infrastructure",value:12,desc:"بهبود جریان کالا."},
+{cat:"صنعت",icon:"🏬",name:"مرکز تجاری",base:17000,effect:"money",value:12500,desc:"افزایش درآمد تجاری."},
+
+/* فناوری */
+{cat:"فناوری",icon:"💻",name:"مرکز فناوری",base:16000,effect:"production",value:18,desc:"توسعه فناوری."},
+{cat:"فناوری",icon:"🧠",name:"آزمایشگاه تحقیقاتی",base:22000,effect:"reputation",value:8,desc:"اعتبار علمی."},
+{cat:"فناوری",icon:"📡",name:"شبکه ارتباطی",base:13000,effect:"infrastructure",value:10,desc:"ارتباطات ملی."},
+{cat:"فناوری",icon:"🤖",name:"اتوماسیون",base:26000,effect:"production",value:28,desc:"افزایش بهره‌وری."},
+{cat:"فناوری",icon:"🛰️",name:"مرکز ماهواره‌ای",base:32000,effect:"reputation",value:10,desc:"اعتبار بین‌المللی."},
+{cat:"فناوری",icon:"🔬",name:"مرکز علوم",base:19000,effect:"education",value:12,desc:"آموزش و پژوهش."},
+{cat:"فناوری",icon:"🖥️",name:"زیرساخت دیجیتال",base:15000,effect:"production",value:16,desc:"اقتصاد دیجیتال."},
+{cat:"فناوری",icon:"📊",name:"مرکز داده",base:24000,effect:"money",value:17000,desc:"درآمد خدماتی."},
+{cat:"فناوری",icon:"🌐",name:"شبکه جهانی",base:28000,effect:"reputation",value:7,desc:"ارتباط اقتصادی جهانی."},
+{cat:"فناوری",icon:"⚡",name:"هوشمندسازی",base:23000,effect:"production",value:23,desc:"بهبود مدیریت کشور."},
+
+/* زیرساخت */
+{cat:"زیرساخت",icon:"🛣️",name:"بزرگراه",base:12000,effect:"infrastructure",value:10,desc:"افزایش اتصال شهرها."},
+{cat:"زیرساخت",icon:"🚉",name:"راه‌آهن",base:17000,effect:"infrastructure",value:15,desc:"ارتباط داخلی بهتر."},
+{cat:"زیرساخت",icon:"🏗️",name:"پروژه شهری",base:11000,effect:"cities",value:1,desc:"افزایش ظرفیت شهری."},
+{cat:"زیرساخت",icon:"🌉",name:"پل بزرگ",base:14500,effect:"infrastructure",value:12,desc:"بهبود حمل‌ونقل."},
+{cat:"زیرساخت",icon:"🏙️",name:"منطقه شهری",base:21000,effect:"cities",value:1,desc:"ایجاد ظرفیت شهر جدید."},
+{cat:"زیرساخت",icon:"🚢",name:"بندر تجاری",base:23000,effect:"money",value:18000,desc:"درآمد تجاری."},
+{cat:"زیرساخت",icon:"✈️",name:"مرکز حمل‌ونقل",base:26000,effect:"infrastructure",value:20,desc:"ارتباط جهانی."},
+{cat:"زیرساخت",icon:"🏥",name:"بیمارستان ملی",base:16000,effect:"health",value:15,desc:"افزایش سلامت."},
+{cat:"زیرساخت",icon:"🏫",name:"شبکه مدارس",base:13000,effect:"education",value:15,desc:"افزایش آموزش."},
+{cat:"زیرساخت",icon:"🏛️",name:"مرکز اداری",base:15000,effect:"reputation",value:4,desc:"بهبود مدیریت کشور."},
+
+/* خدمات */
+{cat:"خدمات",icon:"🏦",name:"بانک ملی",base:18000,effect:"money",value:15000,desc:"تقویت خزانه."},
+{cat:"خدمات",icon:"💳",name:"شبکه مالی",base:14000,effect:"money",value:10000,desc:"اقتصاد مالی."},
+{cat:"خدمات",icon:"🎓",name:"دانشگاه ملی",base:20000,effect:"education",value:18,desc:"افزایش سطح آموزش."},
+{cat:"خدمات",icon:"🏥",name:"شبکه سلامت",base:19000,effect:"health",value:18,desc:"افزایش سلامت."},
+{cat:"خدمات",icon:"🏨",name:"مرکز خدمات",base:11000,effect:"money",value:8000,desc:"افزایش درآمد."},
+{cat:"خدمات",icon:"📦",name:"خدمات پستی",base:7000,effect:"infrastructure",value:6,desc:"ارتباط داخلی."},
+{cat:"خدمات",icon:"📣",name:"کمپین اعتبار",base:8000,effect:"reputation",value:8,desc:"افزایش اعتبار."},
+{cat:"خدمات",icon:"🎓",name:"برنامه نخبگان",base:15000,effect:"education",value:13,desc:"توسعه منابع انسانی."},
+{cat:"خدمات",icon:"🏘️",name:"مسکن عمومی",base:17000,effect:"population",value:2,desc:"افزایش ثبات جمعیتی."},
+{cat:"خدمات",icon:"🌳",name:"برنامه محیط‌زیست",base:9000,effect:"health",value:7,desc:"سلامت و کیفیت زندگی."},
+
+/* انرژی */
+{cat:"انرژی",icon:"☀️",name:"نیروگاه خورشیدی",base:19000,effect:"production",value:22,desc:"انرژی پاک."},
+{cat:"انرژی",icon:"🌬️",name:"نیروگاه بادی",base:17500,effect:"production",value:19,desc:"تولید انرژی."},
+{cat:"انرژی",icon:"💧",name:"نیروگاه آبی",base:22000,effect:"production",value:26,desc:"انرژی پایدار."},
+{cat:"انرژی",icon:"🔋",name:"ذخیره انرژی",base:14000,effect:"production",value:13,desc:"ثبات شبکه."},
+{cat:"انرژی",icon:"⚡",name:"شبکه برق",base:18000,effect:"infrastructure",value:17,desc:"افزایش زیرساخت."},
+{cat:"انرژی",icon:"🔌",name:"شبکه هوشمند",base:24000,effect:"production",value:25,desc:"بهره‌وری انرژی."},
+{cat:"انرژی",icon:"🏭",name:"مرکز انرژی صنعتی",base:27000,effect:"production",value:32,desc:"افزایش تولید."},
+{cat:"انرژی",icon:"🌞",name:"پارک انرژی",base:31000,effect:"money",value:22000,desc:"درآمد انرژی."},
+{cat:"انرژی",icon:"🔧",name:"تعمیر شبکه",base:8500,effect:"infrastructure",value:8,desc:"تثبیت زیرساخت."},
+{cat:"انرژی",icon:"💡",name:"برنامه صرفه‌جویی",base:6500,effect:"inflation",value:-1,desc:"کاهش فشار تورمی."},
+
+/* مدیریت */
+{cat:"مدیریت",icon:"📋",name:"اصلاح اداری",base:10000,effect:"reputation",value:6,desc:"افزایش کارایی حکومت."},
+{cat:"مدیریت",icon:"⚖️",name:"اصلاح مالی",base:13000,effect:"inflation",value:-2,desc:"کاهش تورم."},
+{cat:"مدیریت",icon:"📉",name:"برنامه ثبات قیمت",base:16000,effect:"inflation",value:-3,desc:"کنترل تورم."},
+{cat:"مدیریت",icon:"📈",name:"برنامه رشد",base:15000,effect:"production",value:18,desc:"افزایش تولید."},
+{cat:"مدیریت",icon:"🤝",name:"نشست دیپلماتیک",base:9000,effect:"reputation",value:9,desc:"افزایش اعتبار."},
+{cat:"مدیریت",icon:"🌐",name:"دفتر تجارت خارجی",base:18000,effect:"money",value:14000,desc:"افزایش تجارت."},
+{cat:"مدیریت",icon:"🏛️",name:"اصلاح حکومت",base:24000,effect:"reputation",value:12,desc:"تقویت مدیریت."},
+{cat:"مدیریت",icon:"📚",name:"آرشیو ملی",base:7000,effect:"education",value:7,desc:"افزایش دانش."},
+{cat:"مدیریت",icon:"🧑‍💼",name:"مدیریت حرفه‌ای",base:20000,effect:"production",value:20,desc:"بهره‌وری ملی."},
+{cat:"مدیریت",icon:"⭐",name:"پروژه ملی",base:30000,effect:"reputation",value:15,desc:"افزایش اعتبار و توسعه."}
+
+];
+
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function countryName(props){
-    if(!props) return "کشور ناشناس";
 
     return (
         props.ADMIN ||
@@ -1293,288 +1196,236 @@ function countryName(props){
         props.name ||
         props.NAME_EN ||
         props.NAME_LONG ||
-        "کشور ناشناس"
+        "کشور ناشناخته"
     );
 }
 
-function getFlag(name){
-    return flagMap[name] || "🌐";
+function normalizeName(name){
+
+    if(!name) return "";
+
+    return String(name)
+        .toLowerCase()
+        .replace(/[^a-z0-9\u0600-\u06ff]+/g,"");
 }
 
-function makeCountryStats(name){
+function formatNumber(value){
 
-    const h = hashString(name);
+    value=Math.round(Number(value)||0);
+
+    return value.toLocaleString("en-US");
+}
+
+function clamp(v,min,max){
+
+    return Math.max(min,Math.min(max,v));
+}
+
+function hash(str){
+
+    let h=0;
+
+    for(let i=0;i<str.length;i++){
+
+        h=((h<<5)-h)+str.charCodeAt(i);
+        h|=0;
+    }
+
+    return Math.abs(h);
+}
+
+function countryStats(name){
+
+    const h=hash(name);
 
     return {
-        name:name,
-        treasury:2500 + h % 14000,
-        population:5 + h % 150,
-        production:70 + h % 650,
-        inflation:2 + h % 14,
-        reputation:35 + h % 60,
-        cities:2 + h % 12,
-        army:3000 + h % 90000,
-
-        infantry:2000 + h % 50000,
-        tanks:100 + h % 5000,
-        fighters:20 + h % 900,
-        drones:30 + h % 1200,
-        missiles:5 + h % 400,
-
-        defense:20 + h % 80,
-        stability:45 + h % 55,
-
-        relation:0,
-        controlled:false
+        population:1+(h%120),
+        production:30+(h%180),
+        power:30+(h%220),
+        infrastructure:20+(h%60),
+        reputation:35+(h%60)
     };
 }
 
+function showToast(text){
 
-/* =========================================================
-   LOAD COUNTRIES
-========================================================= */
+    const el=document.getElementById("toast");
 
-async function loadCountries(){
+    el.textContent=text;
+    el.classList.add("show");
 
-    const loading = document.getElementById("countryLoading");
+    clearTimeout(showToast.timer);
 
-    try{
-
-        const controller = new AbortController();
-
-        const timeout = setTimeout(()=>{
-            controller.abort();
-        },8000);
-
-        const response = await fetch(WORLD_URL,{
-            signal:controller.signal,
-            cache:"force-cache"
-        });
-
-        clearTimeout(timeout);
-
-        if(!response.ok){
-            throw new Error("GeoJSON error");
-        }
-
-        worldGeoJSON = await response.json();
-
-        const names = [];
-
-        worldGeoJSON.features.forEach(feature=>{
-
-            const name = countryName(feature.properties);
-
-            if(
-                name &&
-                name !== "کشور ناشناس" &&
-                !names.includes(name)
-            ){
-                names.push(name);
-            }
-
-        });
-
-        window.countryList = names.sort((a,b)=>a.localeCompare(b));
-
-        loading.classList.add("hidden");
-
-        renderCountries();
-
-    }catch(error){
-
-        console.log("Country loading fallback:",error);
-
-        window.countryList = [...fallbackCountries];
-
-        loading.innerHTML =
-            "🌍 فهرست آماده شد — حالت سازگار با اینترنت فعال است.";
-
-        setTimeout(()=>{
-            loading.classList.add("hidden");
-        },700);
-
-        renderCountries();
-    }
+    showToast.timer=setTimeout(()=>{
+        el.classList.remove("show");
+    },2400);
 }
 
+function openModal(id){
+
+    document.getElementById(id).classList.add("show");
+}
+
+function closeModal(id){
+
+    document.getElementById(id).classList.remove("show");
+}
 
 /* =========================================================
-   COUNTRY SELECT UI
+   COUNTRY SELECTION — ALWAYS AVAILABLE
 ========================================================= */
 
-function renderCountries(){
+function renderCountrySelection(list=FALLBACK_COUNTRIES){
 
-    const grid = document.getElementById("countryGrid");
+    const box=document.getElementById("countryList");
 
-    const query =
-        document.getElementById("countrySearch").value
-        .trim()
-        .toLowerCase();
+    box.innerHTML="";
 
-    grid.innerHTML = "";
+    const unique=[...new Set(list)].filter(Boolean);
 
-    const list = (window.countryList || fallbackCountries)
-        .filter(name =>
-            name.toLowerCase().includes(query)
-        );
+    unique.sort((a,b)=>a.localeCompare(b));
 
-    if(!list.length){
+    unique.forEach(name=>{
 
-        grid.innerHTML =
-            '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#8ea5bb">کشوری پیدا نشد.</div>';
+        const card=document.createElement("button");
 
-        return;
-    }
+        card.className="countryCard";
 
-    list.forEach(name=>{
+        const stats=countryStats(name);
 
-        const button = document.createElement("button");
-
-        button.className =
-            "country-card" +
-            (name === selectedCountryName ? " selected" : "");
-
-        button.innerHTML = `
-            <div class="flag">${getFlag(name)}</div>
-            <div class="name">${escapeHTML(name)}</div>
+        card.innerHTML=`
+            <strong>🌐 ${escapeHTML(name)}</strong>
+            <small>
+                جمعیت پایه: ${stats.population}M
+                · تولید: ${stats.production}
+            </small>
         `;
 
-        button.addEventListener("click",()=>{
-            selectCountry(name);
+        card.addEventListener("click",()=>{
+
+            startGame(name);
+
         });
 
-        grid.appendChild(button);
+        box.appendChild(card);
     });
 }
 
+function escapeHTML(value){
 
-function selectCountry(name){
-
-    selectedCountryName = name;
-
-    if(worldGeoJSON){
-
-        selectedFeature =
-            worldGeoJSON.features.find(
-                f => countryName(f.properties) === name
-            ) || null;
-    }
-
-    document.getElementById("selectedCountryTitle").textContent =
-        getFlag(name) + " " + name;
-
-    const data = makeCountryStats(name);
-
-    document.getElementById("selectedCountryInfo").textContent =
-        "جمعیت اولیه: " +
-        formatNumber(data.population) +
-        " میلیون نفر  •  تولید: " +
-        formatNumber(data.production) +
-        "  •  ارتش: " +
-        formatNumber(data.army);
-
-    document.getElementById("startGameBtn").disabled = false;
-
-    renderCountries();
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
 }
 
+/* =========================================================
+   LOAD COUNTRY NAMES WITHOUT BLOCKING START
+========================================================= */
+
+async function loadCountryNames(){
+
+    try{
+
+        const controller=new AbortController();
+
+        const timeout=setTimeout(()=>{
+            controller.abort();
+        },6000);
+
+        const response=await fetch(
+            GEOJSON_URL,
+            {
+                signal:controller.signal,
+                cache:"no-store"
+            }
+        );
+
+        clearTimeout(timeout);
+
+        if(!response.ok) throw new Error("GeoJSON error");
+
+        const data=await response.json();
+
+        const names=(data.features||[])
+            .map(f=>countryName(f.properties||{}))
+            .filter(Boolean);
+
+        if(names.length>30){
+
+            renderCountrySelection(names);
+        }
+
+    }catch(error){
+
+        console.log("Country list fallback:",error);
+    }
+}
 
 /* =========================================================
    START GAME
 ========================================================= */
 
-document
-.getElementById("startGameBtn")
-.addEventListener("click",startGame);
+function startGame(name){
 
+    game.playerCountry=name;
+    game.selectedCountry=name;
 
-function startGame(){
+    game.money=150000;
+    game.population=countryStats(name).population;
+    game.production=countryStats(name).production;
+    game.inflation=4;
+    game.reputation=countryStats(name).reputation;
+    game.power=countryStats(name).power;
+    game.territories=1;
+    game.cities=1;
+    game.infrastructure=countryStats(name).infrastructure;
+    game.education=25;
+    game.health=25;
+    game.readiness=70;
+    game.morale=75;
+    game.tax=15;
+    game.year=2026;
+    game.turn=1;
 
-    if(!selectedCountryName) return;
+    game.countries=[];
+    game.countryData={};
+    game.owned={};
+    game.relations={};
+    game.inventory={};
 
-    const base = makeCountryStats(selectedCountryName);
+    game.owned[name]=true;
 
-    game.playerCountry = selectedCountryName;
+    document.getElementById("countryScreen").style.display="none";
+    document.getElementById("gameScreen").style.display="block";
 
-    game.treasury = base.treasury;
-    game.population = base.population;
-    game.production = base.production;
-    game.inflation = base.inflation;
-    game.reputation = base.reputation;
-    game.cities = base.cities;
-    game.army = base.army;
+    initializeMap();
 
-    game.infantry = base.infantry;
-    game.tanks = base.tanks;
-    game.fighters = base.fighters;
-    game.drones = base.drones;
-    game.missiles = base.missiles;
+    buildWorldData();
 
-    game.defense = base.defense;
-    game.stability = base.stability;
+    buildStore();
 
-    game.tax = 15;
-    game.year = 1;
+    buildDiplomacy();
 
-    game.ownedTerritories = [selectedCountryName];
-
-    initializeCountries();
-
-    const saved = loadSaveRaw();
-
-    if(
-        saved &&
-        saved.playerCountry === selectedCountryName
-    ){
-        game = Object.assign(game,saved);
-
-        showToast("💾 ذخیره قبلی این کشور بارگذاری شد.");
-    }
-
-    document.getElementById("countryScreen").classList.add("hidden");
-
-    document.getElementById("gameApp").classList.add("active");
+    updateUI();
 
     setTimeout(()=>{
-        initializeMap();
-        updateUI();
-        saveGame();
-    },80);
+
+        if(game.map){
+
+            game.map.invalidateSize();
+
+            setTimeout(()=>{
+                game.map.invalidateSize();
+            },400);
+        }
+
+    },150);
+
+    showToast("امپراتوری شما با موفقیت آغاز شد: "+name);
 }
-
-
-/* =========================================================
-   INITIALIZE WORLD COUNTRIES
-========================================================= */
-
-function initializeCountries(){
-
-    game.countries = {};
-
-    const list =
-        worldGeoJSON && worldGeoJSON.features
-        ? worldGeoJSON.features.map(
-            f => countryName(f.properties)
-        )
-        : fallbackCountries;
-
-    list.forEach(name=>{
-
-        if(!name || name === game.playerCountry) return;
-
-        game.countries[name] = makeCountryStats(name);
-
-        game.relations[name] =
-            game.relations[name] ??
-            (hashString(name) % 21 - 10);
-    });
-
-    if(!game.relations){
-        game.relations = {};
-    }
-}
-
 
 /* =========================================================
    MAP
@@ -1582,722 +1433,398 @@ function initializeCountries(){
 
 function initializeMap(){
 
-    if(map){
-        map.invalidateSize();
-        return;
+    if(game.map){
+
+        game.map.remove();
+        game.map=null;
     }
 
-    map = L.map("map",{
+    game.map=L.map("map",{
         zoomControl:true,
-        worldCopyJump:true,
         minZoom:2,
-        maxZoom:7
-    }).setView([25,25],2.2);
+        maxZoom:7,
+        worldCopyJump:true
+    }).setView([28,35],2.7);
 
     L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
             maxZoom:19,
-            attribution:"© OpenStreetMap contributors"
+            attribution:"© OpenStreetMap"
         }
-    ).addTo(map);
+    ).addTo(game.map);
 
-    if(worldGeoJSON){
+    loadGeoJSON();
 
-        worldLayer = L.geoJSON(
-            worldGeoJSON,
-            {
-                style:styleCountry,
+    game.map.on("click",()=>{
 
-                onEachFeature:function(feature,layer){
+        document.getElementById("countryInfo")
+            .classList.remove("show");
 
-                    const name =
-                        countryName(feature.properties);
-
-                    layer.on("click",()=>{
-                        selectMapCountry(name);
-                    });
-
-                    layer.bindTooltip(
-                        escapeHTML(name),
-                        {
-                            sticky:true,
-                            direction:"top"
-                        }
-                    );
-                }
-            }
-        ).addTo(map);
-
-        try{
-
-            const bounds =
-                worldLayer.getBounds();
-
-            map.fitBounds(bounds,{
-                padding:[10,10]
-            });
-
-        }catch(e){}
-    }
-
-    setTimeout(()=>{
-        map.invalidateSize();
-    },300);
+    });
 }
 
+async function loadGeoJSON(){
 
-function styleCountry(feature){
+    try{
 
-    const name =
-        countryName(feature.properties);
+        const response=await fetch(
+            GEOJSON_URL,
+            {
+                cache:"force-cache"
+            }
+        );
 
-    let fill = "#1a334a";
+        if(!response.ok){
 
-    if(name === game.playerCountry){
-        fill = "#08a8d8";
-    }
-
-    if(
-        game.ownedTerritories &&
-        game.ownedTerritories.includes(name)
-    ){
-        fill = "#08a8d8";
-    }
-
-    if(name === targetCountryName){
-        fill = "#f0a12b";
-    }
-
-    if(currentMapMode === "economy"){
-
-        const c = game.countries[name];
-
-        if(c){
-            const p = c.production;
-
-            if(p > 600) fill="#0c8f75";
-            else if(p > 350) fill="#116d69";
-            else if(p > 180) fill="#174d5c";
-            else fill="#243d52";
+            throw new Error("Map unavailable");
         }
 
-        if(name === game.playerCountry){
-            fill="#10b99d";
-        }
+        const data=await response.json();
+
+        drawWorld(data);
+
+    }catch(error){
+
+        showToast("نقشه جهان بارگذاری نشد؛ دوباره صفحه را باز کنید.");
+
+        console.error(error);
+    }
+}
+
+function drawWorld(data){
+
+    if(game.geoLayer){
+
+        game.geoLayer.remove();
     }
 
-    if(currentMapMode === "military"){
+    game.geoLayer=L.geoJSON(
+        data,
+        {
+            style:feature=>{
 
-        const c = game.countries[name];
+                const name=countryName(
+                    feature.properties||{}
+                );
 
-        if(c){
+                return getCountryStyle(name);
+            },
 
-            if(c.army > 60000) fill="#9c3040";
-            else if(c.army > 30000) fill="#713444";
-            else if(c.army > 10000) fill="#4d3a46";
-            else fill="#293a49";
+            onEachFeature:(feature,layer)=>{
+
+                const name=countryName(
+                    feature.properties||{}
+                );
+
+                layer.on({
+
+                    click:e=>{
+
+                        L.DomEvent.stopPropagation(e);
+
+                        selectCountry(name,layer);
+                    },
+
+                    mouseover:e=>{
+
+                        e.target.setStyle({
+                            weight:2,
+                            color:"#fff"
+                        });
+
+                    },
+
+                    mouseout:e=>{
+
+                        e.target.setStyle(
+                            getCountryStyle(name)
+                        );
+                    }
+
+                });
+            }
         }
+    ).addTo(game.map);
+}
 
-        if(name === game.playerCountry){
-            fill="#c26a37";
-        }
+function getCountryStyle(name){
+
+    if(game.owned[name]){
+
+        return {
+            color:"#66d6ff",
+            weight:1,
+            fillColor:"#087ca6",
+            fillOpacity:.62
+        };
     }
+
+    const data=game.countryData[name];
+
+    if(!data){
+
+        return {
+            color:"#506574",
+            weight:.7,
+            fillColor:"#263b49",
+            fillOpacity:.48
+        };
+    }
+
+    if(game.mapMode==="economy"){
+
+        return {
+            color:"#4c6b58",
+            weight:.7,
+            fillColor:getEconomyColor(data.production),
+            fillOpacity:.58
+        };
+    }
+
+    if(game.mapMode==="military"){
+
+        return {
+            color:"#654e49",
+            weight:.7,
+            fillColor:getPowerColor(data.power),
+            fillOpacity:.58
+        };
+    }
+
+    if(game.mapMode==="development"){
+
+        return {
+            color:"#465d69",
+            weight:.7,
+            fillColor:getDevelopmentColor(data.infrastructure),
+            fillOpacity:.58
+        };
+    }
+
+    const hue=hash(name)%360;
 
     return {
-        color:"#6c899d",
-        weight:0.8,
-        fillColor:fill,
-        fillOpacity:.72
+        color:"#506674",
+        weight:.7,
+        fillColor:`hsl(${hue},35%,30%)`,
+        fillOpacity:.58
     };
 }
 
+function getEconomyColor(v){
 
-function refreshMap(){
+    if(v>170) return "#177b65";
+    if(v>120) return "#246c59";
+    if(v>80) return "#3d6550";
+    if(v>50) return "#555d4c";
 
-    if(!worldLayer) return;
+    return "#4d5147";
+}
 
-    worldLayer.setStyle(styleCountry);
+function getPowerColor(v){
 
-    worldLayer.eachLayer(layer=>{
+    if(v>200) return "#704f46";
+    if(v>140) return "#67473f";
+    if(v>90) return "#56423e";
 
-        const name =
-            countryName(layer.feature.properties);
+    return "#414044";
+}
 
-        if(name === targetCountryName){
-            layer.setStyle({
-                weight:2,
-                color:"#ffd05a",
-                fillOpacity:.9
-            });
+function getDevelopmentColor(v){
+
+    if(v>65) return "#286d70";
+    if(v>50) return "#3d6668";
+    if(v>35) return "#4e5e60";
+
+    return "#4c5254";
+}
+
+/* =========================================================
+   WORLD DATA
+========================================================= */
+
+function buildWorldData(){
+
+    game.countries=[...new Set(FALLBACK_COUNTRIES)];
+
+    game.countries.forEach(name=>{
+
+        if(name===game.playerCountry){
+
+            game.countryData[name]={
+                ...countryStats(name)
+            };
+
+            return;
         }
 
-        if(
-            game.ownedTerritories.includes(name)
-        ){
-            layer.setStyle({
-                weight:1.3,
-                color:"#29d8ff",
-                fillOpacity:.78
-            });
-        }
+        const stats=countryStats(name);
+
+        game.countryData[name]=stats;
+
+        game.relations[name]=
+            Math.round(-25+(hash(name+game.playerCountry)%100));
     });
 }
 
-
-function selectMapCountry(name){
-
-    if(!name) return;
-
-    targetCountryName = name;
-
-    const isPlayer =
-        name === game.playerCountry;
-
-    let data;
-
-    if(isPlayer){
-
-        data = {
-            name:name,
-            treasury:game.treasury,
-            population:game.population,
-            production:game.production,
-            inflation:game.inflation,
-            reputation:game.reputation,
-            cities:game.cities,
-            army:game.army,
-            defense:game.defense,
-            stability:game.stability
-        };
-
-    }else{
-
-        data =
-            game.countries[name] ||
-            makeCountryStats(name);
-    }
-
-    document.getElementById("targetName").textContent =
-        getFlag(name) + " " + name;
-
-    document.getElementById("targetInfo").innerHTML = `
-
-        <div class="info-line">
-            <span>👥 جمعیت</span>
-            <b>${formatNumber(data.population)}M</b>
-        </div>
-
-        <div class="info-line">
-            <span>🏭 تولید</span>
-            <b>${formatNumber(data.production)}</b>
-        </div>
-
-        <div class="info-line">
-            <span>🪖 ارتش</span>
-            <b>${formatNumber(data.army)}</b>
-        </div>
-
-        <div class="info-line">
-            <span>💰 خزانه</span>
-            <b>${formatMoney(data.treasury)}</b>
-        </div>
-
-        <div class="info-line">
-            <span>📈 تورم</span>
-            <b>${Number(data.inflation || 0).toFixed(1)}%</b>
-        </div>
-
-        <div class="info-line">
-            <span>🛡 دفاع</span>
-            <b>${Math.round(data.defense || 0)}</b>
-        </div>
-
-        <div class="info-line">
-            <span>⭐ اعتبار</span>
-            <b>${Math.round(data.reputation || 0)}</b>
-        </div>
-    `;
-
-    document.getElementById("tradeBtn").disabled = isPlayer;
-    document.getElementById("allianceBtn").disabled = isPlayer;
-    document.getElementById("aidBtn").disabled = isPlayer;
-    document.getElementById("warBtn").disabled = isPlayer;
-
-    refreshMap();
-}
-
-
 /* =========================================================
-   TOP UI
+   SELECT COUNTRY
 ========================================================= */
 
-function updateUI(){
+function selectCountry(name,layer){
 
-    document.getElementById("hudCountry").textContent =
-        getFlag(game.playerCountry) +
-        " " +
-        game.playerCountry;
+    game.selectedCountry=name;
 
-    document.getElementById("money").textContent =
-        formatMoney(game.treasury);
+    const data=
+        game.countryData[name] ||
+        countryStats(name);
 
-    document.getElementById("population").textContent =
-        formatNumber(game.population) + "M";
+    document.getElementById("selectedName").textContent=name;
 
-    document.getElementById("production").textContent =
-        formatNumber(game.production);
+    document.getElementById("selectedPopulation").textContent=
+        formatNumber(data.population)+"M";
 
-    document.getElementById("inflation").textContent =
-        Number(game.inflation).toFixed(1) + "%";
+    document.getElementById("selectedProduction").textContent=
+        formatNumber(data.production);
 
-    document.getElementById("reputation").textContent =
-        Math.round(game.reputation);
+    document.getElementById("selectedPower").textContent=
+        formatNumber(data.power);
 
-    document.getElementById("cities").textContent =
-        game.cities;
+    document.getElementById("selectedRelation").textContent=
+        game.owned[name]
+        ?"قلمرو شما"
+        :(game.relations[name]??0);
 
-    document.getElementById("army").textContent =
-        formatNumber(game.army);
+    document.getElementById("countryInfo")
+        .classList.add("show");
 
-    document.getElementById("year").textContent =
-        game.year;
+    if(layer){
 
-    updateManagement();
+        layer.setStyle({
+            weight:3,
+            color:"#fff"
+        });
 
-    if(document.getElementById("storeModal").classList.contains("hidden") === false){
-        updateStoreMoney();
-        renderStore();
+        setTimeout(()=>{
+
+            layer.setStyle(
+                getCountryStyle(name)
+            );
+
+        },900);
     }
 }
-
 
 /* =========================================================
    STORE
-   دقیقاً ۱۰ آیتم برای هر بخش
 ========================================================= */
 
-const storeSections = [
+let currentCategory="همه";
 
-    {
-        id:"resources",
-        name:"⛏ منابع",
-        items:[
-            ["سنگ آهن","⛏️","ذخیره استراتژیک سنگ آهن","1800",12,0,8,0,0],
-            ["مس","🟠","قرارداد بلندمدت مس","2200",15,0,6,0,0],
-            ["غلات","🌾","ذخیره غلات ملی","1500",8,2,0,1,0],
-            ["سوخت","🛢️","ذخیره سوخت ملی","3200",22,0,5,0,0],
-            ["ذخیره آب","💧","پروژه ذخیره آب کشور","2700",10,4,0,0,1],
-            ["مواد اولیه","📦","انبار بزرگ مواد اولیه","2500",18,0,7,0,0],
-            ["سنگ ساختمانی","🪨","معدن سنگ ساختمانی","2100",14,1,5,0,0],
-            ["منابع کمیاب","💎","ذخیره منابع کمیاب","6500",35,0,12,2,0],
-            ["ذخیره غذایی","🥫","ذخیره غذایی اضطراری","2900",12,6,0,2,0],
-            ["قرارداد منابع","📜","قرارداد تأمین منابع خارجی","4800",30,0,15,0,0]
-        ]
-    },
+function getCategories(){
 
-    {
-        id:"industry",
-        name:"🏭 صنعت",
-        items:[
-            ["کارخانه کوچک","🏭","کارخانه صنعتی پایه","4200",35,0,25,0,0],
-            ["کارخانه پیشرفته","🏗️","افزایش ظرفیت صنعتی","8500",70,0,45,0,2],
-            ["مجتمع صنعتی","🏢","مجتمع صنعتی چندمنظوره","14500",115,0,80,1,3],
-            ["خط تولید سریع","⚙️","بهینه‌سازی خطوط تولید","7200",80,0,35,0,2],
-            ["مرکز لجستیک","🚚","افزایش سرعت جابه‌جایی کالا","5300",45,0,22,1,1],
-            ["انبار هوشمند","📦","مدیریت هوشمند موجودی","6100",50,0,28,0,1],
-            ["کارگاه تخصصی","🔧","کارگاه تولید تخصصی","3900",30,0,20,0,1],
-            ["مرکز تعمیرات","🛠️","زیرساخت تعمیرات صنعتی","4700",38,0,18,0,3],
-            ["مجتمع صادراتی","🚢","افزایش ظرفیت صادرات","11000",95,0,50,2,2],
-            ["شهرک صنعتی","🏙️","پروژه بزرگ شهرک صنعتی","18000",150,0,100,2,4]
-        ]
-    },
+    return [
+        "همه",
+        ...new Set(STORE.map(x=>x.cat))
+    ];
+}
 
-    {
-        id:"infrastructure",
-        name:"🛣 زیرساخت",
-        items:[
-            ["جاده اصلی","🛣️","احداث جاده اصلی","2600",20,0,10,0,1],
-            ["بزرگراه","🚘","شبکه بزرگراهی","6200",50,0,24,0,2],
-            ["راه‌آهن","🚆","خط ریلی بین‌شهری","7900",65,1,30,0,2],
-            ["ایستگاه مرکزی","🚉","مرکز حمل‌ونقل ریلی","5400",42,2,20,0,1],
-            ["فرودگاه","✈️","فرودگاه بین‌المللی","12500",80,3,40,1,3],
-            ["بندر تجاری","⚓","بندر تجاری بزرگ","16000",110,3,55,2,3],
-            ["شبکه مترو","🚇","شبکه حمل‌ونقل شهری","10500",70,5,35,1,2],
-            ["مرکز پستی","📮","شبکه توزیع ملی","3100",25,2,12,0,1],
-            ["شبکه ارتباطی","📡","زیرساخت ارتباطی ملی","6900",60,2,32,1,2],
-            ["ابرپروژه زیرساختی","🌐","پروژه جامع زیرساخت","24000",190,8,100,3,5]
-        ]
-    },
+function buildStore(){
 
-    {
-        id:"technology",
-        name:"🔬 فناوری",
-        items:[
-            ["آزمایشگاه ملی","🔬","مرکز تحقیقات پایه","6800",35,1,30,1,3],
-            ["مرکز داده","💻","مرکز داده ملی","8200",55,1,35,0,3],
-            ["شبکه هوشمند","🧠","سامانه مدیریت هوشمند","9800",70,2,40,1,4],
-            ["مرکز نوآوری","💡","حمایت از نوآوری داخلی","7600",45,2,34,1,3],
-            ["دانشگاه پیشرفته","🎓","توسعه آموزش عالی","11500",65,7,38,2,2],
-            ["آزمایشگاه رباتیک","🤖","پروژه رباتیک صنعتی","13200",85,1,55,1,4],
-            ["شبکه ماهواره‌ای","🛰️","ارتباطات ماهواره‌ای","17500",110,2,65,2,5],
-            ["هوش مصنوعی","🧠","سامانه هوشمند ملی","21000",145,3,80,3,6],
-            ["مرکز هوافضا","🚀","مرکز تحقیقات هوافضا","25000",175,4,95,3,7],
-            ["پروژه علمی ملی","🧪","پروژه تحقیقاتی بزرگ","30000",220,5,120,4,8]
-        ]
-    },
+    const catBox=document.getElementById("categories");
 
-    {
-        id:"agriculture",
-        name:"🌾 کشاورزی",
-        items:[
-            ["مزرعه مدرن","🌱","افزایش بهره‌وری کشاورزی","2100",12,5,5,0,0],
-            ["گلخانه","🏡","تولید کنترل‌شده محصولات","3900",25,4,12,0,1],
-            ["سیستم آبیاری","💦","بهینه‌سازی مصرف آب","3500",20,3,10,0,2],
-            ["مرکز کشاورزی","🌾","مرکز خدمات کشاورزی","4500",30,5,15,1,1],
-            ["انبار غلات","🌾","افزایش ظرفیت ذخیره غذا","4300",24,4,8,0,1],
-            ["مزرعه بزرگ","🚜","مزرعه صنعتی بزرگ","8200",60,9,30,1,2],
-            ["مرکز دامپروری","🐄","توسعه تولید دام","6400",42,7,22,0,1],
-            ["کشاورزی هوشمند","📱","فناوری کشاورزی هوشمند","9300",65,8,35,1,3],
-            ["مرکز بذر","🌿","پشتیبانی تولید کشاورزی","5100",28,5,18,1,2],
-            ["پروژه غذایی ملی","🍞","پروژه امنیت غذایی","15000",100,15,55,2,4]
-        ]
-    },
+    catBox.innerHTML="";
 
-    {
-        id:"energy",
-        name:"⚡ انرژی",
-        items:[
-            ["نیروگاه کوچک","⚡","نیروگاه پایه","6500",65,0,30,0,2],
-            ["نیروگاه خورشیدی","☀️","تولید انرژی خورشیدی","9200",90,1,40,1,3],
-            ["نیروگاه بادی","🌬️","تولید انرژی بادی","8800",80,1,38,1,3],
-            ["شبکه برق","🔌","تقویت شبکه برق","7400",55,1,32,0,4],
-            ["باتری ملی","🔋","ذخیره انرژی","6900",50,0,25,1,3],
-            ["مرکز انرژی پاک","🌱","پروژه انرژی پاک","12000",105,2,50,2,4],
-            ["شبکه هوشمند برق","⚙️","مدیریت هوشمند انرژی","13500",120,2,60,2,5],
-            ["مجتمع انرژی","🏭","مجتمع بزرگ انرژی","19000",170,1,80,2,6],
-            ["پروژه انرژی ملی","🌐","برنامه جامع انرژی","27000",240,3,115,3,8],
-            ["ذخیره انرژی راهبردی","🔋","ذخیره بزرگ انرژی","22000",180,2,70,2,7]
-        ]
-    },
+    getCategories().forEach(cat=>{
 
-    {
-        id:"welfare",
-        name:"🏥 رفاه",
-        items:[
-            ["بیمارستان","🏥","ساخت بیمارستان عمومی","4600",15,7,12,2,2],
-            ["مدرسه","🏫","توسعه آموزش پایه","2300",8,5,7,1,1],
-            ["دانشگاه","🎓","افزایش ظرفیت دانشگاهی","7600",20,9,20,2,2],
-            ["مرکز درمانی","⚕️","مرکز درمانی شهری","3100",10,5,8,1,2],
-            ["پارک شهری","🌳","افزایش رفاه شهری","1800",5,4,5,2,0],
-            ["مسکن شهری","🏘️","پروژه مسکن","7200",30,12,18,1,2],
-            ["شبکه آب شهری","🚰","بهبود خدمات آب","5900",25,6,16,1,3],
-            ["شبکه فاضلاب","♻️","زیرساخت شهری","6100",22,5,15,1,3],
-            ["مرکز فرهنگی","🏛️","توسعه فرهنگی","3600",10,4,10,3,1],
-            ["ابرپروژه رفاه","❤️","برنامه جامع رفاه","18000",65,25,45,6,5]
-        ]
-    },
+        const btn=document.createElement("button");
 
-    {
-        id:"trade",
-        name:"📦 تجارت",
-        items:[
-            ["قرارداد تجاری","📜","افزایش درآمد تجارت","2800",25,0,12,1,0],
-            ["بازار منطقه‌ای","🏪","بازار منطقه‌ای","4900",45,2,18,1,1],
-            ["مرکز صادرات","📤","مرکز صادرات کالا","7200",65,1,28,2,2],
-            ["مرکز واردات","📥","بهینه‌سازی واردات","6100",50,0,22,1,1],
-            ["اتحادیه تجاری","🤝","قرارداد تجاری گسترده","9800",90,1,35,3,2],
-            ["دفتر بازرگانی","💼","دفتر تجارت خارجی","4200",38,0,15,2,1],
-            ["بازار جهانی","🌎","دسترسی بیشتر به بازارها","13500",120,1,55,3,3],
-            ["ناوگان تجاری","🚢","افزایش ظرفیت حمل‌ونقل","11800",100,0,45,2,3],
-            ["بانک توسعه","🏦","افزایش گردش اقتصادی","14500",130,2,50,3,4],
-            ["پروژه تجارت ملی","🌐","برنامه جامع تجارت","23000",210,2,95,5,6]
-        ]
-    },
+        btn.className="catBtn";
 
-    {
-        id:"defense",
-        name:"🛡 دفاع",
-        items:[
-            ["مرکز فرماندهی","🎖️","تقویت سازماندهی ارتش","6500",20,0,25,0,12],
-            ["پایگاه دفاعی","🛡️","افزایش قدرت دفاعی","7200",15,0,30,0,18],
-            ["مرکز پشتیبانی","📡","پشتیبانی لجستیکی","5400",18,0,20,0,10],
-            ["سامانه مراقبت","👁️","افزایش آگاهی مرزی","8300",25,0,32,0,22],
-            ["شبکه پدافندی","🔰","تقویت دفاع ملی","11000",35,0,45,0,30],
-            ["مرکز آموزشی","🎯","آموزش نیروها","4700",12,0,18,0,8],
-            ["ناوگان پشتیبانی","🚛","افزایش لجستیک نظامی","9200",25,0,40,0,15],
-            ["مرکز هوایی","✈️","توسعه زیرساخت هوایی","12500",35,0,55,0,20],
-            ["مرکز دریایی","⚓","توسعه زیرساخت دریایی","14500",40,0,60,0,24],
-            ["طرح دفاع ملی","🏰","برنامه جامع دفاعی","28000",80,0,120,0,55]
-        ]
-    }
+        if(cat===currentCategory){
 
-];
+            btn.classList.add("active");
+        }
 
+        btn.textContent=cat;
 
-/* =========================================================
-   FLATTEN STORE ITEMS
-========================================================= */
+        btn.addEventListener("click",()=>{
 
-let storeItems = [];
+            currentCategory=cat;
 
-function buildStoreItems(){
-
-    storeItems = [];
-
-    storeSections.forEach(section=>{
-
-        section.items.forEach((raw,index)=>{
-
-            const item = {
-
-                id:
-                    section.id +
-                    "_" +
-                    index,
-
-                name:raw[0],
-                icon:raw[1],
-                description:raw[2],
-
-                baseCost:Number(raw[3]),
-
-                production:Number(raw[4]),
-                population:Number(raw[5]),
-                treasury:Number(raw[6]),
-                reputation:Number(raw[7]),
-                defense:Number(raw[8]),
-
-                category:section.id,
-                categoryName:section.name
-
-            };
-
-            storeItems.push(item);
+            buildStore();
         });
 
-    });
-}
-
-buildStoreItems();
-
-
-/* =========================================================
-   STORE CATEGORIES
-========================================================= */
-
-let currentStoreCategory = "all";
-
-function renderStoreCategories(){
-
-    const container =
-        document.getElementById("storeCategories");
-
-    container.innerHTML = "";
-
-    const allButton =
-        document.createElement("button");
-
-    allButton.className =
-        "category-btn" +
-        (currentStoreCategory === "all" ? " active" : "");
-
-    allButton.textContent =
-        "🌐 همه";
-
-    allButton.addEventListener("click",()=>{
-
-        currentStoreCategory = "all";
-
-        renderStoreCategories();
-        renderStore();
-
+        catBox.appendChild(btn);
     });
 
-    container.appendChild(allButton);
-
-    storeSections.forEach(section=>{
-
-        const button =
-            document.createElement("button");
-
-        button.className =
-            "category-btn" +
-            (currentStoreCategory === section.id ? " active" : "");
-
-        button.textContent = section.name;
-
-        button.addEventListener("click",()=>{
-
-            currentStoreCategory = section.id;
-
-            renderStoreCategories();
-            renderStore();
-
-        });
-
-        container.appendChild(button);
-    });
+    renderStoreItems();
 }
 
+function itemPrice(item){
 
-/* =========================================================
-   INFLATION PRICE
-========================================================= */
+    const multiplier=1+(game.inflation/100);
 
-function getStorePrice(item){
-
-    /*
-       تورم مستقیماً روی قیمت فروشگاه اثر می‌گذارد.
-       مثال:
-       تورم 5%  => 1.05
-       تورم 20% => 1.20
-       تورم 50% => 1.50
-    */
-
-    const multiplier =
-        1 + (Number(game.inflation) / 100);
-
-    return Math.max(
-        1,
-        Math.round(item.baseCost * multiplier)
-    );
+    return Math.round(item.base*multiplier);
 }
 
+function renderStoreItems(){
 
-/* =========================================================
-   STORE RENDER
-========================================================= */
+    const grid=document.getElementById("storeGrid");
 
-function renderStore(){
-
-    const grid =
-        document.getElementById("storeGrid");
-
-    if(!grid) return;
-
-    const query =
+    const search=
         document.getElementById("storeSearch")
-        .value
-        .trim()
-        .toLowerCase();
+            .value
+            .trim()
+            .toLowerCase();
 
-    let list = storeItems;
+    grid.innerHTML="";
 
-    if(currentStoreCategory !== "all"){
+    let items=STORE.filter(item=>{
 
-        list = list.filter(
-            item =>
-                item.category === currentStoreCategory
-        );
-    }
+        const categoryOK=
+            currentCategory==="همه" ||
+            item.cat===currentCategory;
 
-    if(query){
+        const searchOK=
+            !search ||
+            item.name.toLowerCase().includes(search) ||
+            item.desc.toLowerCase().includes(search);
 
-        list = list.filter(item=>
-            (
-                item.name +
-                " " +
-                item.description +
-                " " +
-                item.categoryName
-            )
-            .toLowerCase()
-            .includes(query)
-        );
-    }
+        return categoryOK && searchOK;
+    });
 
-    grid.innerHTML = "";
+    items.forEach(item=>{
 
-    if(!list.length){
+        const index=STORE.indexOf(item);
 
-        grid.innerHTML =
-            '<div style="grid-column:1/-1;text-align:center;padding:35px;color:#90a8bc">موردی پیدا نشد.</div>';
+        if(game.inventory[index]===undefined){
 
-        return;
-    }
+            game.inventory[index]=0;
+        }
 
-    list.forEach(item=>{
+        const price=itemPrice(item);
 
-        const card =
-            document.createElement("div");
+        const card=document.createElement("div");
 
-        card.className = "store-card";
+        card.className="item";
 
-        const price =
-            getStorePrice(item);
+        card.innerHTML=`
+            <div class="itemIcon">${item.icon}</div>
+            <h3>${escapeHTML(item.name)}</h3>
+            <p>${escapeHTML(item.desc)}</p>
 
-        const owned =
-            Number(game.inventory[item.id] || 0);
-
-        let effects = [];
-
-        if(item.production)
-            effects.push(
-                "🏭 +" +
-                item.production +
-                " تولید"
-            );
-
-        if(item.population)
-            effects.push(
-                "👥 +" +
-                item.population +
-                " جمعیت"
-            );
-
-        if(item.treasury)
-            effects.push(
-                "💰 +" +
-                formatMoney(item.treasury)
-            );
-
-        if(item.reputation)
-            effects.push(
-                "⭐ +" +
-                item.reputation
-            );
-
-        if(item.defense)
-            effects.push(
-                "🛡 +" +
-                item.defense +
-                " دفاع"
-            );
-
-        card.innerHTML = `
-
-            <div class="item-icon">${item.icon}</div>
-
-            <div class="item-name">
-                ${escapeHTML(item.name)}
-            </div>
-
-            <div class="item-category">
-                ${escapeHTML(item.categoryName)}
-            </div>
-
-            <div class="item-desc">
-                ${escapeHTML(item.description)}
-            </div>
-
-            <div class="item-effects">
-                ${effects.join("<br>")}
-            </div>
-
-            <div class="owned">
-                مالکیت: ${owned}
+            <div class="itemInfo">
+                <span>💰 ${formatNumber(price)}</span>
+                <span>تعداد: ${game.inventory[index]}</span>
             </div>
 
             <button
-                class="item-buy"
-                data-buy="${item.id}"
-                ${game.treasury < price ? "disabled" : ""}
-            >
+                class="buyBtn"
+                data-buy="${index}"
+                ${game.money<price?"disabled":""}>
                 خرید
-                <span class="price">
-                    💰 ${formatMoney(price)}
-                </span>
             </button>
         `;
 
@@ -2305,1061 +1832,1195 @@ function renderStore(){
     });
 }
 
+document.getElementById("storeGrid")
+.addEventListener("click",e=>{
 
-/* =========================================================
-   STORE BUY
-========================================================= */
+    const btn=e.target.closest("[data-buy]");
 
-function purchaseStoreItem(id){
+    if(!btn) return;
 
-    const item =
-        storeItems.find(x=>x.id === id);
+    const index=Number(btn.dataset.buy);
+
+    buyItem(index);
+});
+
+function buyItem(index){
+
+    const item=STORE[index];
 
     if(!item) return;
 
-    const price =
-        getStorePrice(item);
+    const price=itemPrice(item);
 
-    if(game.treasury < price){
+    if(game.money<price){
 
-        showToast(
-            "❌ پول کافی برای خرید این کالا نداری."
-        );
+        showToast("بودجه کافی نیست.");
 
         return;
     }
 
-    game.treasury -= price;
+    game.money-=price;
 
-    game.production += item.production;
+    game.inventory[index]=
+        (game.inventory[index]||0)+1;
 
-    game.population += item.population;
+    applyItemEffect(item);
 
-    game.reputation += item.reputation;
-
-    game.defense += item.defense;
-
-    game.stability += Math.min(
-        2,
-        item.population / 10
+    addEvent(
+        "خرید "+item.name+
+        " با قیمت "+formatNumber(price)
     );
-
-    game.inventory[item.id] =
-        Number(game.inventory[item.id] || 0) + 1;
-
-    game.statistics.purchases++;
-
-    /*
-       خریدهای بزرگ کمی فشار اقتصادی ایجاد می‌کنند.
-       این باعث می‌شود تورم یک شاخص زنده باشد.
-    */
-
-    const economicPressure =
-        Math.min(
-            .45,
-            price / Math.max(game.production * 300,1)
-        );
-
-    game.inflation += economicPressure;
-
-    game.inflation =
-        Math.min(60,game.inflation);
 
     updateUI();
 
-    renderStore();
+    renderStoreItems();
 
-    saveGame();
-
-    showToast(
-        "✅ " +
-        item.icon +
-        " " +
-        item.name +
-        " با موفقیت خریداری شد."
-    );
+    showToast("خرید با موفقیت انجام شد.");
 }
 
+function applyItemEffect(item){
 
-/* =========================================================
-   STORE BUTTON BUG FIX
-   ========================================================= */
+    const effect=item.effect;
+    const value=item.value;
 
-document
-.getElementById("openStoreButton")
-.addEventListener("click",function(e){
+    if(effect==="money")
+        game.money+=value;
 
-    e.preventDefault();
-    e.stopPropagation();
+    if(effect==="production")
+        game.production+=value;
 
-    openStore();
+    if(effect==="population")
+        game.population+=value;
 
-});
+    if(effect==="reputation")
+        game.reputation=clamp(
+            game.reputation+value,
+            0,
+            100
+        );
 
+    if(effect==="infrastructure")
+        game.infrastructure=clamp(
+            game.infrastructure+value,
+            0,
+            100
+        );
 
-function openStore(){
+    if(effect==="education")
+        game.education=clamp(
+            game.education+value,
+            0,
+            100
+        );
 
-    const modal =
-        document.getElementById("storeModal");
+    if(effect==="health")
+        game.health=clamp(
+            game.health+value,
+            0,
+            100
+        );
 
-    modal.classList.remove("hidden");
+    if(effect==="readiness")
+        game.readiness=clamp(
+            game.readiness+value,
+            0,
+            100
+        );
 
-    currentStoreCategory = "all";
+    if(effect==="cities")
+        game.cities+=value;
 
-    document.getElementById("storeSearch").value = "";
-
-    updateStoreMoney();
-
-    renderStoreCategories();
-
-    renderStore();
-
-    document.body.style.overflow = "hidden";
+    if(effect==="inflation")
+        game.inflation=clamp(
+            game.inflation+value,
+            0,
+            60
+        );
 }
 
-
-function closeStore(){
-
-    document
-        .getElementById("storeModal")
-        .classList.add("hidden");
-
-    document.body.style.overflow = "";
-}
-
-
-document
-.getElementById("closeStoreButton")
-.addEventListener("click",closeStore);
-
-
-document
-.getElementById("storeModal")
-.addEventListener("click",function(e){
-
-    if(e.target === this){
-        closeStore();
-    }
-
-});
-
-
-document
-.getElementById("storeGrid")
-.addEventListener("click",function(e){
-
-    const button =
-        e.target.closest("[data-buy]");
-
-    if(!button) return;
-
-    purchaseStoreItem(
-        button.dataset.buy
-    );
-
-});
-
-
-document
-.getElementById("storeSearch")
-.addEventListener("input",renderStore);
-
-
-function updateStoreMoney(){
-
-    document.getElementById("storeMoney").textContent =
-        formatMoney(game.treasury);
-}
-
+document.getElementById("storeSearch")
+.addEventListener("input",renderStoreItems);
 
 /* =========================================================
    MANAGEMENT
 ========================================================= */
 
-document
-.getElementById("openManagementButton")
-.addEventListener("click",openManagement);
-
-
-function openManagement(){
-
-    updateManagement();
-
-    renderDiplomacy();
-
-    document
-        .getElementById("managementModal")
-        .classList.remove("hidden");
-
-}
-
-
-document
-.getElementById("closeManagementButton")
-.addEventListener("click",()=>{
-
-    document
-        .getElementById("managementModal")
-        .classList.add("hidden");
-
-});
-
-
-document
-.getElementById("managementModal")
-.addEventListener("click",function(e){
-
-    if(e.target === this){
-        this.classList.add("hidden");
-    }
-
-});
-
-
 function updateManagement(){
 
-    const ids = {
+    document.getElementById("manageMoney")
+        .textContent=formatNumber(game.money);
 
-        mInfantry:game.infantry,
-        mTanks:game.tanks,
-        mFighters:game.fighters,
-        mDrones:game.drones,
-        mMissiles:game.missiles,
+    document.getElementById("managePopulation")
+        .textContent=formatNumber(game.population)+"M";
 
-        mInflation:
-            Number(game.inflation).toFixed(1)+"%",
+    document.getElementById("manageProduction")
+        .textContent=formatNumber(game.production);
 
-        mProduction:
-            formatNumber(game.production),
+    document.getElementById("managePower")
+        .textContent=formatNumber(game.power);
 
-        mTreasury:
-            formatMoney(game.treasury),
+    document.getElementById("manageCities")
+        .textContent=formatNumber(game.cities);
 
-        mReputation:
-            Math.round(game.reputation),
+    document.getElementById("manageInfrastructure")
+        .textContent=formatNumber(game.infrastructure);
 
-        mDefense:
-            Math.round(game.defense),
-
-        mStability:
-            Math.round(game.stability),
-
-        mCountries:
-            Object.keys(game.countries).length,
-
-        mRelations:
-            Object.keys(game.relations || {}).length,
-
-        mAllies:
-            countAllies()
-    };
-
-    Object.keys(ids).forEach(id=>{
-
-        const el =
-            document.getElementById(id);
-
-        if(el) el.textContent = ids[id];
-
-    });
-
-    const tax =
-        document.getElementById("taxInput");
-
-    if(tax){
-
-        tax.value = game.tax;
-
-        document.getElementById("taxValue")
-            .textContent =
-            game.tax + "%";
-    }
-}
-
-
-document
-.getElementById("taxInput")
-.addEventListener("input",function(){
+    document.getElementById("manageReputation")
+        .textContent=formatNumber(game.reputation);
 
     document.getElementById("taxValue")
-        .textContent =
-        this.value + "%";
+        .textContent=game.tax;
 
-});
+    document.getElementById("taxRange")
+        .value=game.tax;
+}
 
+document.getElementById("taxRange")
+.addEventListener("input",e=>{
 
-document
-.getElementById("applyTax")
-.addEventListener("click",function(){
+    game.tax=Number(e.target.value);
 
-    const newTax =
-        Number(
-            document.getElementById("taxInput").value
-        );
-
-    game.tax = newTax;
-
-    if(newTax > 25){
-
-        game.reputation -= 2;
-
-        game.inflation += .7;
-
-        showToast(
-            "⚠️ مالیات بالا درآمد را زیاد کرد اما فشار اقتصادی بالا رفت."
-        );
-
-    }else if(newTax < 8){
-
-        game.reputation += 1;
-
-        game.inflation -= .3;
-
-        showToast(
-            "📉 مالیات پایین‌تر شد و فشار اقتصادی کاهش یافت."
-        );
-
-    }else{
-
-        showToast(
-            "✅ نرخ مالیات اعمال شد."
-        );
-    }
-
-    game.inflation =
-        Math.max(0,game.inflation);
-
-    saveGame();
     updateUI();
 });
 
-
 /* =========================================================
-   ECONOMIC POLICY
+   MANAGEMENT ACTIONS
 ========================================================= */
 
-document
-.getElementById("economicPolicy")
-.addEventListener("click",function(){
+document.getElementById("economicStimulus")
+.addEventListener("click",()=>{
 
-    if(game.treasury < 1200){
+    if(game.money<12000){
+
+        showToast("بودجه کافی نیست.");
+
+        return;
+    }
+
+    game.money-=12000;
+
+    game.production+=14;
+    game.inflation+=1.5;
+
+    addEvent("بسته تحریک اقتصادی اجرا شد.");
+
+    updateUI();
+
+    showToast("تولید افزایش یافت اما تورم کمی بالا رفت.");
+});
+
+document.getElementById("fightInflation")
+.addEventListener("click",()=>{
+
+    if(game.money<10000){
+
+        showToast("بودجه کافی نیست.");
+
+        return;
+    }
+
+    game.money-=10000;
+
+    game.inflation=Math.max(
+        0,
+        game.inflation-2
+    );
+
+    game.production=Math.max(
+        1,
+        game.production-3
+    );
+
+    addEvent("برنامه کنترل تورم اجرا شد.");
+
+    updateUI();
+
+    showToast("تورم کاهش یافت.");
+});
+
+document.getElementById("investHealth")
+.addEventListener("click",()=>{
+
+    if(game.money<8000){
+
+        showToast("بودجه کافی نیست.");
+
+        return;
+    }
+
+    game.money-=8000;
+    game.health=clamp(game.health+8,0,100);
+    game.population+=1;
+
+    addEvent("سرمایه‌گذاری سلامت انجام شد.");
+
+    updateUI();
+});
+
+document.getElementById("investEducation")
+.addEventListener("click",()=>{
+
+    if(game.money<8000){
+
+        showToast("بودجه کافی نیست.");
+
+        return;
+    }
+
+    game.money-=8000;
+    game.education=clamp(game.education+8,0,100);
+    game.production+=4;
+
+    addEvent("سرمایه‌گذاری آموزشی انجام شد.");
+
+    updateUI();
+});
+
+document.getElementById("investIndustry")
+.addEventListener("click",()=>{
+
+    if(game.money<15000){
+
+        showToast("بودجه کافی نیست.");
+
+        return;
+    }
+
+    game.money-=15000;
+    game.production+=20;
+    game.infrastructure=clamp(
+        game.infrastructure+5,
+        0,
+        100
+    );
+
+    addEvent("صنعت کشور توسعه یافت.");
+
+    updateUI();
+});
+
+document.getElementById("trainForces")
+.addEventListener("click",()=>{
+
+    if(game.money<9000){
+
+        showToast("بودجه کافی نیست.");
+
+        return;
+    }
+
+    game.money-=9000;
+
+    game.readiness=clamp(
+        game.readiness+10,
+        0,
+        100
+    );
+
+    game.morale=clamp(
+        game.morale+5,
+        0,
+        100
+    );
+
+    game.power+=8;
+
+    addEvent("آمادگی ملی افزایش یافت.");
+
+    updateUI();
+});
+
+document.getElementById("buildCity")
+.addEventListener("click",()=>{
+
+    const price=
+        25000+
+        (game.cities*7000);
+
+    if(game.money<price){
 
         showToast(
-            "❌ برای اجرای سیاست اقتصادی حداقل ۱۲۰۰ پول لازم است."
+            "هزینه شهر بعدی: "+
+            formatNumber(price)
         );
 
         return;
     }
 
-    game.treasury -= 1200;
+    game.money-=price;
 
-    game.inflation -= 2.2;
-
-    game.production += 15;
-
-    game.reputation += 2;
-
-    game.inflation =
-        Math.max(0,game.inflation);
-
-    showToast(
-        "📊 سیاست اقتصادی اجرا شد؛ تورم کاهش یافت."
+    game.cities++;
+    game.population+=3;
+    game.production+=12;
+    game.infrastructure=clamp(
+        game.infrastructure+6,
+        0,
+        100
     );
 
+    addEvent("یک شهر جدید توسعه یافت.");
+
     updateUI();
-    saveGame();
 });
 
+document.getElementById("buildInfrastructure")
+.addEventListener("click",()=>{
 
-/* =========================================================
-   REPUTATION
-========================================================= */
+    if(game.money<9000){
 
-document
-.getElementById("improveReputation")
-.addEventListener("click",function(){
+        showToast("بودجه کافی نیست.");
 
-    if(game.treasury < 1000){
-
-        showToast("❌ خزانه کافی نیست.");
         return;
     }
 
-    game.treasury -= 1000;
-    game.reputation += 5;
-    game.stability += 2;
+    game.money-=9000;
 
-    showToast(
-        "⭐ اعتبار بین‌المللی کشور افزایش یافت."
+    game.infrastructure=clamp(
+        game.infrastructure+10,
+        0,
+        100
     );
 
+    game.production+=5;
+
+    addEvent("زیرساخت توسعه یافت.");
+
     updateUI();
-    saveGame();
 });
 
+document.getElementById("publicProgram")
+.addEventListener("click",()=>{
 
-/* =========================================================
-   SECURITY
-========================================================= */
+    if(game.money<7000){
 
-document
-.getElementById("securityPolicy")
-.addEventListener("click",function(){
+        showToast("بودجه کافی نیست.");
 
-    if(game.treasury < 1800){
-
-        showToast("❌ برای این برنامه ۱۸۰۰ پول لازم است.");
         return;
     }
 
-    game.treasury -= 1800;
+    game.money-=7000;
 
-    game.defense += 8;
-    game.stability += 4;
-    game.inflation += .4;
-
-    showToast(
-        "🛡 امنیت کشور تقویت شد."
+    game.reputation=clamp(
+        game.reputation+7,
+        0,
+        100
     );
 
-    updateUI();
-    saveGame();
-});
+    game.morale=clamp(
+        game.morale+5,
+        0,
+        100
+    );
 
+    addEvent("برنامه عمومی موفق بود.");
+
+    updateUI();
+});
 
 /* =========================================================
    DIPLOMACY
 ========================================================= */
 
-function renderDiplomacy(){
+function buildDiplomacy(){
 
-    const container =
-        document.getElementById("diplomacyList");
+    const box=document.getElementById("diplomacyList");
 
-    container.innerHTML = "";
+    box.innerHTML="";
 
-    const names =
-        Object.keys(game.countries)
-        .sort((a,b)=>{
-            return (
-                (game.relations[b] || 0) -
-                (game.relations[a] || 0)
-            );
-        })
-        .slice(0,60);
+    game.countries
+        .filter(name=>name!==game.playerCountry)
+        .slice(0,80)
+        .forEach(name=>{
 
-    if(!names.length){
+            const relation=
+                game.relations[name] ??
+                Math.round(-20+(hash(name)%90));
 
-        container.innerHTML =
-            '<div class="dip-card">کشور دیگری پیدا نشد.</div>';
+            game.relations[name]=relation;
 
-        return;
-    }
+            const card=document.createElement("div");
 
-    names.forEach(name=>{
+            card.className="dipCard";
 
-        const relation =
-            Number(game.relations[name] || 0);
+            card.innerHTML=`
+                <div class="dipHeader">
+                    <strong>🌐 ${escapeHTML(name)}</strong>
+                    <span class="relation">
+                        رابطه: ${relation}
+                    </span>
+                </div>
 
-        const card =
-            document.createElement("div");
+                <div class="dipActions">
 
-        card.className = "dip-card";
+                    <button
+                        data-dip="trade"
+                        data-country="${escapeHTML(name)}">
+                        تجارت
+                    </button>
 
-        card.innerHTML = `
+                    <button
+                        data-dip="pact"
+                        data-country="${escapeHTML(name)}">
+                        پیمان
+                    </button>
 
-            <strong>
-                ${getFlag(name)}
-                ${escapeHTML(name)}
-            </strong>
+                    <button
+                        data-dip="aid"
+                        data-country="${escapeHTML(name)}">
+                        کمک
+                    </button>
 
-            <p>
-                رابطه فعلی:
-                <b>${relation}</b>
-            </p>
+                    <button
+                        data-dip="alliance"
+                        data-country="${escapeHTML(name)}">
+                        اتحاد
+                    </button>
 
-            <button data-dip="${encodeURIComponent(name)}">
-                🤝 بهبود روابط
-            </button>
-        `;
+                    <button
+                        data-dip="pressure"
+                        data-country="${escapeHTML(name)}">
+                        فشار سیاسی
+                    </button>
 
-        container.appendChild(card);
+                    <button
+                        class="danger"
+                        data-dip="conflict"
+                        data-country="${escapeHTML(name)}">
+                        درگیری
+                    </button>
 
-    });
+                </div>
+            `;
+
+            box.appendChild(card);
+        });
 }
 
+document.getElementById("diplomacyList")
+.addEventListener("click",e=>{
 
-document
-.getElementById("diplomacyList")
-.addEventListener("click",function(e){
-
-    const btn =
-        e.target.closest("[data-dip]");
+    const btn=e.target.closest("[data-dip]");
 
     if(!btn) return;
 
-    const name =
-        decodeURIComponent(btn.dataset.dip);
+    const type=btn.dataset.dip;
+    const country=btn.dataset.country;
 
-    diplomaticAction(name);
-
+    diplomacyAction(type,country);
 });
 
+function diplomacyAction(type,country){
 
-function diplomaticAction(name){
+    const relation=game.relations[country] ?? 0;
 
-    if(game.treasury < 500){
+    if(type==="trade"){
 
-        showToast("❌ برای فعالیت دیپلماتیک ۵۰۰ پول لازم است.");
-        return;
-    }
+        if(game.money<5000){
 
-    game.treasury -= 500;
+            showToast("برای شروع توافق تجاری بودجه لازم است.");
 
-    game.relations[name] =
-        Math.min(
-            100,
-            Number(game.relations[name] || 0) + 10
-        );
-
-    game.reputation += 1;
-
-    game.statistics.diplomaticActions++;
-
-    showToast(
-        "🤝 روابط با " +
-        name +
-        " بهتر شد."
-    );
-
-    renderDiplomacy();
-    updateUI();
-    saveGame();
-}
-
-
-function countAllies(){
-
-    return Object.values(
-        game.relations || {}
-    ).filter(x=>x >= 70).length;
-}
-
-
-document
-.getElementById("openDiplomacy")
-.addEventListener("click",function(){
-
-    renderDiplomacy();
-
-    showToast(
-        "🌐 روابط کشورها در همین بخش قابل مدیریت است."
-    );
-
-});
-
-
-/* =========================================================
-   MAP ACTIONS
-========================================================= */
-
-document
-.getElementById("zoomWorld")
-.addEventListener("click",function(){
-
-    if(map){
-
-        map.setView([25,25],2.2);
-
-    }
-
-});
-
-
-document
-.getElementById("modePolitical")
-.addEventListener("click",function(){
-
-    currentMapMode = "political";
-    refreshMap();
-
-    showToast("🗺 حالت سیاسی نقشه فعال شد.");
-
-});
-
-
-document
-.getElementById("modeEconomy")
-.addEventListener("click",function(){
-
-    currentMapMode = "economy";
-    refreshMap();
-
-    showToast("💰 حالت اقتصادی نقشه فعال شد.");
-
-});
-
-
-document
-.getElementById("modeMilitary")
-.addEventListener("click",function(){
-
-    currentMapMode = "military";
-    refreshMap();
-
-    showToast("⚔️ حالت نظامی نقشه فعال شد.");
-
-});
-
-
-/* =========================================================
-   DIPLOMACY QUICK BUTTONS
-========================================================= */
-
-document
-.getElementById("tradeBtn")
-.addEventListener("click",function(){
-
-    if(!targetCountryName ||
-       targetCountryName === game.playerCountry){
-
-        return;
-    }
-
-    if(game.treasury < 800){
-
-        showToast("❌ خزانه کافی نیست.");
-        return;
-    }
-
-    game.treasury -= 800;
-
-    game.relations[targetCountryName] =
-        Math.min(
-            100,
-            Number(game.relations[targetCountryName] || 0) + 8
-        );
-
-    game.production += 12;
-
-    game.reputation += 1;
-
-    showToast(
-        "📦 قرارداد تجاری با " +
-        targetCountryName +
-        " امضا شد."
-    );
-
-    updateUI();
-    saveGame();
-});
-
-
-document
-.getElementById("allianceBtn")
-.addEventListener("click",function(){
-
-    if(!targetCountryName ||
-       targetCountryName === game.playerCountry){
-
-        return;
-    }
-
-    const relation =
-        Number(
-            game.relations[targetCountryName] || 0
-        );
-
-    if(relation < 40){
-
-        showToast(
-            "⚠️ روابط هنوز برای اتحاد کافی نیست."
-        );
-
-        return;
-    }
-
-    game.relations[targetCountryName] =
-        Math.min(
-            100,
-            relation + 15
-        );
-
-    game.reputation += 4;
-
-    showToast(
-        "🛡 اتحاد با " +
-        targetCountryName +
-        " تقویت شد."
-    );
-
-    updateUI();
-    saveGame();
-});
-
-
-document
-.getElementById("aidBtn")
-.addEventListener("click",function(){
-
-    if(!targetCountryName ||
-       targetCountryName === game.playerCountry){
-
-        return;
-    }
-
-    if(game.treasury < 1000){
-
-        showToast("❌ خزانه کافی نیست.");
-        return;
-    }
-
-    game.treasury -= 1000;
-
-    game.relations[targetCountryName] =
-        Math.min(
-            100,
-            Number(game.relations[targetCountryName] || 0) + 12
-        );
-
-    game.reputation += 3;
-
-    showToast(
-        "🎁 کمک اقتصادی ارسال شد."
-    );
-
-    updateUI();
-    saveGame();
-});
-
-
-/* =========================================================
-   WAR SYSTEM
-========================================================= */
-
-document
-.getElementById("warBtn")
-.addEventListener("click",function(){
-
-    attackCountry(targetCountryName);
-
-});
-
-
-function attackCountry(name){
-
-    if(!name || name === game.playerCountry){
-
-        showToast("⚠️ ابتدا یک کشور دیگر را انتخاب کن.");
-        return;
-    }
-
-    const target =
-        game.countries[name];
-
-    if(!target){
-
-        showToast("⚠️ اطلاعات کشور پیدا نشد.");
-        return;
-    }
-
-    if(game.army < 1000){
-
-        showToast(
-            "❌ ارتش کافی برای عملیات وجود ندارد."
-        );
-
-        return;
-    }
-
-    game.statistics.wars++;
-
-    const playerPower =
-        game.army +
-        game.tanks * 8 +
-        game.fighters * 18 +
-        game.drones * 6 +
-        game.missiles * 25 +
-        game.defense * 80;
-
-    const enemyPower =
-        target.army +
-        target.tanks * 8 +
-        target.fighters * 18 +
-        target.drones * 6 +
-        target.missiles * 25 +
-        target.defense * 80;
-
-    const randomFactor =
-        .78 + Math.random() * .45;
-
-    const won =
-        playerPower * randomFactor >
-        enemyPower;
-
-    const cost =
-        Math.max(
-            500,
-            Math.round(game.army * .04)
-        );
-
-    game.army =
-        Math.max(
-            0,
-            game.army - cost
-        );
-
-    if(won){
-
-        game.statistics.wins++;
-
-        /*
-           کشور شکست‌خورده به قلمرو بازیکن اضافه می‌شود.
-           خود کشور روی نقشه با رنگ قلمرو بازیکن نمایش داده می‌شود.
-        */
-
-        if(!game.ownedTerritories.includes(name)){
-
-            game.ownedTerritories.push(name);
+            return;
         }
 
-        game.population +=
-            Math.round(target.population * .55);
+        game.money-=5000;
+        game.money+=Math.round(
+            9000+(game.production*10)
+        );
 
-        game.production +=
-            Math.round(target.production * .35);
+        game.relations[country]=clamp(
+            relation+8,
+            -100,
+            100
+        );
 
-        game.treasury +=
-            Math.round(target.treasury * .45);
+        game.reputation=clamp(
+            game.reputation+2,
+            0,
+            100
+        );
 
-        game.cities +=
-            Math.max(
-                1,
-                Math.round(target.cities * .3)
+        addEvent("توافق تجاری با "+country);
+
+        showToast("تجارت با موفقیت انجام شد.");
+    }
+
+    if(type==="pact"){
+
+        if(relation<0){
+
+            showToast("رابطه برای پیمان مناسب نیست.");
+
+            return;
+        }
+
+        game.relations[country]=clamp(
+            relation+10,
+            -100,
+            100
+        );
+
+        game.reputation=clamp(
+            game.reputation+3,
+            0,
+            100
+        );
+
+        addEvent("پیمان با "+country+" امضا شد.");
+
+        showToast("پیمان دیپلماتیک برقرار شد.");
+    }
+
+    if(type==="aid"){
+
+        if(game.money<7000){
+
+            showToast("بودجه کافی نیست.");
+
+            return;
+        }
+
+        game.money-=7000;
+
+        game.relations[country]=clamp(
+            relation+15,
+            -100,
+            100
+        );
+
+        game.reputation=clamp(
+            game.reputation+5,
+            0,
+            100
+        );
+
+        addEvent("کمک اقتصادی به "+country);
+
+        showToast("اعتبار بین‌المللی افزایش یافت.");
+    }
+
+    if(type==="alliance"){
+
+        if(relation<25){
+
+            showToast(
+                "برای اتحاد، رابطه باید حداقل 25 باشد."
             );
 
-        game.reputation += 6;
+            return;
+        }
 
-        game.relations[name] = -100;
+        game.relations[country]=clamp(
+            relation+5,
+            -100,
+            100
+        );
 
-        target.controlled = true;
+        game.reputation=clamp(
+            game.reputation+5,
+            0,
+            100
+        );
+
+        addEvent("اتحاد با "+country+" ایجاد شد.");
+
+        showToast("اتحاد برقرار شد.");
+    }
+
+    if(type==="pressure"){
+
+        game.relations[country]=clamp(
+            relation-12,
+            -100,
+            100
+        );
+
+        game.reputation=Math.max(
+            0,
+            game.reputation-1
+        );
+
+        addEvent("فشار سیاسی بر "+country);
+
+        showToast("رابطه با کشور هدف کاهش یافت.");
+    }
+
+    if(type==="conflict"){
+
+        openWarAgainst(country);
+
+        return;
+    }
+
+    buildDiplomacy();
+    buildWarTargets();
+    updateUI();
+}
+
+/* =========================================================
+   WAR / ABSTRACT CONFLICT
+========================================================= */
+
+function buildWarTargets(){
+
+    const box=document.getElementById("warTargets");
+
+    box.innerHTML="";
+
+    game.countries
+        .filter(name=>name!==game.playerCountry)
+        .slice(0,100)
+        .forEach(name=>{
+
+            const data=
+                game.countryData[name] ||
+                countryStats(name);
+
+            const card=document.createElement("div");
+
+            card.className="dipCard";
+
+            card.innerHTML=`
+                <div class="dipHeader">
+                    <strong>🌐 ${escapeHTML(name)}</strong>
+                    <span class="relation">
+                        قدرت: ${formatNumber(data.power)}
+                    </span>
+                </div>
+
+                <div class="infoLine">
+                    <span>رابطه</span>
+                    <b>${game.relations[name]??0}</b>
+                </div>
+
+                <div class="infoLine">
+                    <span>تولید</span>
+                    <b>${formatNumber(data.production)}</b>
+                </div>
+
+                <button
+                    class="actionBtn"
+                    data-war="${escapeHTML(name)}"
+                    style="margin-top:9px">
+                    آغاز عملیات
+                </button>
+            `;
+
+            box.appendChild(card);
+        });
+}
+
+document.getElementById("warTargets")
+.addEventListener("click",e=>{
+
+    const btn=e.target.closest("[data-war]");
+
+    if(!btn) return;
+
+    openWarAgainst(btn.dataset.war);
+});
+
+function openWarAgainst(target){
+
+    if(target===game.playerCountry){
+
+        showToast("نمی‌توانید کشور خودتان را هدف قرار دهید.");
+
+        return;
+    }
+
+    const data=
+        game.countryData[target] ||
+        countryStats(target);
+
+    const relation=
+        game.relations[target] ?? 0;
+
+    if(game.readiness<30){
+
+        showToast("آمادگی ملی شما پایین است.");
+
+        return;
+    }
+
+    const playerScore=
+        game.power+
+        game.readiness+
+        game.morale+
+        game.production*.35+
+        game.infrastructure*.2;
+
+    const targetScore=
+        data.power+
+        45+
+        data.production*.35+
+        data.infrastructure*.2+
+        Math.max(0,relation*-0.25);
+
+    const randomPlayer=
+        Math.random()*35;
+
+    const randomTarget=
+        Math.random()*35;
+
+    const finalPlayer=
+        playerScore+randomPlayer;
+
+    const finalTarget=
+        targetScore+randomTarget;
+
+    game.readiness=
+        clamp(game.readiness-12,0,100);
+
+    game.morale=
+        clamp(game.morale-4,0,100);
+
+    if(finalPlayer>=finalTarget){
+
+        game.territories++;
+
+        game.owned[target]=true;
+
+        game.money+=
+            Math.round(
+                12000+
+                data.production*90
+            );
+
+        game.production+=
+            Math.round(data.production*.12);
+
+        game.reputation=
+            clamp(
+                game.reputation+3,
+                0,
+                100
+            );
+
+        game.relations[target]=35;
+
+        addEvent(
+            "عملیات علیه "+target+
+            " موفق بود و قلمرو جدید به کشور افزوده شد."
+        );
 
         showToast(
-            "🏆 پیروزی! " +
-            name +
-            " به قلمرو امپراتوری تو اضافه شد."
+            "پیروزی! "+
+            target+
+            " به قلمرو شما پیوست."
         );
 
     }else{
 
-        game.statistics.losses++;
+        game.money=
+            Math.max(
+                0,
+                game.money-7000
+            );
 
-        game.reputation -= 5;
-        game.stability -= 4;
+        game.reputation=
+            Math.max(
+                0,
+                game.reputation-4
+            );
+
+        addEvent(
+            "عملیات علیه "+target+
+            " موفقیت‌آمیز نبود."
+        );
 
         showToast(
-            "❌ حمله شکست خورد و بخشی از ارتش از دست رفت."
+            "عملیات ناموفق بود."
         );
     }
 
-    game.reputation =
-        Math.max(0,game.reputation);
+    if(game.geoLayer){
 
-    game.stability =
-        Math.max(0,game.stability);
+        game.geoLayer.eachLayer(layer=>{
 
-    updateUI();
+            const name=countryName(
+                layer.feature.properties||{}
+            );
 
-    refreshMap();
-
-    saveGame();
-
-    if(
-        document
-        .getElementById("managementModal")
-        .classList
-        .contains("hidden") === false
-    ){
-        renderDiplomacy();
+            layer.setStyle(
+                getCountryStyle(name)
+            );
+        });
     }
+
+    buildDiplomacy();
+    buildWarTargets();
+    updateUI();
 }
 
-
 /* =========================================================
-   NEXT TURN
+   TURN SYSTEM
 ========================================================= */
-
-document
-.getElementById("nextTurn")
-.addEventListener("click",nextTurn);
-
 
 function nextTurn(){
 
+    game.turn++;
+
     game.year++;
 
-    /*
-       درآمد مالیاتی
-    */
+    const taxIncome=
+        game.production*
+        (game.tax/100)*
+        75;
 
-    const taxIncome =
+    const baseIncome=
+        game.production*
+        45;
+
+    game.money+=
         Math.round(
-            game.production *
-            (game.tax / 100) *
-            10
+            baseIncome+
+            taxIncome
         );
 
-    game.treasury += taxIncome;
-
-    /*
-       درآمد پایه تولید
-    */
-
-    const productionIncome =
-        Math.round(
-            game.production *
-            .35
-        );
-
-    game.treasury += productionIncome;
-
-    /*
-       رشد جمعیت
-    */
-
-    const populationGrowth =
+    const populationGrowth=
         Math.max(
-            .05,
-            game.population *
-            (0.008 - game.inflation / 10000)
-        );
-
-    game.population +=
-        populationGrowth;
-
-    /*
-       تورم
-       مالیات بالا + اقتصاد ضعیف = تورم بیشتر
-       تولید بالا = کاهش فشار
-    */
-
-    const taxPressure =
-        Math.max(
-            0,
-            game.tax - 18
-        ) * .08;
-
-    const productionRelief =
-        Math.min(
-            1.2,
-            game.production / 500
-        );
-
-    const naturalInflation =
-        .15 +
-        taxPressure -
-        productionRelief * .15;
-
-    game.inflation += naturalInflation;
-
-    /*
-       اگر تولید خیلی پایین باشد،
-       تورم کمی بیشتر می‌شود.
-    */
-
-    if(game.production < 100){
-        game.inflation += .4;
-    }
-
-    /*
-       خرید و هزینه‌های سنگین
-    */
-
-    if(game.army > game.production * 50){
-        game.treasury -=
-            Math.round(
-                game.army * .015
-            );
-    }
-
-    /*
-       ثبات
-    */
-
-    if(game.inflation > 20){
-        game.stability -= .8;
-    }else{
-        game.stability += .2;
-    }
-
-    game.stability =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                game.stability
+            .2,
+            game.population*
+            (
+                .003+
+                game.health/10000+
+                game.education/20000
             )
         );
 
-    /*
-       تورم کنترل می‌شود
-    */
+    game.population+=populationGrowth;
 
-    game.inflation =
-        Math.max(
+    const inflationChange=
+        (game.tax-15)*.045+
+        (game.production>200?.15:0)-
+        (game.infrastructure>70?.2:0);
+
+    game.inflation=
+        clamp(
+            game.inflation+
+            inflationChange+
+            (Math.random()*.8-.35),
             0,
-            Math.min(
-                100,
-                game.inflation
-            )
+            60
         );
 
-    /*
-       کشورهای دیگر هم رشد می‌کنند
-    */
+    game.production+=
+        Math.round(
+            game.cities*.7+
+            game.infrastructure*.08
+        );
 
-    Object.values(game.countries).forEach(country=>{
+    game.readiness=
+        clamp(
+            game.readiness-1+
+            (game.power>150?.5:0),
+            0,
+            100
+        );
 
-        country.treasury +=
-            Math.round(
-                country.production * .15
-            );
+    game.morale=
+        clamp(
+            game.morale+
+            (game.reputation>60?.5:-.4),
+            0,
+            100
+        );
 
-        country.population +=
-            country.population * .004;
+    randomEvent();
 
-        country.production +=
-            Math.random() * 2 - .4;
-
-        country.inflation +=
-            Math.random() * .5 - .15;
-
-        country.inflation =
-            Math.max(
-                0,
-                Math.min(
-                    80,
-                    country.inflation
-                )
-            );
-    });
+    addEvent(
+        "سال "+game.year+
+        " آغاز شد. درآمد دوره‌ای دریافت شد."
+    );
 
     updateUI();
 
-    refreshMap();
+    if(game.map){
 
-    saveGame();
+        game.map.invalidateSize();
+    }
 
     showToast(
-        "📅 سال " +
-        game.year +
-        " آغاز شد. درآمد: +" +
-        formatMoney(
-            taxIncome + productionIncome
-        )
+        "نوبت جدید — سال "+
+        game.year
     );
 }
 
+/* =========================================================
+   RANDOM EVENTS
+========================================================= */
+
+function randomEvent(){
+
+    const events=[
+
+        {
+            text:"رونق اقتصادی",
+            run(){
+                game.money+=18000;
+                game.production+=10;
+            }
+        },
+
+        {
+            text:"افزایش تقاضای جهانی",
+            run(){
+                game.production+=15;
+                game.inflation+=.8;
+            }
+        },
+
+        {
+            text:"ثبات اقتصادی",
+            run(){
+                game.inflation=Math.max(
+                    0,
+                    game.inflation-1
+                );
+            }
+        },
+
+        {
+            text:"پیشرفت علمی",
+            run(){
+                game.education+=5;
+                game.production+=5;
+            }
+        },
+
+        {
+            text:"بهبود روابط بین‌المللی",
+            run(){
+                game.reputation=
+                    clamp(
+                        game.reputation+5,
+                        0,
+                        100
+                    );
+            }
+        },
+
+        {
+            text:"فشار اقتصادی",
+            run(){
+                game.money=
+                    Math.max(
+                        0,
+                        game.money-10000
+                    );
+
+                game.inflation+=1;
+            }
+        }
+
+    ];
+
+    if(Math.random()<.6){
+
+        const event=
+            events[
+                Math.floor(
+                    Math.random()*events.length
+                )
+            ];
+
+        event.run();
+
+        addEvent("رویداد: "+event.text);
+    }
+}
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+function addEvent(text){
+
+    game.events.unshift(
+        "سال "+game.year+" — "+text
+    );
+
+    game.events=
+        game.events.slice(0,20);
+
+    const box=document.getElementById("eventLog");
+
+    box.innerHTML=
+        game.events
+        .slice(0,7)
+        .map(x=>"• "+escapeHTML(x))
+        .join("<br>");
+}
+
+/* =========================================================
+   UI
+========================================================= */
+
+function updateUI(){
+
+    const totalPower=
+        Math.round(
+            game.power+
+            game.readiness+
+            game.morale+
+            game.production*.35+
+            game.infrastructure*.2+
+            game.cities*5
+        );
+
+    document.getElementById("playerCountryTop")
+        .textContent=game.playerCountry;
+
+    document.getElementById("money")
+        .textContent=formatNumber(game.money);
+
+    document.getElementById("population")
+        .textContent=formatNumber(game.population)+"M";
+
+    document.getElementById("production")
+        .textContent=formatNumber(game.production);
+
+    document.getElementById("inflation")
+        .textContent=game.inflation.toFixed(1)+"%";
+
+    document.getElementById("reputation")
+        .textContent=formatNumber(game.reputation);
+
+    document.getElementById("territories")
+        .textContent=formatNumber(game.territories);
+
+    document.getElementById("power")
+        .textContent=formatNumber(totalPower);
+
+    document.getElementById("year")
+        .textContent=game.year;
+
+    document.getElementById("storeMoney")
+        .textContent=formatNumber(game.money);
+
+    updateManagement();
+
+    if(
+        document.getElementById("storeModal")
+        .classList.contains("show")
+    ){
+
+        renderStoreItems();
+    }
+}
+
+/* =========================================================
+   MAP MODES
+========================================================= */
+
+document.getElementById("mapMode")
+.addEventListener("click",e=>{
+
+    const btn=e.target.closest("[data-mode]");
+
+    if(!btn) return;
+
+    game.mapMode=btn.dataset.mode;
+
+    if(game.geoLayer){
+
+        game.geoLayer.eachLayer(layer=>{
+
+            const name=countryName(
+                layer.feature.properties||{}
+            );
+
+            layer.setStyle(
+                getCountryStyle(name)
+            );
+        });
+    }
+
+    showToast(
+        "حالت نقشه: "+
+        ({
+            political:"سیاسی",
+            economy:"اقتصادی",
+            military:"توان ملی",
+            development:"توسعه"
+        }[game.mapMode])
+    );
+});
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+document.getElementById("openStore")
+.addEventListener("click",()=>{
+
+    buildStore();
+
+    updateUI();
+
+    openModal("storeModal");
+});
+
+document.getElementById("openManage")
+.addEventListener("click",()=>{
+
+    buildDiplomacy();
+
+    updateManagement();
+
+    openModal("manageModal");
+});
+
+document.getElementById("openWar")
+.addEventListener("click",()=>{
+
+    buildWarTargets();
+
+    openModal("warModal");
+});
+
+document.getElementById("nextTurn")
+.addEventListener("click",nextTurn);
+
+document.querySelectorAll("[data-close]")
+.forEach(btn=>{
+
+    btn.addEventListener("click",()=>{
+
+        closeModal(btn.dataset.close);
+    });
+});
+
+document.querySelectorAll(".modal")
+.forEach(modal=>{
+
+    modal.addEventListener("click",e=>{
+
+        if(e.target===modal){
+
+            modal.classList.remove("show");
+        }
+    });
+});
+
+/* =========================================================
+   COUNTRY SEARCH
+========================================================= */
+
+document.getElementById("countrySearch")
+.addEventListener("input",e=>{
+
+    const q=e.target.value
+        .trim()
+        .toLowerCase();
+
+    const filtered=
+        FALLBACK_COUNTRIES.filter(name=>
+            name.toLowerCase().includes(q)
+        );
+
+    renderCountrySelection(filtered);
+});
 
 /* =========================================================
    SAVE / LOAD
@@ -3370,411 +3031,147 @@ function saveGame(){
     try{
 
         localStorage.setItem(
-            SAVE_KEY,
-            JSON.stringify(game)
+            "WORLD_EMPIRE_SAVE",
+            JSON.stringify({
+                playerCountry:game.playerCountry,
+                money:game.money,
+                population:game.population,
+                production:game.production,
+                inflation:game.inflation,
+                reputation:game.reputation,
+                power:game.power,
+                territories:game.territories,
+                cities:game.cities,
+                infrastructure:game.infrastructure,
+                education:game.education,
+                health:game.health,
+                readiness:game.readiness,
+                morale:game.morale,
+                tax:game.tax,
+                year:game.year,
+                turn:game.turn,
+                owned:game.owned,
+                relations:game.relations,
+                inventory:game.inventory,
+                events:game.events
+            })
         );
 
     }catch(e){
 
-        console.log("Save failed",e);
+        console.error(e);
     }
 }
 
-
-function loadSaveRaw(){
+function loadGame(){
 
     try{
 
-        const raw =
-            localStorage.getItem(SAVE_KEY);
+        const raw=
+            localStorage.getItem(
+                "WORLD_EMPIRE_SAVE"
+            );
 
-        if(!raw) return null;
+        if(!raw) return false;
 
-        return JSON.parse(raw);
+        const save=JSON.parse(raw);
+
+        Object.keys(save).forEach(key=>{
+
+            if(key in game){
+
+                game[key]=save[key];
+            }
+        });
+
+        return !!game.playerCountry;
 
     }catch(e){
 
-        return null;
+        return false;
     }
 }
 
+/* ذخیره خودکار */
+setInterval(()=>{
 
-/* =========================================================
-   COUNTRY SEARCH
-========================================================= */
-
-document
-.getElementById("countrySearch")
-.addEventListener("input",renderCountries);
-
-
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function formatNumber(number){
-
-    const n = Number(number || 0);
-
-    return Math.round(n)
-        .toLocaleString("en-US");
-}
-
-
-function formatMoney(number){
-
-    const n =
-        Math.round(
-            Number(number || 0)
-        );
-
-    if(n >= 1000000000){
-
-        return (
-            (n / 1000000000)
-            .toFixed(1) +
-            "B"
-        );
-    }
-
-    if(n >= 1000000){
-
-        return (
-            (n / 1000000)
-            .toFixed(1) +
-            "M"
-        );
-    }
-
-    if(n >= 1000){
-
-        return (
-            (n / 1000)
-            .toFixed(1) +
-            "K"
-        );
-    }
-
-    return n.toLocaleString("en-US");
-}
-
-
-function escapeHTML(value){
-
-    return String(value)
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
-}
-
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-let toastTimer = null;
-
-function showToast(message){
-
-    const toast =
-        document.getElementById("toast");
-
-    toast.textContent = message;
-
-    toast.classList.add("show");
-
-    clearTimeout(toastTimer);
-
-    toastTimer =
-        setTimeout(()=>{
-            toast.classList.remove("show");
-        },3000);
-}
-
-
-/* =========================================================
-   KEYBOARD / ESC
-========================================================= */
-
-document.addEventListener("keydown",function(e){
-
-    if(e.key === "Escape"){
-
-        document
-            .getElementById("storeModal")
-            .classList
-            .add("hidden");
-
-        document
-            .getElementById("managementModal")
-            .classList
-            .add("hidden");
-    }
-
-});
-
-
-/* =========================================================
-   PREVENT MODAL CONTENT MAP CLICKS
-========================================================= */
-
-document
-.querySelectorAll(".modal-box")
-.forEach(box=>{
-
-    box.addEventListener("click",e=>{
-        e.stopPropagation();
-    });
-
-});
-
-
-/* =========================================================
-   STARTUP
-========================================================= */
-
-document.addEventListener("DOMContentLoaded",function(){
-
-    renderStoreCategories();
-
-    loadCountries();
-
-});
-
-
-/* =========================================================
-   FALLBACK IF NETWORK IS VERY SLOW
-========================================================= */
-
-setTimeout(function(){
-
-    if(
-        !window.countryList ||
-        !window.countryList.length
-    ){
-
-        window.countryList =
-            [...fallbackCountries];
-
-        document.getElementById(
-            "countryLoading"
-        ).textContent =
-            "🌍 فهرست کشورها آماده شد.";
-
-        renderCountries();
-
-    }
-
-},10000);
-
-
-/* =========================================================
-   AUTO SAVE
-========================================================= */
-
-setInterval(function(){
-
-    if(
-        game.playerCountry &&
-        document
-        .getElementById("gameApp")
-        .classList
-        .contains("active")
-    ){
+    if(game.playerCountry){
 
         saveGame();
     }
 
-},30000);
-
+},10000);
 
 /* =========================================================
-   MOBILE RESIZE
+   LOAD COUNTRY SCREEN IMMEDIATELY
 ========================================================= */
 
-window.addEventListener("resize",function(){
+renderCountrySelection();
 
-    if(map){
+/* کشورها را در پس‌زمینه غنی‌تر می‌کنیم */
+loadCountryNames();
 
-        setTimeout(()=>{
-            map.invalidateSize();
-        },100);
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+document.addEventListener("keydown",e=>{
+
+    if(e.key==="Escape"){
+
+        document
+            .querySelectorAll(".modal.show")
+            .forEach(modal=>{
+                modal.classList.remove("show");
+            });
     }
 
-});
+    if(e.key==="Enter"){
 
+        const screen=
+            document.getElementById("countryScreen");
 
-/* =========================================================
-   EXTRA GAME ECONOMY
-========================================================= */
+        if(
+            screen.style.display!=="none" &&
+            document.activeElement.id==="countrySearch"
+        ){
 
-function applyEconomicBalance(){
+            const first=
+                document.querySelector(
+                    ".countryCard"
+                );
 
-    if(game.inflation > 35){
+            if(first){
 
-        game.reputation -= .15;
-        game.stability -= .25;
-
-    }else if(game.inflation < 8){
-
-        game.reputation += .05;
-        game.stability += .1;
-    }
-
-    if(game.production > 500){
-
-        game.reputation += .04;
-    }
-
-    game.reputation =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                game.reputation
-            )
-        );
-
-    game.stability =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                game.stability
-            )
-        );
-}
-
-
-/* =========================================================
-   PERIODIC ECONOMIC SIMULATION
-========================================================= */
-
-setInterval(function(){
-
-    if(!game.playerCountry) return;
-
-    applyEconomicBalance();
-
-    updateUI();
-
-},15000);
-
-
-/* =========================================================
-   STORE PRICE PREVIEW UPDATE
-   قیمت‌ها با تورم زنده هستند
-========================================================= */
-
-setInterval(function(){
-
-    if(
-        !document
-        .getElementById("storeModal")
-        .classList
-        .contains("hidden")
-    ){
-
-        renderStore();
-        updateStoreMoney();
-    }
-
-},5000);
-
-
-/* =========================================================
-   RESET ONLY VIA DOUBLE TAP ON LOGO
-   intentionally not exposed as normal button
-========================================================= */
-
-let logoTapCount = 0;
-
-document
-.querySelector(".logo h1")
-.addEventListener("click",function(){
-
-    logoTapCount++;
-
-    if(logoTapCount >= 7){
-
-        logoTapCount = 0;
-
-        if(confirm("ذخیره بازی پاک شود؟")){
-
-            localStorage.removeItem(SAVE_KEY);
-
-            location.reload();
+                first.click();
+            }
         }
     }
-
-    setTimeout(()=>{
-        logoTapCount = 0;
-    },2000);
-
 });
 
-
 /* =========================================================
-   STORE DATA VALIDATION
+   PREVENT MAP SCROLL ON PAGE
 ========================================================= */
 
-function validateStore(){
+document.addEventListener(
+    "touchmove",
+    e=>{
 
-    const ids = new Set();
+        if(
+            e.target.closest("#map") ||
+            e.target.closest(".modalBody") ||
+            e.target.closest(".countryList")
+        ){
 
-    storeItems.forEach(item=>{
-
-        if(ids.has(item.id)){
-
-            console.warn(
-                "Duplicate store ID:",
-                item.id
-            );
+            return;
         }
 
-        ids.add(item.id);
-    });
-
-    console.log(
-        "WORLD EMPIRE store:",
-        storeItems.length,
-        "items"
-    );
-}
-
-validateStore();
-
-
-/* =========================================================
-   FINAL SAFE INITIALIZATION
-========================================================= */
-
-(function(){
-
-    /*
-       اطمینان از اینکه دکمه فروشگاه حتی اگر
-       بخشی از UI دیر لود شد نیز متصل باشد.
-    */
-
-    const storeButton =
-        document.getElementById("openStoreButton");
-
-    if(storeButton){
-
-        storeButton.onclick = function(e){
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            openStore();
-        };
-    }
-
-})();
+    },
+    {passive:true}
+);
 
 </script>
 
 </body>
-    </html>
+</html>
+```0
