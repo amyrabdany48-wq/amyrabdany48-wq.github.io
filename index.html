@@ -4,227 +4,186 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WORLD EMPIRE</title>
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
 :root{
---bg:#07111f;
---panel:#0b1b2e;
---panel2:#10263f;
---line:#ffffff18;
---text:#eef7ff;
---muted:#8ea5bd;
---gold:#ffc857;
---red:#ef4458;
---green:#34d17d;
---blue:#4ba9ff;
+ --bg:#07111f;
+ --p:#0b1b2e;
+ --p2:#10263f;
+ --line:#ffffff18;
+ --txt:#eef7ff;
+ --mut:#8ea5bd;
+ --gold:#ffc857;
+ --red:#ef4458;
+ --green:#34d17d;
+ --blue:#4ba9ff;
 }
 
 *{box-sizing:border-box}
 
 html,body{
-margin:0;
-width:100%;
-height:100%;
-overflow:hidden;
-background:var(--bg);
-color:var(--text);
-font-family:Tahoma,Arial,sans-serif;
+ margin:0;
+ width:100%;
+ height:100%;
+ overflow:hidden;
+ background:var(--bg);
+ color:var(--txt);
+ font-family:Tahoma,Arial,sans-serif;
 }
 
-button,input,select{
-font-family:inherit;
-}
-
-button{
-cursor:pointer;
-}
-
-.hidden{
-display:none!important;
-}
-
-/* =========================
-   COUNTRY SELECT
-========================= */
+button,input,select{font-family:inherit}
+button{cursor:pointer}
 
 #countryScreen{
-position:fixed;
-inset:0;
-z-index:5000;
-overflow:auto;
-padding:25px 14px 50px;
-background:
-radial-gradient(circle at 20% 20%,#278bff20,transparent 35%),
-radial-gradient(circle at 80% 75%,#9b6cff18,transparent 35%),
-linear-gradient(135deg,#050c17,#0a1727 55%,#07101d);
+ position:fixed;
+ inset:0;
+ z-index:5000;
+ overflow:auto;
+ padding:25px 14px 50px;
+ background:
+ radial-gradient(circle at 20% 20%,#278bff20,transparent 35%),
+ radial-gradient(circle at 80% 75%,#9b6cff18,transparent 35%),
+ linear-gradient(135deg,#050c17,#0a1727 55%,#07101d);
 }
 
 .logo{
-text-align:center;
-font-size:clamp(34px,7vw,66px);
-font-weight:900;
-letter-spacing:3px;
-color:#eaf8ff;
-text-shadow:0 0 30px #49a8ff55;
+ text-align:center;
+ font-size:clamp(34px,7vw,66px);
+ font-weight:900;
+ letter-spacing:3px;
+ color:#eaf8ff;
+ text-shadow:0 0 30px #49a8ff55;
 }
 
 .subtitle{
-text-align:center;
-color:var(--muted);
-margin:8px auto 25px;
-max-width:800px;
-font-size:13px;
+ text-align:center;
+ color:var(--mut);
+ margin:8px auto 25px;
+ max-width:800px;
+ font-size:13px;
 }
 
 #countryGrid{
-max-width:1200px;
-margin:auto;
-display:grid;
-grid-template-columns:
-repeat(auto-fit,minmax(170px,1fr));
-gap:11px;
+ max-width:1200px;
+ margin:auto;
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+ gap:11px;
 }
 
 .cc{
-padding:15px;
-border:1px solid var(--line);
-border-radius:17px;
-background:
-linear-gradient(145deg,#132a43f5,#091a2bf5);
-transition:.2s;
+ padding:15px;
+ border:1px solid var(--line);
+ border-radius:17px;
+ background:linear-gradient(145deg,#132a43f5,#091a2bf5);
+ transition:.2s;
 }
 
 .cc:hover{
-transform:translateY(-4px);
-border-color:#4ba9ff66;
+ transform:translateY(-4px);
+ border-color:#4ba9ff66;
 }
 
 .cc.sel{
-border-color:var(--gold);
-box-shadow:0 0 0 2px #ffc85718;
+ border-color:var(--gold);
+ box-shadow:0 0 0 2px #ffc85718;
 }
 
-.flag{
-font-size:30px;
-}
-
-.cn{
-font-size:16px;
-font-weight:bold;
-margin-top:7px;
-}
-
-.cm{
-font-size:10px;
-color:var(--muted);
-margin-top:4px;
-}
+.flag{font-size:30px}
+.cn{font-size:16px;font-weight:bold;margin-top:7px}
+.cm{font-size:10px;color:var(--mut);margin-top:4px}
 
 #start{
-display:block;
-margin:23px auto;
-padding:13px 35px;
-border-radius:13px;
-border:0;
-background:
-linear-gradient(135deg,#ffd76e,#ffb62c);
-font-weight:900;
-font-size:15px;
-color:#101820;
+ display:block;
+ margin:23px auto;
+ padding:13px 35px;
+ border-radius:13px;
+ background:linear-gradient(135deg,#ffd76e,#ffb62c);
+ font-weight:900;
+ font-size:15px;
+ color:#101820;
+ border:0;
 }
-
-/* =========================
-   GAME
-========================= */
 
 #game{
-position:fixed;
-inset:0;
-}
-
-#map{
-position:absolute;
-inset:0;
-z-index:1;
+ position:fixed;
+ inset:0;
 }
 
 .leaflet-control-zoom{
-display:none!important;
+ display:none!important;
 }
 
 .leaflet-control-attribution{
-font-size:8px!important;
+ font-size:8px!important;
 }
 
-/* =========================
-   TOP BAR
-========================= */
+#map{
+ position:absolute;
+ inset:0;
+ z-index:1;
+}
 
 .top{
-position:absolute;
-z-index:1000;
-top:8px;
-left:8px;
-right:8px;
-display:flex;
-gap:7px;
-pointer-events:none;
+ position:absolute;
+ z-index:1000;
+ top:8px;
+ left:8px;
+ right:8px;
+ display:flex;
+ gap:7px;
+ pointer-events:none;
 }
 
-.brand,
-.stat{
-background:#06101de8;
-border:1px solid var(--line);
-backdrop-filter:blur(12px);
-box-shadow:0 12px 35px #0005;
-border-radius:13px;
+.brand,.stat{
+ background:#06101de8;
+ border:1px solid var(--line);
+ backdrop-filter:blur(12px);
+ box-shadow:0 12px 35px #0005;
+ border-radius:13px;
 }
 
 .brand{
-pointer-events:auto;
-padding:9px 12px;
-min-width:155px;
+ pointer-events:auto;
+ padding:9px 12px;
+ min-width:155px;
 }
 
-.brand b{
-font-size:14px;
-}
+.brand b{font-size:14px}
 
 .brand small{
-display:block;
-color:var(--muted);
-font-size:9px;
-margin-top:3px;
+ display:block;
+ color:var(--mut);
+ font-size:9px;
+ margin-top:3px;
 }
 
 .stats{
-flex:1;
-display:grid;
-grid-template-columns:
-repeat(8,1fr);
-gap:6px;
+ flex:1;
+ display:grid;
+ grid-template-columns:repeat(8,1fr);
+ gap:6px;
 }
 
 .stat{
-padding:6px 8px;
-min-width:0;
+ padding:6px 8px;
+ min-width:0;
 }
 
 .stat small{
-display:block;
-color:var(--muted);
-font-size:8px;
+ display:block;
+ color:var(--mut);
+ font-size:8px;
 }
 
 .stat b{
-display:block;
-font-size:12px;
-margin-top:3px;
-white-space:nowrap;
-overflow:hidden;
-text-overflow:ellipsis;
+ display:block;
+ font-size:12px;
+ margin-top:3px;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
 }
 
 .gold{color:var(--gold)}
@@ -232,593 +191,483 @@ text-overflow:ellipsis;
 .red{color:var(--red)}
 .blue{color:var(--blue)}
 
-/* =========================
-   WORLD PANEL
-========================= */
-
 .side{
-position:absolute;
-z-index:1000;
-right:8px;
-top:85px;
-width:295px;
-max-height:calc(100% - 160px);
-overflow:auto;
-background:#07121eea;
-border:1px solid var(--line);
-border-radius:17px;
-backdrop-filter:blur(13px);
-box-shadow:0 18px 55px #0007;
+ position:absolute;
+ z-index:1000;
+ right:8px;
+ top:85px;
+ width:295px;
+ max-height:calc(100% - 160px);
+ overflow:auto;
+ background:#07121eea;
+ border:1px solid var(--line);
+ border-radius:17px;
+ backdrop-filter:blur(13px);
+ box-shadow:0 18px 55px #0007;
 }
 
 .side h3{
-font-size:13px;
-margin:0;
-padding:12px;
-border-bottom:1px solid var(--line);
+ font-size:13px;
+ margin:0;
+ padding:12px;
+ border-bottom:1px solid var(--line);
 }
 
-#world{
-padding:9px;
-}
+#world{padding:9px}
 
 .worldRow{
-display:flex;
-gap:7px;
-align-items:center;
-padding:8px;
-border-radius:11px;
-background:#ffffff06;
-margin-bottom:6px;
-cursor:pointer;
+ display:flex;
+ gap:7px;
+ align-items:center;
+ padding:8px;
+ border-radius:11px;
+ background:#ffffff06;
+ margin-bottom:6px;
+ cursor:pointer;
 }
 
 .worldRow:hover{
-background:#ffffff0d;
+ background:#ffffff0d;
 }
 
-.worldRow .f{
-font-size:21px;
-}
+.worldRow .f{font-size:21px}
 
 .wi{
-flex:1;
-min-width:0;
+ flex:1;
+ min-width:0;
 }
 
 .wi b{
-display:block;
-font-size:10px;
+ display:block;
+ font-size:10px;
 }
 
 .wi small{
-display:block;
-color:var(--muted);
-font-size:8px;
-margin-top:3px;
+ display:block;
+ color:var(--mut);
+ font-size:8px;
+ margin-top:3px;
 }
 
 .badge{
-font-size:8px;
-padding:4px 6px;
-border-radius:15px;
-background:#35d17d18;
-color:var(--green);
+ font-size:8px;
+ padding:4px 6px;
+ border-radius:15px;
+ background:#35d17d18;
+ color:var(--green);
 }
 
 .badge.w{
-background:#ef445818;
-color:var(--red);
+ background:#ef445818;
+ color:var(--red);
 }
 
 .badge.y{
-background:#ffc85718;
-color:var(--gold);
+ background:#ffc85718;
+ color:var(--gold);
 }
 
-/* =========================
-   BOTTOM DOCK
-========================= */
-
 .dock{
-position:absolute;
-z-index:1100;
-bottom:7px;
-left:50%;
-transform:translateX(-50%);
-display:flex;
-gap:6px;
-padding:7px;
-border:1px solid var(--line);
-border-radius:16px;
-background:#06101df2;
-backdrop-filter:blur(14px);
-width:min(690px,calc(100% - 10px));
-box-shadow:0 18px 55px #0008;
+ position:absolute;
+ z-index:1100;
+ bottom:7px;
+ left:50%;
+ transform:translateX(-50%);
+ display:flex;
+ gap:6px;
+ padding:7px;
+ border:1px solid var(--line);
+ border-radius:16px;
+ background:#06101df2;
+ backdrop-filter:blur(14px);
+ width:min(690px,calc(100% - 10px));
+ box-shadow:0 18px 55px #0008;
 }
 
 .dock button{
-flex:1;
-padding:9px 4px;
-border-radius:10px;
-background:#ffffff08;
-color:#eef7ff;
-border:1px solid transparent;
-font-size:10px;
+ flex:1;
+ padding:9px 4px;
+ border-radius:10px;
+ background:#ffffff08;
+ color:#eef7ff;
+ border:1px solid transparent;
+ font-size:10px;
 }
 
 .dock button:hover{
-border-color:#4ba9ff55;
-background:#4ba9ff16;
+ border-color:#4ba9ff55;
+ background:#4ba9ff16;
 }
 
 .dock .next{
-background:
-linear-gradient(135deg,#19734c,#27bd70);
-font-weight:bold;
+ background:linear-gradient(135deg,#19734c,#27bd70);
+ font-weight:bold;
 }
 
-/* =========================
-   TOAST
-========================= */
-
 #toast{
-position:absolute;
-z-index:3000;
-left:8px;
-bottom:83px;
-width:min(330px,calc(100% - 16px));
+ position:absolute;
+ z-index:3000;
+ left:8px;
+ bottom:83px;
+ width:min(330px,calc(100% - 16px));
 }
 
 .toast{
-padding:10px;
-border-radius:12px;
-background:#081522f5;
-border:1px solid var(--line);
-margin-top:6px;
-box-shadow:0 12px 35px #0008;
+ padding:10px;
+ border-radius:12px;
+ background:#081522f5;
+ border:1px solid var(--line);
+ margin-top:6px;
+ box-shadow:0 12px 35px #0008;
 }
 
-.toast b{
-font-size:11px;
-}
+.toast b{font-size:11px}
 
 .toast small{
-display:block;
-color:var(--muted);
-font-size:9px;
-margin-top:3px;
+ display:block;
+ color:var(--mut);
+ font-size:9px;
+ margin-top:3px;
 }
 
-/* =========================
-   MODAL
-========================= */
-
 #layer{
-position:absolute;
-z-index:4000;
-inset:0;
-background:#0008;
-backdrop-filter:blur(4px);
-display:flex;
-align-items:center;
-justify-content:center;
-padding:12px;
+ position:absolute;
+ z-index:4000;
+ inset:0;
+ background:#0008;
+ backdrop-filter:blur(4px);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ padding:12px;
 }
 
 .modal{
-width:min(950px,100%);
-max-height:91vh;
-overflow:auto;
-border-radius:20px;
-background:
-linear-gradient(145deg,#0b1c30,#081522);
-border:1px solid #ffffff18;
-box-shadow:0 30px 100px #000b;
+ width:min(950px,100%);
+ max-height:91vh;
+ overflow:auto;
+ border-radius:20px;
+ background:linear-gradient(145deg,#0b1c30,#081522);
+ border:1px solid #ffffff18;
+ box-shadow:0 30px 100px #000b;
 }
 
 .mh{
-position:sticky;
-top:0;
-z-index:3;
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:14px 16px;
-background:#091827f5;
-border-bottom:1px solid var(--line);
+ position:sticky;
+ top:0;
+ z-index:3;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:14px 16px;
+ background:#091827f5;
+ border-bottom:1px solid var(--line);
 }
 
-.mh b{
-font-size:15px;
-}
+.mh b{font-size:15px}
 
 .close{
-width:31px;
-height:31px;
-border-radius:9px;
-background:#ffffff0a;
-color:#fff;
-border:0;
-font-size:18px;
+ width:31px;
+ height:31px;
+ border-radius:9px;
+ background:#ffffff0a;
+ color:#fff;
+ font-size:18px;
+ border:0;
 }
 
-.mb{
-padding:14px;
-}
+.mb{padding:14px}
 
 .grid2{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:10px;
 }
 
 .grid3{
-display:grid;
-grid-template-columns:
-repeat(3,1fr);
-gap:9px;
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:9px;
 }
 
 .card{
-padding:12px;
-border-radius:14px;
-background:#ffffff06;
-border:1px solid var(--line);
+ padding:12px;
+ border-radius:14px;
+ background:#ffffff06;
+ border:1px solid var(--line);
 }
 
 .card h3{
-font-size:12px;
-margin:0 0 7px;
+ font-size:12px;
+ margin:0 0 7px;
 }
 
 .card p{
-font-size:10px;
-line-height:1.8;
-color:var(--muted);
-margin:4px 0;
+ font-size:10px;
+ line-height:1.8;
+ color:var(--mut);
+ margin:4px 0;
 }
 
 .big{
-font-size:21px;
-font-weight:900;
+ font-size:21px;
+ font-weight:900;
 }
 
 .action{
-width:100%;
-padding:10px;
-margin-top:8px;
-border-radius:10px;
-background:
-linear-gradient(135deg,#1c6fb4,#2b93dc);
-color:#fff;
-font-weight:bold;
-border:0;
+ width:100%;
+ padding:10px;
+ margin-top:8px;
+ border-radius:10px;
+ background:linear-gradient(135deg,#1c6fb4,#2b93dc);
+ color:#fff;
+ font-weight:bold;
+ border:0;
 }
 
 .action.red{
-background:
-linear-gradient(135deg,#8a2c3b,#d94c60);
+ background:linear-gradient(135deg,#8a2c3b,#d94c60);
 }
 
 .action.green{
-background:
-linear-gradient(135deg,#19744d,#27bc70);
+ background:linear-gradient(135deg,#19744d,#27bc70);
 }
 
 .action.gold{
-background:
-linear-gradient(135deg,#b57918,#e9ae3d);
-color:#101010;
+ background:linear-gradient(135deg,#b57918,#e9ae3d);
+ color:#101010;
 }
 
 .notice{
-padding:10px;
-border-radius:11px;
-background:#ffc8570b;
-border:1px solid #ffc85722;
-color:#cbd9e6;
-font-size:10px;
-line-height:1.8;
+ padding:10px;
+ border-radius:11px;
+ background:#ffc8570b;
+ border:1px solid #ffc85722;
+ color:#cbd9e6;
+ font-size:10px;
+ line-height:1.8;
 }
 
-/* =========================
-   COUNTRY INFO
-========================= */
-
 .hero{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:9px;
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:9px;
 }
 
 .flagbox{
-display:flex;
-align-items:center;
-gap:10px;
-padding:12px;
-border-radius:13px;
-background:#ffffff06;
-border:1px solid var(--line);
+ display:flex;
+ align-items:center;
+ gap:10px;
+ padding:12px;
+ border-radius:13px;
+ background:#ffffff06;
+ border:1px solid var(--line);
 }
 
-.flagbox span{
-font-size:38px;
-}
+.flagbox span{font-size:38px}
 
-.flagbox b{
-font-size:14px;
-}
+.flagbox b{font-size:14px}
 
 .flagbox small{
-display:block;
-color:var(--muted);
-font-size:9px;
-margin-top:3px;
+ display:block;
+ color:var(--mut);
+ font-size:9px;
+ margin-top:3px;
 }
 
 .power{
-display:grid;
-grid-template-columns:
-repeat(4,1fr);
-gap:6px;
-margin:10px 0;
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:6px;
+ margin:10px 0;
 }
 
 .power div{
-text-align:center;
-padding:8px;
-border-radius:9px;
-background:#ffffff06;
+ text-align:center;
+ padding:8px;
+ border-radius:9px;
+ background:#ffffff06;
 }
 
 .power small{
-display:block;
-color:var(--muted);
-font-size:8px;
+ display:block;
+ color:var(--mut);
+ font-size:8px;
 }
 
 .power b{
-display:block;
-font-size:11px;
-margin-top:3px;
+ display:block;
+ font-size:11px;
+ margin-top:3px;
 }
 
-/* =========================
-   ARMY
-========================= */
-
 .units{
-display:grid;
-grid-template-columns:
-repeat(4,1fr);
-gap:8px;
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:8px;
 }
 
 .unit{
-padding:10px;
-border-radius:12px;
-background:#ffffff06;
-border:1px solid var(--line);
+ padding:10px;
+ border-radius:12px;
+ background:#ffffff06;
+ border:1px solid var(--line);
 }
 
-.unit .ico{
-font-size:23px;
-}
+.unit .ico{font-size:23px}
 
 .unit b{
-display:block;
-font-size:10px;
-margin-top:4px;
+ display:block;
+ font-size:10px;
+ margin-top:4px;
 }
 
 .unit small{
-display:block;
-color:var(--muted);
-font-size:8px;
-line-height:1.7;
-margin-top:3px;
+ display:block;
+ color:var(--mut);
+ font-size:8px;
+ line-height:1.7;
+ margin-top:3px;
 }
 
 .qty{
-color:#3de0dc!important;
-font-size:10px!important;
-font-weight:bold;
+ color:#3de0dc!important;
+ font-size:10px!important;
+ font-weight:bold;
 }
 
 .unit button{
-width:100%;
-padding:6px;
-border:0;
-border-radius:8px;
-background:#4ba9ff12;
-color:#dceeff;
-font-size:8px;
-margin-top:5px;
+ width:100%;
+ padding:6px;
+ border:0;
+ border-radius:8px;
+ background:#4ba9ff12;
+ color:#dceeff;
+ font-size:8px;
+ margin-top:5px;
 }
 
-/* =========================
-   METER
-========================= */
-
 .meter{
-height:10px;
-background:#182b40;
-border-radius:10px;
-overflow:hidden;
+ height:10px;
+ background:#182b40;
+ border-radius:10px;
+ overflow:hidden;
 }
 
 .meter i{
-display:block;
-height:100%;
-background:
-linear-gradient(90deg,#ef4458,#ffc857,#35d17d);
-transition:.4s;
+ display:block;
+ height:100%;
+ background:linear-gradient(90deg,#ef4458,#ffc857,#35d17d);
+ transition:.4s;
 }
 
-/* =========================
-   NEWS
-========================= */
-
 .news{
-display:flex;
-gap:9px;
-padding:9px 2px;
-border-bottom:1px solid var(--line);
+ display:flex;
+ gap:9px;
+ padding:9px 2px;
+ border-bottom:1px solid var(--line);
 }
 
 .news .ni{
-width:31px;
-height:31px;
-display:grid;
-place-items:center;
-border-radius:9px;
-background:#4ba9ff12;
+ width:31px;
+ height:31px;
+ display:grid;
+ place-items:center;
+ border-radius:9px;
+ background:#4ba9ff12;
 }
 
-.news b{
-font-size:10px;
-}
+.news b{font-size:10px}
 
 .news p{
-margin:3px 0;
-color:var(--muted);
-font-size:9px;
-line-height:1.7;
+ margin:3px 0;
+ color:var(--mut);
+ font-size:9px;
+ line-height:1.7;
 }
 
 .news small{
-font-size:7px;
-color:#668099;
+ font-size:7px;
+ color:#668099;
 }
 
 .tabs{
-display:flex;
-gap:5px;
-overflow:auto;
-margin-bottom:10px;
+ display:flex;
+ gap:5px;
+ overflow:auto;
+ margin-bottom:10px;
 }
 
 .tabs button{
-white-space:nowrap;
-padding:7px 10px;
-border-radius:9px;
-background:#ffffff08;
-color:var(--muted);
-border:0;
+ white-space:nowrap;
+ padding:7px 10px;
+ border-radius:9px;
+ background:#ffffff08;
+ color:var(--mut);
+ border:0;
 }
 
 .tabs button.active{
-background:#4ba9ff18;
-color:#fff;
+ background:#4ba9ff18;
+ color:#fff;
 }
 
 select{
-width:100%;
-padding:10px;
-background:#10263f;
-color:#fff;
-border:1px solid var(--line);
-border-radius:10px;
+ width:100%;
+ padding:10px;
+ background:#10263f;
+ color:#fff;
+ border:1px solid var(--line);
+ border-radius:10px;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
+.row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:10px;
+}
+
+.hidden{display:none!important}
 
 @media(max-width:900px){
-
-.brand{
-display:none;
-}
-
-.stats{
-grid-template-columns:
-repeat(4,1fr);
-}
-
-.side{
-display:none;
-}
-
-.dock button{
-font-size:8px;
-}
-
-.units{
-grid-template-columns:1fr 1fr;
-}
-
-.grid3{
-grid-template-columns:1fr 1fr;
-}
-
+ .brand{display:none}
+ .stats{grid-template-columns:repeat(4,1fr)}
+ .side{display:none}
+ .dock button{font-size:8px}
+ .units{grid-template-columns:1fr 1fr}
+ .grid3{grid-template-columns:1fr 1fr}
 }
 
 @media(max-width:520px){
-
-.stats .stat:nth-child(n+5){
-display:none;
-}
-
-.stats{
-grid-template-columns:
-repeat(4,1fr);
-}
-
-.grid2,
-.hero{
-grid-template-columns:1fr;
-}
-
-.grid3{
-grid-template-columns:1fr;
-}
-
-.power{
-grid-template-columns:
-1fr 1fr;
-}
-
+ .stats .stat:nth-child(n+5){display:none}
+ .stats{grid-template-columns:repeat(4,1fr)}
+ .grid2,.hero{grid-template-columns:1fr}
+ .grid3{grid-template-columns:1fr}
+ .power{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 
 <body>
 
-<!-- =========================
-     COUNTRY SCREEN
-========================= -->
-
 <section id="countryScreen">
 
-<div class="logo">
-WORLD EMPIRE
-</div>
+<div class="logo">WORLD EMPIRE</div>
 
 <div class="subtitle">
-یک کشور انتخاب کن و جهان را با اقتصاد، دیپلماسی، مدیریت و ارتش خود متحول کن.
+یک کشور انتخاب کن و جهان را با اقتصاد، دیپلماسی و مدیریت ارتش خود متحول کن.
 </div>
 
 <div id="countryGrid"></div>
 
-<button id="start">
-شروع امپراتوری
-</button>
+<button id="start">شروع امپراتوری</button>
 
 </section>
-
-
-<!-- =========================
-     GAME
-========================= -->
 
 <main id="game" class="hidden">
 
 <div id="map"></div>
-
-
-<!-- TOP -->
 
 <div class="top">
 
@@ -872,86 +721,41 @@ WORLD EMPIRE
 </div>
 </div>
 
-
-<!-- WORLD PANEL -->
-
 <aside class="side">
 
-<h3>
-🌍 قدرت‌های جهان
-</h3>
+<h3>🌍 قدرت‌های جهان</h3>
 
 <div id="world"></div>
 
 </aside>
 
-
 <div id="toast"></div>
-
-
-<!-- DOCK -->
 
 <nav class="dock">
 
-<button onclick="store()">
-🏪 فروشگاه
-</button>
-
-<button onclick="gov()">
-🏛 دولت
-</button>
-
-<button onclick="army()">
-🛡 ارتش
-</button>
-
-<button onclick="war()">
-⚔ جنگ
-</button>
-
-<button onclick="myCountry()">
-🏳 کشور
-</button>
-
-<button onclick="news()">
-📰 اخبار
-</button>
-
-<button class="next" onclick="nextDay()">
-⏩ روز بعد
-</button>
+<button onclick="store()">🏪 فروشگاه</button>
+<button onclick="gov()">🏛 دولت</button>
+<button onclick="army()">🛡 ارتش</button>
+<button onclick="war()">⚔ جنگ</button>
+<button onclick="myCountry()">🏳 کشور</button>
+<button onclick="news()">📰 اخبار</button>
+<button class="next" onclick="nextDay()">⏩ روز بعد</button>
 
 </nav>
 
 </main>
 
-
-<!-- MODAL -->
-
 <div id="layer" class="hidden">
-
 <div id="modal" class="modal"></div>
-
 </div>
-
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-
 "use strict";
 
-/* =====================================================
-   CONFIG
-===================================================== */
-
-const MAP_GEOJSON=
+const MAP_GEOJSON =
 "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
-
-
-/* =====================================================
-   COUNTRIES
-===================================================== */
 
 const countries=[
 
@@ -990,3298 +794,2378 @@ const countries=[
 ["ARG","آرژانتین","AR",45.9,"بوئنوس آیرس",54,55]
 
 ].map(x=>({
-
-id:x[0],
-name:x[1],
-iso:x[2],
-pop:x[3],
-capital:x[4],
-prod:x[5],
-power:x[6]
-
+ id:x[0],
+ name:x[1],
+ iso:x[2],
+ pop:x[3],
+ capital:x[4],
+ prod:x[5],
+ power:x[6]
 }));
 
-
-/* =====================================================
-   MAP COLORS
-===================================================== */
-
 const colors=[
-
-"#5c7cfa",
-"#20c997",
-"#f59f00",
-"#ae3ec9",
-"#15aabf",
-"#e64980",
-"#37b24d",
-"#f08c00",
-"#7950f2",
-"#0ca678",
-"#d6336c",
-"#228be6",
-"#74b816",
-"#fab005",
-"#845ef7",
-"#12b886",
-"#e03131",
-"#339af0",
-"#66a80f",
-"#f76707",
-"#7048e8",
-"#1098ad",
-"#c92a2a",
-"#2f9e44",
-"#f08c00",
-"#6741d9",
-"#0b7285",
-"#a61e4d",
-"#2b8a3e",
-"#1864ab",
-"#862e9c",
-"#087f5b",
-"#9c36b5"
-
+"#5c7cfa","#20c997","#f59f00","#ae3ec9","#15aabf",
+"#e64980","#37b24d","#f08c00","#7950f2","#0ca678",
+"#d6336c","#228be6","#74b816","#fab005","#845ef7",
+"#12b886","#e03131","#339af0","#66a80f","#f76707",
+"#7048e8","#1098ad","#c92a2a","#2f9e44","#f08c00",
+"#6741d9","#0b7285","#a61e4d","#2b8a3e","#1864ab",
+"#862e9c","#087f5b","#9c36b5"
 ];
-
-
-/* =====================================================
-   ARMY UNITS
-===================================================== */
 
 const units={
 
 infantry:[
-"نیروی زمینی",
-"🪖",
-1,
-1,
-1,
-18,
-.12
+"نیروی زمینی","🪖",1,1,1,18,.12
 ],
 
 armor:[
-"زرهی",
-"🛡️",
-1.55,
-1.3,
-.8,
-42,
-.28
+"زرهی","🛡️",1.55,1.3,.8,42,.28
 ],
 
 artillery:[
-"پشتیبانی آتش",
-"🎯",
-1.75,
-.65,
-.55,
-48,
-.30
+"پشتیبانی آتش","🎯",1.75,.65,.55,48,.30
 ],
 
 air:[
-"نیروی هوایی",
-"✈️",
-2.05,
-1,
-1.7,
-72,
-.45
+"نیروی هوایی","✈️",2.05,1,1.7,72,.45
 ],
 
 drone:[
-"بدون‌سرنشین",
-"🛰️",
-1.35,
-.75,
-1.9,
-58,
-.35
+"بدون‌سرنشین","🛰️",1.35,.75,1.9,58,.35
 ],
 
 navy:[
-"نیروی دریایی",
-"⚓",
-1.65,
-1.25,
-1.3,
-65,
-.38
+"نیروی دریایی","⚓",1.65,1.25,1.3,65,.38
 ],
 
 recon:[
-"شناسایی",
-"🔭",
-.65,
-.7,
-2,
-32,
-.18
+"شناسایی","🔭",.65,.7,2,32,.18
 ],
 
 logistics:[
-"لجستیک",
-"🚚",
-.45,
-.8,
-1.2,
-28,
-.20
+"لجستیک","🚚",.45,.8,1.2,28,.20
 ]
 
 };
 
-
-/* =====================================================
-   GAME STATE
-===================================================== */
-
 let S={
-
-started:false,
-
-player:null,
-
-owned:[],
-
-conquered:[],
-
-money:7000,
-
-pop:0,
-
-prod:0,
-
-rep:55,
-
-infl:4,
-
-cities:3,
-
-stability:82,
-
-readiness:76,
-
-morale:76,
-
-logistics:74,
-
-exhaust:0,
-
-cp:100,
-
-year:1,
-
-day:1,
-
-hour:0,
-
-units:{
-
-infantry:12000,
-armor:2500,
-artillery:1300,
-air:650,
-drone:900,
-navy:300,
-recon:900,
-logistics:850
-
-},
-
-ai:{},
-
-wars:[],
-
-news:[],
-
-lastNews:0
-
+ started:false,
+ player:null,
+ owned:[],
+ conquered:[],
+ money:7000,
+ pop:0,
+ prod:0,
+ rep:55,
+ infl:4,
+ cities:3,
+ stability:82,
+ readiness:76,
+ morale:76,
+ logistics:74,
+ exhaust:0,
+ cp:100,
+ year:1,
+ day:1,
+ hour:0,
+ wars:[],
+ news:[],
+ lastNews:0,
+ units:{
+  infantry:12000,
+  armor:2500,
+  artillery:1300,
+  air:650,
+  drone:900,
+  navy:300,
+  recon:900,
+  logistics:850
+ },
+ ai:{}
 };
-
 
 let map;
 let geo;
 let chosen=null;
 
-
-/* =====================================================
-   HELPERS
-===================================================== */
-
-const C=id=>
-countries.find(c=>c.id===id);
+const C=id=>countries.find(c=>c.id===id);
 
 const F=iso=>
-iso.replace(
-/./g,
-c=>String.fromCodePoint(127397+c.charCodeAt(0))
-);
+ iso.replace(/./g,c=>
+ String.fromCodePoint(127397+c.charCodeAt(0))
+ );
 
-const owned=id=>
-S.owned.includes(id);
-
-const conquered=id=>
-S.conquered.includes(id);
+const owned=id=>S.owned.includes(id);
+const conquered=id=>S.conquered.includes(id);
 
 function n(x){
-
-return Math.round(x).toLocaleString("fa-IR");
-
+ return Math.round(x).toLocaleString("fa-IR");
 }
 
 function rnd(a,b){
-
-return Math.random()*(b-a)+a;
-
+ return Math.random()*(b-a)+a;
 }
 
 function clamp(x,a,b){
-
-return Math.max(a,Math.min(b,x));
-
+ return Math.max(a,Math.min(b,x));
 }
-
-
-/* =====================================================
-   POWER
-===================================================== */
 
 function power(){
 
-let p=0;
+ let p=0;
 
-for(const[k,q] of Object.entries(S.units)){
+ for(const[k,q] of Object.entries(S.units)){
+  p+=q*units[k][2];
+ }
 
-p+=q*units[k][2];
-
+ return p/100+
+ S.morale*.9+
+ S.readiness*.8+
+ S.logistics*.55+
+ S.cities*8;
 }
-
-return p/100+
-S.morale*.9+
-S.readiness*.8+
-S.logistics*.55+
-S.cities*8;
-
-}
-
 
 function aiPower(id){
 
-let c=C(id);
+ let c=C(id);
+ let a=S.ai[id];
 
-let a=S.ai[id];
-
-return c.power*
-(
-.65+
-a.readiness/300+
-a.stability/500
-);
-
+ return c.power*
+ (
+  .65+
+  a.readiness/300+
+  a.stability/500
+ );
 }
-
 
 function targetPower(id){
 
-let c=C(id);
+ let c=C(id);
+ let a=S.ai[id];
 
-let a=S.ai[id];
-
-return c.power*1.4+
-a.readiness*.9+
-a.morale*.8+
-a.stability*.5;
-
+ return c.power*1.4+
+ a.readiness*.9+
+ a.morale*.8+
+ a.stability*.5;
 }
 
+function toast(t,x){
 
-/* =====================================================
-   TOAST
-===================================================== */
+ let d=document.createElement("div");
 
-function toast(title,text){
+ d.className="toast";
 
-let d=document.createElement("div");
+ d.innerHTML=
+ `<b>${t}</b>
+ <small>${x}</small>`;
 
-d.className="toast";
+ document.getElementById("toast").prepend(d);
 
-d.innerHTML=
-`
-<b>${title}</b>
-<small>${text}</small>
-`;
-
-document.getElementById("toast").prepend(d);
-
-setTimeout(()=>d.remove(),5000);
-
+ setTimeout(()=>{
+  d.remove();
+ },5000);
 }
 
+function modal(t,b){
 
-/* =====================================================
-   MODAL
-===================================================== */
+ document.getElementById("modal").innerHTML=
+ `<div class="mh">
+   <b>${t}</b>
+   <button class="close" onclick="closeM()">×</button>
+  </div>
+  <div class="mb">${b}</div>`;
 
-function modal(title,body){
-
-document.getElementById("modal").innerHTML=
-`
-<div class="mh">
-
-<b>${title}</b>
-
-<button
-class="close"
-onclick="closeM()">
-×
-</button>
-
-</div>
-
-<div class="mb">
-${body}
-</div>
-`;
-
-document
-.getElementById("layer")
-.classList
-.remove("hidden");
-
+ document.getElementById("layer")
+ .classList.remove("hidden");
 }
-
 
 function closeM(){
 
-document
-.getElementById("layer")
-.classList
-.add("hidden");
-
+ document.getElementById("layer")
+ .classList.add("hidden");
 }
-
-
-/* =====================================================
-   NEWS
-===================================================== */
 
 function newsAdd(type,title,text,related=null){
 
-S.news.unshift({
+ S.news.unshift({
+  type,
+  title,
+  text,
+  related,
+  day:S.day,
+  year:S.year,
+  hour:S.hour
+ });
 
-type,
-title,
-text,
-related,
-day:S.day,
-year:S.year,
-hour:S.hour
-
-});
-
-if(S.news.length>100){
-
-S.news.pop();
-
+ if(S.news.length>100)
+ S.news.pop();
 }
 
-}
-
-
-/* =====================================================
-   COUNTRY SELECT
-===================================================== */
+/* انتخاب کشور */
 
 function drawSelect(){
 
-countryGrid.innerHTML=
-countries.map(c=>`
+ countryGrid.innerHTML=
+ countries.map(c=>
 
-<div
-class="cc ${chosen===c.id?"sel":""}"
-onclick="chosen='${c.id}';drawSelect()">
+ `<div class="cc ${chosen===c.id?"sel":""}"
+ onclick="chosen='${c.id}';drawSelect()">
 
-<span class="flag">
-${F(c.iso)}
-</span>
+ <span class="flag">${F(c.iso)}</span>
 
-<div class="cn">
-${c.name}
-</div>
+ <div class="cn">${c.name}</div>
 
-<div class="cm">
-جمعیت ${c.pop} میلیون
-</div>
+ <div class="cm">
+ جمعیت ${c.pop} میلیون
+ </div>
 
-<div class="cm">
-تولید ${c.prod}
-|
-قدرت ${c.power}
-</div>
+ <div class="cm">
+ تولید ${c.prod} | قدرت ${c.power}
+ </div>
 
-</div>
+ </div>`
 
-`).join("");
-
+ ).join("");
 }
 
-
-start.onclick=()=>
-startGame(chosen||"IRN");
-
-
-/* =====================================================
-   START
-===================================================== */
+start.onclick=()=>{
+ startGame(chosen||"IRN");
+};
 
 function startGame(id){
 
-const c=C(id);
+ const c=C(id);
 
-S={
+ S={
+  ...S,
+  started:true,
+  player:id,
+  owned:[id],
+  conquered:[],
+  money:7000,
+  pop:c.pop,
+  prod:c.prod,
+  year:1,
+  day:1,
+  hour:0,
+  rep:55,
+  infl:4,
+  cities:3,
+  stability:82,
+  readiness:76,
+  morale:76,
+  logistics:74,
+  exhaust:0,
+  cp:100,
+  wars:[],
+  news:[],
+  lastNews:0
+ };
 
-...S,
+ countries.forEach(x=>{
 
-started:true,
+  if(x.id===id)return;
 
-player:id,
+  S.ai[x.id]={
+   treasury:Math.round(rnd(3500,15000)),
+   stability:Math.round(rnd(55,88)),
+   readiness:Math.round(rnd(50,90)),
+   morale:Math.round(rnd(55,88)),
+   relations:Math.round(rnd(-30,35)),
+   aggression:rnd(.2,.85),
+   war:null
+  };
 
-owned:[id],
+ });
 
-conquered:[],
+ countryScreen.classList.add("hidden");
+ game.classList.remove("hidden");
 
-money:7000,
+ title.textContent=c.name;
 
-pop:c.pop,
+ initMap();
+ seed();
+ render();
 
-prod:c.prod,
-
-year:1,
-
-day:1,
-
-hour:0,
-
-rep:55,
-
-infl:4,
-
-cities:3,
-
-stability:82,
-
-readiness:76,
-
-morale:76,
-
-logistics:74,
-
-exhaust:0,
-
-cp:100,
-
-wars:[],
-
-news:[],
-
-lastNews:0
-
-};
-
-
-countries.forEach(x=>{
-
-if(x.id===id)return;
-
-S.ai[x.id]={
-
-treasury:Math.round(rnd(3500,15000)),
-
-stability:Math.round(rnd(55,88)),
-
-readiness:Math.round(rnd(50,90)),
-
-morale:Math.round(rnd(55,88)),
-
-relations:Math.round(rnd(-30,35)),
-
-aggression:rnd(.2,.85),
-
-war:null
-
-};
-
-});
-
-
-countryScreen
-.classList
-.add("hidden");
-
-game
-.classList
-.remove("hidden");
-
-title.textContent=c.name;
-
-initMap();
-
-seed();
-
-render();
-
-toast(
-"👑 امپراتوری آماده است",
-`فرماندهی ${c.name} آغاز شد.`
-);
-
+ toast(
+  "👑 امپراتوری آماده است",
+  `فرماندهی ${c.name} آغاز شد.`
+ );
 }
-
-
-/* =====================================================
-   START NEWS
-===================================================== */
 
 function seed(){
 
-newsAdd(
-"development",
-"شروع عصر جدید",
-"امپراتوری شما وارد رقابت جهانی شد."
-);
+ newsAdd(
+  "development",
+  "شروع عصر جدید",
+  "امپراتوری شما وارد رقابت جهانی شد."
+ );
 
-newsAdd(
-"diplomacy",
-"مذاکرات جهانی",
-"کشورها در حال ارزیابی قدرت یکدیگر هستند."
-);
+ newsAdd(
+  "diplomacy",
+  "مذاکرات جهانی",
+  "کشورها در حال ارزیابی قدرت یکدیگر هستند."
+ );
 
-newsAdd(
-"economy",
-"بازارهای جهان",
-"اقتصاد جهانی وارد چرخه جدیدی شد."
-);
-
+ newsAdd(
+  "economy",
+  "بازارهای جهان",
+  "اقتصاد جهانی وارد چرخه جدیدی شد."
+ );
 }
 
-
-/* =====================================================
-   MAP
-===================================================== */
+/* نقشه */
 
 function fid(f){
 
-let p=f.properties||{};
+ let p=f.properties||{};
 
-return String(
-p.ISO_A3||
-p.ISO_A3_EH||
-p.ADM0_A3||
-p["ISO3166-1-Alpha-3"]||
-""
-).toUpperCase();
-
+ return String(
+  p.ISO_A3||
+  p.ISO_A3_EH||
+  p.ADM0_A3||
+  p["ISO3166-1-Alpha-3"]||
+  ""
+ ).toUpperCase();
 }
-
 
 function mapColor(id){
 
-if(
-id===S.player||
-conquered(id)
-){
+ if(id===S.player||conquered(id))
+  return "#e63946";
 
-return "#e63946";
+ let i=countries.findIndex(c=>c.id===id);
 
+ return colors[(i<0?0:i)%colors.length];
 }
-
-let i=
-countries.findIndex(
-c=>c.id===id
-);
-
-return colors[
-(i<0?0:i)%colors.length
-];
-
-}
-
 
 function style(f){
 
-return{
-
-color:"#fff",
-
-weight:.7,
-
-fillColor:mapColor(fid(f)),
-
-fillOpacity:.76
-
-};
-
+ return{
+  color:"#fff",
+  weight:.7,
+  fillColor:mapColor(fid(f)),
+  fillOpacity:.76
+ };
 }
-
 
 function initMap(){
 
-map=L.map(
-"map",
-{
-worldCopyJump:false,
-zoomControl:false,
-minZoom:2,
-maxZoom:7
+ map=L.map(
+  "map",
+  {
+   worldCopyJump:false,
+   zoomControl:false,
+   minZoom:2,
+   maxZoom:7
+  }
+ ).setView([25,10],2);
+
+ L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  {
+   maxZoom:19,
+   attribution:"© OpenStreetMap"
+  }
+ ).addTo(map);
+
+ fetch(MAP_GEOJSON)
+ .then(r=>r.json())
+ .then(data=>{
+
+  geo=L.geoJSON(
+   data,
+   {
+    style,
+    onEachFeature:(f,l)=>{
+
+     l.on({
+
+      click:()=>{
+       info(fid(f));
+      },
+
+      mouseover:e=>{
+       e.target.setStyle({
+        weight:2,
+        color:"#fff",
+        fillOpacity:.9
+       });
+      },
+
+      mouseout:e=>{
+       geo.resetStyle(e.target);
+      }
+
+     });
+
+    }
+   }
+  ).addTo(map);
+
+ })
+ .catch(()=>{
+  toast(
+   "نقشه",
+   "اتصال برای دریافت نقشه برقرار نشد."
+  );
+ });
 }
-).setView(
-[25,10],
-2
-);
-
-
-L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{
-maxZoom:19,
-attribution:"© OpenStreetMap"
-}
-).addTo(map);
-
-
-fetch(MAP_GEOJSON)
-
-.then(r=>r.json())
-
-.then(data=>{
-
-geo=L.geoJSON(
-data,
-{
-
-style,
-
-onEachFeature:(f,l)=>{
-
-l.on({
-
-click:()=>info(fid(f)),
-
-mouseover:e=>
-e.target.setStyle(
-{
-weight:2,
-color:"#fff",
-fillOpacity:.9
-}
-),
-
-mouseout:e=>
-geo.resetStyle(e.target)
-
-});
-
-}
-
-}
-
-).addTo(map);
-
-})
-
-.catch(()=>{
-
-toast(
-"نقشه",
-"اتصال برای دریافت نقشه برقرار نشد."
-);
-
-});
-
-}
-
 
 function recolor(){
 
-if(!geo)return;
-
-geo.eachLayer(
-l=>l.setStyle(style(l.feature))
-);
-
+ if(geo)
+  geo.eachLayer(
+   l=>l.setStyle(style(l.feature))
+  );
 }
 
-
-/* =====================================================
-   TIME
-===================================================== */
+/* زمان */
 
 function hour(){
 
-S.hour++;
+ S.hour++;
 
-if(S.hour>=24){
+ if(S.hour>=24){
 
-S.hour=0;
+  S.hour=0;
 
-dayTick();
+  dayTick();
 
+ }
 }
-
-}
-
 
 function dayTick(){
 
-S.day++;
+ S.day++;
 
-if(S.day>365){
+ if(S.day>365){
 
-S.day=1;
+  S.day=1;
+  S.year++;
 
-S.year++;
+ }
 
+ S.money+=
+ S.prod*(1-S.infl/300)+
+ S.cities*3;
+
+ S.pop*=1.00003;
+
+ S.infl=clamp(
+  S.infl+rnd(-.08,.1),
+  0,
+  30
+ );
+
+ S.stability=clamp(
+  S.stability+rnd(-.5,.45),
+  0,
+  100
+ );
+
+ S.cp=clamp(
+  S.cp+3,
+  0,
+  150
+ );
+
+ S.readiness=clamp(
+  S.readiness+
+  S.logistics*.008-
+  S.exhaust*.025-
+  rnd(0,.3),
+  0,
+  100
+ );
+
+ S.exhaust=clamp(
+  S.exhaust-.5,
+  0,
+  100
+ );
+
+ let up=0;
+
+ for(
+  const[k,q]
+  of Object.entries(S.units)
+ ){
+  up+=q*units[k][6]/100;
+ }
+
+ S.money=Math.max(
+  0,
+  S.money-up
+ );
+
+ aiTick();
+ resolveWars();
+
+ if(
+  S.day-S.lastNews>=3
+ ){
+  worldNews();
+  S.lastNews=S.day;
+ }
+
+ if(Math.random()<.15)
+  randomEvent();
+
+ render();
 }
-
-
-S.money+=
-S.prod*
-(1-S.infl/300)+
-S.cities*3;
-
-
-S.pop*=1.00003;
-
-
-S.infl=
-clamp(
-S.infl+rnd(-.08,.1),
-0,
-30
-);
-
-
-S.stability=
-clamp(
-S.stability+rnd(-.5,.45),
-0,
-100
-);
-
-
-S.cp=
-clamp(
-S.cp+3,
-0,
-150
-);
-
-
-S.readiness=
-clamp(
-S.readiness+
-S.logistics*.008-
-S.exhaust*.025-
-rnd(0,.3),
-0,
-100
-);
-
-
-S.exhaust=
-clamp(
-S.exhaust-.5,
-0,
-100
-);
-
-
-let upkeep=0;
-
-for(
-const[k,q]
-of Object.entries(S.units)
-){
-
-upkeep+=
-q*
-units[k][6]/
-100;
-
-}
-
-S.money=
-Math.max(
-0,
-S.money-upkeep
-);
-
-
-aiTick();
-
-resolveWars();
-
-
-if(
-S.day-S.lastNews>=3
-){
-
-worldNews();
-
-S.lastNews=S.day;
-
-}
-
-
-if(
-Math.random()<.15
-){
-
-randomEvent();
-
-}
-
-
-render();
-
-}
-
 
 function nextDay(){
 
-if(!S.started)return;
+ if(!S.started)return;
 
-for(
-let i=0;
-i<24;
-i++
-){
+ for(let i=0;i<24;i++)
+  hour();
 
-hour();
-
+ toast(
+  "⏩ روز جدید",
+  `سال ${S.year} — روز ${S.day}`
+ );
 }
-
-toast(
-"⏩ روز جدید",
-`سال ${S.year} — روز ${S.day}`
-);
-
-}
-
-
-/* خودکار شدن زمان */
 
 setInterval(()=>{
-
-if(S.started){
-
-hour();
-
-}
-
+ if(S.started)
+  hour();
 },5000);
 
-
-/* =====================================================
-   AI
-===================================================== */
+/* هوش مصنوعی */
 
 function aiTick(){
 
-countries.forEach(c=>{
+ countries.forEach(c=>{
 
-if(
-c.id===S.player||
-conquered(c.id)
-)return;
+  if(
+   c.id===S.player||
+   conquered(c.id)
+  )return;
 
+  let a=S.ai[c.id];
 
-let a=S.ai[c.id];
+  a.stability=
+   clamp(
+    a.stability+rnd(-.8,.8),
+    20,
+    100
+   );
 
+  a.readiness=
+   clamp(
+    a.readiness+rnd(-1.2,1.6),
+    25,
+    100
+   );
 
-a.stability=
-clamp(
-a.stability+rnd(-.8,.8),
-20,
-100
-);
+  a.treasury+=
+   c.prod*rnd(.7,1.1);
 
+  if(
+   !a.war&&
+   Math.random()<.045
+  ){
 
-a.readiness=
-clamp(
-a.readiness+rnd(-1.2,1.6),
-25,
-100
-);
+   let list=countries.filter(
+    x=>
+    x.id!==c.id&&
+    !conquered(x.id)&&
+    x.id!==S.player
+   );
 
+   let t=
+    list[
+     Math.floor(
+      Math.random()*list.length
+     )
+    ];
 
-a.treasury+=
-c.prod*
-rnd(.7,1.1);
+   if(
+    t&&
+    aiPower(c.id)>
+    aiPower(t.id)*1.12&&
+    a.readiness>62&&
+    a.treasury>5000
+   ){
 
+    a.war=t.id;
 
-/* AI WAR */
+    newsAdd(
+     "war",
+     `⚔️ ${c.name} وارد جنگ شد`,
+     `${c.name} علیه ${t.name} اعلام جنگ کرد.`
+    );
+   }
+  }
 
-if(
-!a.war&&
-Math.random()<.045
-){
+  if(
+   a.war&&
+   a.stability<35&&
+   Math.random()<.15
+  ){
 
-let list=
-countries.filter(x=>
-x.id!==c.id&&
-!conquered(x.id)&&
-x.id!==S.player
-);
+   a.war=null;
 
-let t=
-list[
-Math.floor(
-Math.random()*list.length
-)
-];
+   newsAdd(
+    "peace",
+    `🕊️ پایان جنگ ${c.name}`,
+    `${c.name} به دنبال آتش‌بس رفت.`
+   );
+  }
 
-
-if(
-t&&
-aiPower(c.id)>
-aiPower(t.id)*1.12&&
-a.readiness>62&&
-a.treasury>5000
-){
-
-a.war=t.id;
-
-newsAdd(
-"war",
-`⚔️ ${c.name} وارد جنگ شد`,
-`${c.name} علیه ${t.name} اعلام جنگ کرد.`
-);
-
+ });
 }
-
-}
-
-
-/* AI PEACE */
-
-if(
-a.war&&
-a.stability<35&&
-Math.random()<.15
-){
-
-let old=a.war;
-
-a.war=null;
-
-newsAdd(
-"peace",
-`🕊️ پایان جنگ ${c.name}`,
-`${c.name} به دنبال آتش‌بس رفت.`
-);
-
-}
-
-});
-
-}
-
-
-/* =====================================================
-   WORLD NEWS
-===================================================== */
 
 function worldNews(){
 
-let list=
-countries.filter(
-c=>
-c.id!==S.player&&
-!conquered(c.id)
-);
+ let list=
+  countries.filter(
+   c=>
+   c.id!==S.player&&
+   !conquered(c.id)
+  );
 
-if(!list.length)return;
+ if(!list.length)return;
 
-let c=
-list[
-Math.floor(
-Math.random()*list.length
-)
-];
+ let c=
+  list[
+   Math.floor(
+    Math.random()*list.length
+   )
+  ];
 
+ let e=[
+  [
+   "economy",
+   `رشد اقتصادی ${c.name}`,
+   `تولید داخلی ${c.name} افزایش یافت.`
+  ],
+  [
+   "development",
+   `پروژه بزرگ ${c.name}`,
+   `${c.name} برنامه توسعه زیرساختی جدید آغاز کرد.`
+  ],
+  [
+   "diplomacy",
+   `پیام دیپلماتیک ${c.name}`,
+   `${c.name} به دنبال بهبود روابط منطقه‌ای است.`
+  ],
+  [
+   "tech",
+   `پیشرفت فناوری ${c.name}`,
+   `${c.name} سرمایه‌گذاری پژوهشی خود را افزایش داد.`
+  ]
+ ][
+  Math.floor(Math.random()*4)
+ ];
 
-let events=[
-
-[
-"economy",
-`رشد اقتصادی ${c.name}`,
-`تولید داخلی ${c.name} افزایش یافت.`
-],
-
-[
-"development",
-`پروژه بزرگ ${c.name}`,
-`${c.name} برنامه توسعه زیرساختی جدید آغاز کرد.`
-],
-
-[
-"diplomacy",
-`پیام دیپلماتیک ${c.name}`,
-`${c.name} به دنبال بهبود روابط منطقه‌ای است.`
-],
-
-[
-"tech",
-`پیشرفت فناوری ${c.name}`,
-`${c.name} سرمایه‌گذاری پژوهشی خود را افزایش داد.`
-]
-
-];
-
-
-let e=
-events[
-Math.floor(
-Math.random()*events.length
-)
-];
-
-
-newsAdd(
-e[0],
-e[1],
-e[2],
-c.id
-);
-
+ newsAdd(
+  e[0],
+  e[1],
+  e[2],
+  c.id
+ );
 }
-
-
-/* =====================================================
-   RANDOM EVENTS
-===================================================== */
 
 function randomEvent(){
 
-let events=[
+ let e=[
+  ["رونق بازار",4],
+  ["فشار اقتصادی",-2],
+  ["موج سازندگی",3],
+  ["رضایت عمومی",2]
+ ][
+  Math.floor(Math.random()*4)
+ ];
 
-["رونق بازار",4],
+ S.prod+=e[1];
 
-["فشار اقتصادی",-2],
+ S.rep=clamp(
+  S.rep+e[1]*.4,
+  0,
+  100
+ );
 
-["موج سازندگی",3],
-
-["رضایت عمومی",2]
-
-];
-
-
-let e=
-events[
-Math.floor(
-Math.random()*events.length
-)
-];
-
-
-S.prod+=e[1];
-
-S.rep=
-clamp(
-S.rep+e[1]*.4,
-0,
-100
-);
-
-
-newsAdd(
-"economy",
-e[0],
-"یک رویداد داخلی روی وضعیت کشور اثر گذاشت."
-);
-
+ newsAdd(
+  "economy",
+  e[0],
+  "یک رویداد داخلی روی وضعیت کشور اثر گذاشت."
+ );
 }
 
-
-/* =====================================================
-   WAR
-===================================================== */
+/* جنگ */
 
 function warCost(){
 
-return 500+
-S.wars.length*250+
-S.exhaust*8;
-
+ return 500+
+ S.wars.length*250+
+ S.exhaust*8;
 }
-
 
 function war(id=null){
 
-if(!id){
+ if(!id){
 
-let a=
-countries.find(
-c=>
-c.id!==S.player&&
-!conquered(c.id)
-);
+  let a=
+   countries.find(
+    c=>
+    c.id!==S.player&&
+    !conquered(c.id)
+   );
 
-id=a?.id;
+  id=a?.id;
+ }
 
+ S.target=id;
+
+ renderWar();
 }
-
-S.target=id;
-
-renderWar();
-
-}
-
 
 function declareWar(id){
 
-if(S.cp<20){
+ if(S.cp<20){
 
-return toast(
-"فرماندهی ناکافی",
-"برای جنگ ۲۰ امتیاز فرماندهی لازم است."
-);
+  return toast(
+   "فرماندهی ناکافی",
+   "برای جنگ ۲۰ امتیاز فرماندهی لازم است."
+  );
 
+ }
+
+ if(S.money<warCost()){
+
+  return toast(
+   "خزانه ناکافی",
+   "هزینه آماده‌سازی جنگ را ندارید."
+  );
+
+ }
+
+ if(
+  S.wars.some(
+   w=>w.target===id
+  )
+ )return;
+
+ S.cp-=20;
+ S.money-=warCost();
+ S.exhaust+=8;
+
+ S.wars.push({
+  target:id,
+  turns:0,
+  progress:0,
+  aloss:0,
+  dloss:0
+ });
+
+ newsAdd(
+  "war",
+  "⚔️ اعلام جنگ",
+  `${C(S.player).name} علیه ${C(id).name} وارد جنگ شد.`,
+  id
+ );
+
+ toast(
+  "⚔️ جنگ آغاز شد",
+  `نبرد با ${C(id).name} شروع شد.`
+ );
+
+ renderWar();
 }
-
-
-if(S.money<warCost()){
-
-return toast(
-"خزانه ناکافی",
-"هزینه آماده‌سازی جنگ را ندارید."
-);
-
-}
-
-
-if(
-S.wars.some(
-w=>w.target===id
-)
-)return;
-
-
-S.cp-=20;
-
-S.money-=warCost();
-
-S.exhaust+=8;
-
-
-S.wars.push({
-
-target:id,
-
-turns:0,
-
-progress:0,
-
-aloss:0,
-
-dloss:0
-
-});
-
-
-newsAdd(
-"war",
-"⚔️ اعلام جنگ",
-`${C(S.player).name} علیه ${C(id).name} وارد جنگ شد.`,
-id
-);
-
-
-toast(
-"⚔️ جنگ آغاز شد",
-`نبرد با ${C(id).name} شروع شد.`
-);
-
-
-renderWar();
-
-}
-
-
-/* =====================================================
-   RESOLVE WARS
-===================================================== */
 
 function resolveWars(){
 
-[...S.wars]
-.forEach(battle);
+ [...S.wars].forEach(battle);
 
 }
-
 
 function battle(w){
 
-let atk=
-power()*
-rnd(.88,1.12);
+ let atk=
+  power()*
+  rnd(.88,1.12);
 
+ let def=
+  targetPower(w.target)*
+  rnd(.88,1.12);
 
-let def=
-targetPower(w.target)*
-rnd(.88,1.12);
+ let bonus=
+  (
+   S.units.recon>500
+   ?1.04
+   :1
+  )+
+  (
+   S.units.logistics>500
+   ?.03
+   :0
+  );
 
+ let d=
+  clamp(
+   (atk*bonus/def-1)*13,
+   -10,
+   12
+  );
 
-let bonus=
-(
-S.units.recon>500
-?
-1.04
-:
-1
-)+
-(
-S.units.logistics>500
-?
-.03
-:
-0
-);
+ if(S.stability<40)
+  d-=3;
 
+ if(S.exhaust>55)
+  d-=4;
 
-let d=
-clamp(
-(
-atk*bonus/def-1
-)*13,
--10,
-12
-);
+ w.progress=
+  clamp(
+   w.progress+d,
+   -100,
+   100
+  );
 
+ w.turns++;
 
-if(S.stability<40){
+ let loss=
+  Math.max(
+   30,
+   Math.round(
+    Math.min(atk,def)*.012
+   )
+  );
 
-d-=3;
+ w.aloss+=
+  Math.round(
+   loss*(d<0?1.25:.82)
+  );
 
+ w.dloss+=
+  Math.round(
+   loss*(d>0?1.28:.8)
+  );
+
+ S.exhaust=
+  clamp(
+   S.exhaust+rnd(.5,1.8),
+   0,
+   100
+  );
+
+ S.morale=
+  clamp(
+   S.morale+
+   (
+    d>0
+    ?rnd(.1,.7)
+    :rnd(-1.2,-.2)
+   ),
+   0,
+   100
+  );
+
+ S.readiness=
+  clamp(
+   S.readiness+rnd(-1.3,.2),
+   0,
+   100
+  );
+
+ if(w.progress>=100)
+  return win(w);
+
+ if(w.progress<=-100)
+  return lose(w);
 }
-
-
-if(S.exhaust>55){
-
-d-=4;
-
-}
-
-
-w.progress=
-clamp(
-w.progress+d,
--100,
-100
-);
-
-
-w.turns++;
-
-
-let loss=
-Math.max(
-30,
-Math.round(
-Math.min(atk,def)*.012
-)
-);
-
-
-w.aloss+=
-Math.round(
-loss*
-(d<0?1.25:.82)
-);
-
-
-w.dloss+=
-Math.round(
-loss*
-(d>0?1.28:.8)
-);
-
-
-S.exhaust=
-clamp(
-S.exhaust+rnd(.5,1.8),
-0,
-100
-);
-
-
-S.morale=
-clamp(
-S.morale+
-(
-d>0
-?
-rnd(.1,.7)
-:
-rnd(-1.2,-.2)
-),
-0,
-100
-);
-
-
-S.readiness=
-clamp(
-S.readiness+
-rnd(-1.3,.2),
-0,
-100
-);
-
-
-if(w.progress>=100){
-
-return win(w);
-
-}
-
-
-if(w.progress<=-100){
-
-return lose(w);
-
-}
-
-}
-
-
-/* =====================================================
-   WIN
-===================================================== */
 
 function win(w){
 
-let id=w.target;
+ let id=w.target;
 
-S.wars=
-S.wars.filter(
-x=>x!==w
-);
+ S.wars=
+  S.wars.filter(
+   x=>x!==w
+  );
 
+ newsAdd(
+  "conquest",
+  `🏳️ پیروزی برابر ${C(id).name}`,
+  `کشور ${C(id).name} شکست خورد و اکنون درباره آینده آن تصمیم می‌گیرید.`,
+  id
+ );
 
-newsAdd(
-"conquest",
-`🏳️ پیروزی برابر ${C(id).name}`,
-`کشور ${C(id).name} شکست خورد و اکنون درباره آینده آن تصمیم می‌گیرید.`,
-id
-);
+ toast(
+  "🏳️ پیروزی",
+  "سرنوشت کشور شکست‌خورده را انتخاب کن."
+ );
 
-
-toast(
-"🏳️ پیروزی",
-"سرنوشت کشور شکست‌خورده را انتخاب کن."
-);
-
-
-postWar(id,w);
-
+ postWar(id,w);
 }
-
-
-/* =====================================================
-   LOSS
-===================================================== */
 
 function lose(w){
 
-let c=C(w.target);
+ let c=C(w.target);
 
-S.wars=
-S.wars.filter(
-x=>x!==w
-);
+ S.wars=
+  S.wars.filter(
+   x=>x!==w
+  );
 
+ S.rep=
+  clamp(
+   S.rep-8,
+   0,
+   100
+  );
 
-S.rep=
-clamp(
-S.rep-8,
-0,
-100
-);
+ S.stability=
+  clamp(
+   S.stability-7,
+   0,
+   100
+  );
 
+ S.exhaust=
+  clamp(
+   S.exhaust+8,
+   0,
+   100
+  );
 
-S.stability=
-clamp(
-S.stability-7,
-0,
-100
-);
+ newsAdd(
+  "war",
+  "❌ شکست",
+  `عملیات علیه ${c.name} با شکست پایان یافت.`
+ );
 
+ toast(
+  "❌ شکست",
+  `جنگ با ${c.name} پایان یافت.`
+ );
 
-S.exhaust=
-clamp(
-S.exhaust+8,
-0,
-100
-);
-
-
-newsAdd(
-"war",
-"❌ شکست",
-`عملیات علیه ${c.name} با شکست پایان یافت.`
-);
-
-
-toast(
-"❌ شکست",
-`جنگ با ${c.name} پایان یافت.`
-);
-
-
-render();
-
+ render();
 }
-
-
-/* =====================================================
-   POST WAR
-===================================================== */
 
 function postWar(id,w){
 
-let c=C(id);
+ let c=C(id);
 
-modal(
-`🏳️ سرنوشت ${F(c.iso)} ${c.name}`,
+ modal(
+  `🏳️ سرنوشت ${F(c.iso)} ${c.name}`,
 
-`
+  `
 
-<div class="notice">
+  <div class="notice">
+  کشور شکست خورده است.
+  انتخاب شما روی نقشه، اقتصاد، ثبات و اعتبار اثر می‌گذارد.
+  </div>
 
-کشور شکست خورده است.
-انتخاب شما روی نقشه، اقتصاد، ثبات و اعتبار اثر می‌گذارد.
+  <div class="grid3" style="margin-top:10px">
 
-</div>
+   <div class="card">
+    <small>تلفات شما</small>
+    <div class="big red">${n(w.aloss)}</div>
+   </div>
 
+   <div class="card">
+    <small>تلفات دشمن</small>
+    <div class="big green">${n(w.dloss)}</div>
+   </div>
 
-<div class="grid3" style="margin-top:10px">
+   <div class="card">
+    <small>مراحل جنگ</small>
+    <div class="big">${n(w.turns)}</div>
+   </div>
 
-<div class="card">
-<small>تلفات شما</small>
-<div class="big red">
-${n(w.aloss)}
-</div>
-</div>
+  </div>
 
-<div class="card">
-<small>تلفات دشمن</small>
-<div class="big green">
-${n(w.dloss)}
-</div>
-</div>
+  <div class="grid3" style="margin-top:10px">
 
-<div class="card">
-<small>مراحل جنگ</small>
-<div class="big">
-${n(w.turns)}
-</div>
-</div>
+   <div class="card">
+    <h3>🏴 الحاق کامل</h3>
+    <p>
+    کشور وارد قلمرو شما می‌شود و روی نقشه قرمز خواهد شد.
+    </p>
+    <button
+     class="action red"
+     onclick="conquer('${id}')">
+     الحاق
+    </button>
+   </div>
 
-</div>
+   <div class="card">
+    <h3>🤝 دولت وابسته</h3>
+    <p>
+    کشور مستقل می‌ماند اما تحت نفوذ شما قرار می‌گیرد.
+    </p>
+    <button
+     class="action green"
+     onclick="vassal('${id}')">
+     دولت وابسته
+    </button>
+   </div>
 
+   <div class="card">
+    <h3>🕊️ صلح و غرامت</h3>
+    <p>
+    کشور آزاد می‌ماند و شما غرامت دریافت می‌کنید.
+    </p>
+    <button
+     class="action gold"
+     onclick="peace('${id}')">
+     صلح
+    </button>
+   </div>
 
-<div
-class="grid3"
-style="margin-top:10px"
->
+  </div>
 
-
-<div class="card">
-
-<h3>
-🏴 الحاق کامل
-</h3>
-
-<p>
-کشور وارد قلمرو شما می‌شود و روی نقشه قرمز خواهد شد.
-</p>
-
-<button
-class="action red"
-onclick="conquer('${id}')"
->
-الحاق
-</button>
-
-</div>
-
-
-<div class="card">
-
-<h3>
-🤝 دولت وابسته
-</h3>
-
-<p>
-کشور مستقل می‌ماند اما تحت نفوذ شما قرار می‌گیرد.
-</p>
-
-<button
-class="action green"
-onclick="vassal('${id}')"
->
-دولت وابسته
-</button>
-
-</div>
-
-
-<div class="card">
-
-<h3>
-🕊️ صلح و غرامت
-</h3>
-
-<p>
-کشور آزاد می‌ماند و شما غرامت دریافت می‌کنید.
-</p>
-
-<button
-class="action gold"
-onclick="peace('${id}')"
->
-صلح
-</button>
-
-</div>
-
-</div>
-
-`
-);
-
+ `
+ );
 }
-
-
-/* =====================================================
-   CONQUER
-===================================================== */
 
 function conquer(id){
 
-let c=C(id);
+ let c=C(id);
 
+ if(!owned(id))
+  S.owned.push(id);
 
-if(!owned(id)){
+ if(!conquered(id))
+  S.conquered.push(id);
 
-S.owned.push(id);
+ S.pop+=c.pop*.94;
+ S.prod+=c.prod*.72;
 
+ S.cities+=
+  Math.max(
+   1,
+   Math.round(c.prod/25)
+  );
+
+ S.money+=c.prod*20;
+
+ S.rep=
+  clamp(
+   S.rep+5,
+   0,
+   100
+  );
+
+ S.stability=
+  clamp(
+   S.stability-7,
+   0,
+   100
+  );
+
+ recolor();
+ closeM();
+
+ newsAdd(
+  "conquest",
+  `🏴 ${c.name} تصرف شد`,
+  `${c.name} اکنون رسماً بخشی از امپراتوری شماست و روی نقشه قرمز نمایش داده می‌شود.`,
+  id
+ );
+
+ toast(
+  "🏴 قلمرو جدید",
+  `${c.name} تحت کنترل شماست.`
+ );
+
+ render();
 }
-
-
-if(!conquered(id)){
-
-S.conquered.push(id);
-
-}
-
-
-S.pop+=
-c.pop*.94;
-
-
-S.prod+=
-c.prod*.72;
-
-
-S.cities+=
-Math.max(
-1,
-Math.round(c.prod/25)
-);
-
-
-S.money+=
-c.prod*20;
-
-
-S.rep=
-clamp(
-S.rep+5,
-0,
-100
-);
-
-
-S.stability=
-clamp(
-S.stability-7,
-0,
-100
-);
-
-
-recolor();
-
-closeM();
-
-
-newsAdd(
-"conquest",
-`🏴 ${c.name} تصرف شد`,
-`${c.name} اکنون رسماً بخشی از امپراتوری شماست و روی نقشه قرمز نمایش داده می‌شود.`,
-id
-);
-
-
-toast(
-"🏴 قلمرو جدید",
-`${c.name} تحت کنترل شماست.`
-);
-
-
-render();
-
-}
-
-
-/* =====================================================
-   VASSAL
-===================================================== */
 
 function vassal(id){
 
-let c=C(id);
+ let c=C(id);
 
-S.money+=
-c.prod*25;
+ S.money+=c.prod*25;
 
+ S.rep=
+  clamp(
+   S.rep+3,
+   0,
+   100
+  );
 
-S.rep=
-clamp(
-S.rep+3,
-0,
-100
-);
+ closeM();
 
+ newsAdd(
+  "diplomacy",
+  `🤝 دولت وابسته ${c.name}`,
+  `${c.name} تحت نفوذ شما قرار گرفت.`
+ );
 
-closeM();
-
-
-newsAdd(
-"diplomacy",
-`🤝 دولت وابسته ${c.name}`,
-`${c.name} تحت نفوذ شما قرار گرفت.`
-);
-
-
-toast(
-"🤝 پیروزی دیپلماتیک",
-`${c.name} دولت وابسته شد.`
-);
-
+ toast(
+  "🤝 پیروزی دیپلماتیک",
+  `${c.name} دولت وابسته شد.`
+ );
 }
-
-
-/* =====================================================
-   PEACE
-===================================================== */
 
 function peace(id){
 
-let c=C(id);
+ let c=C(id);
 
-S.money+=
-c.prod*38;
+ S.money+=c.prod*38;
 
+ S.rep=
+  clamp(
+   S.rep+7,
+   0,
+   100
+  );
 
-S.rep=
-clamp(
-S.rep+7,
-0,
-100
-);
+ S.exhaust=
+  clamp(
+   S.exhaust-10,
+   0,
+   100
+  );
 
+ closeM();
 
-S.exhaust=
-clamp(
-S.exhaust-10,
-0,
-100
-);
+ newsAdd(
+  "peace",
+  `🕊️ صلح با ${c.name}`,
+  `${c.name} غرامت پرداخت کرد.`
+ );
 
-
-closeM();
-
-
-newsAdd(
-"peace",
-`🕊️ صلح با ${c.name}`,
-`${c.name} غرامت پرداخت کرد.`
-);
-
-
-toast(
-"🕊️ صلح",
-"جنگ پایان یافت."
-);
-
+ toast(
+  "🕊️ صلح",
+  "جنگ پایان یافت."
+ );
 }
 
-
-/* =====================================================
-   COUNTRY INFO
-===================================================== */
+/* اطلاعات کشور */
 
 function info(id){
 
-let c=C(id);
+ let c=C(id);
 
-if(!c){
+ if(!c){
 
-return modal(
-"🌍 منطقه",
-`
-<div class="notice">
-این منطقه در فهرست کشورهای قابل مدیریت این نسخه نیست.
-</div>
-`
-);
+  return modal(
+   "🌍 منطقه",
+   `<div class="notice">
+    این منطقه در فهرست کشورهای قابل مدیریت این نسخه نیست.
+   </div>`
+  );
 
+ }
+
+ let a=S.ai[id];
+
+ let w=
+  S.wars.find(
+   x=>x.target===id
+  );
+
+ modal(
+
+  `${F(c.iso)} ${c.name}`,
+
+  `
+
+  <div class="hero">
+
+   <div class="flagbox">
+    <span>${F(c.iso)}</span>
+
+    <div>
+     <b>${c.name}</b>
+     <small>پایتخت: ${c.capital}</small>
+    </div>
+   </div>
+
+   <div class="flagbox">
+
+    <span>
+     ${
+      owned(id)
+      ?"🏴"
+      :
+      w
+      ?"⚔️"
+      :
+      "🌐"
+     }
+    </span>
+
+    <div>
+
+     <b>
+      ${
+       owned(id)
+       ?"تحت کنترل شما"
+       :
+       w
+       ?"در حال جنگ"
+       :
+       "کشور مستقل"
+      }
+     </b>
+
+     <small>
+      ${
+       owned(id)
+       ?"قلمرو امپراتوری"
+       :
+       "قدرت مستقل"
+      }
+     </small>
+
+    </div>
+
+   </div>
+
+  </div>
+
+  <div class="power">
+
+   <div>
+    <small>جمعیت</small>
+    <b>${c.pop}M</b>
+   </div>
+
+   <div>
+    <small>تولید</small>
+    <b>${c.prod}</b>
+   </div>
+
+   <div>
+    <small>قدرت</small>
+    <b>${c.power}</b>
+   </div>
+
+   <div>
+    <small>وضعیت</small>
+    <b>${owned(id)?"تصرف‌شده":"مستقل"}</b>
+   </div>
+
+  </div>
+
+  ${
+   a
+   ?
+   `
+   <div class="card">
+
+    <h3>📊 اطلاعات راهبردی</h3>
+
+    <p>
+    آمادگی ${Math.round(a.readiness)}%
+    |
+    روحیه ${Math.round(a.morale)}%
+    |
+    ثبات ${Math.round(a.stability)}%
+    |
+    رابطه ${a.relations}
+    </p>
+
+   </div>
+   `
+   :
+   ""
+  }
+
+  ${
+   id===S.player
+   ?
+   `
+   <button
+    class="action gold"
+    onclick="myCountry()">
+    🏳 مدیریت کشور
+   </button>
+   `
+   :
+   owned(id)
+   ?
+   `
+   <button
+    class="action green"
+    onclick="territory('${id}')">
+    🏴 جزئیات قلمرو تصرف‌شده
+   </button>
+   `
+   :
+   `
+   <button
+    class="action red"
+    onclick="war('${id}')">
+    ⚔ بررسی جنگ
+   </button>
+   `
+  }
+
+ `
+ );
 }
-
-
-let a=S.ai[id];
-
-let w=
-S.wars.find(
-x=>x.target===id
-);
-
-
-modal(
-
-`${F(c.iso)} ${c.name}`,
-
-`
-
-<div class="hero">
-
-<div class="flagbox">
-
-<span>
-${F(c.iso)}
-</span>
-
-<div>
-
-<b>
-${c.name}
-</b>
-
-<small>
-پایتخت: ${c.capital}
-</small>
-
-</div>
-
-</div>
-
-
-<div class="flagbox">
-
-<span>
-${owned(id)?"🏴":w?"⚔️":"🌐"}
-</span>
-
-<div>
-
-<b>
-${
-owned(id)
-?
-"تحت کنترل شما"
-:
-w
-?
-"در حال جنگ"
-:
-"کشور مستقل"
-}
-</b>
-
-<small>
-${
-owned(id)
-?
-"قلمرو امپراتوری"
-:
-"قدرت مستقل"
-}
-</small>
-
-</div>
-
-</div>
-
-</div>
-
-
-<div class="power">
-
-<div>
-<small>جمعیت</small>
-<b>${c.pop}M</b>
-</div>
-
-<div>
-<small>تولید</small>
-<b>${c.prod}</b>
-</div>
-
-<div>
-<small>قدرت</small>
-<b>${c.power}</b>
-</div>
-
-<div>
-<small>وضعیت</small>
-<b>
-${owned(id)?"تصرف‌شده":"مستقل"}
-</b>
-</div>
-
-</div>
-
-
-${
-a
-?
-`
-
-<div class="card">
-
-<h3>
-📊 اطلاعات راهبردی
-</h3>
-
-<p>
-آمادگی ${Math.round(a.readiness)}%
-|
-روحیه ${Math.round(a.morale)}%
-|
-ثبات ${Math.round(a.stability)}%
-|
-رابطه ${a.relations}
-</p>
-
-</div>
-
-`
-:
-""
-}
-
-
-${
-id===S.player
-?
-`
-<button
-class="action gold"
-onclick="myCountry()"
->
-🏳 مدیریت کشور
-</button>
-`
-:
-owned(id)
-?
-`
-<button
-class="action green"
-onclick="territory('${id}')"
->
-🏴 جزئیات قلمرو تصرف‌شده
-</button>
-`
-:
-`
-<button
-class="action red"
-onclick="war('${id}')"
->
-⚔ بررسی جنگ
-</button>
-`
-}
-
-`
-
-);
-
-}
-
-
-/* =====================================================
-   CONQUERED TERRITORY
-===================================================== */
 
 function territory(id){
 
-let c=C(id);
+ let c=C(id);
 
-modal(
+ modal(
 
-`🏴 جزئیات قلمرو ${c.name}`,
+  `🏴 جزئیات قلمرو ${c.name}`,
 
-`
+  `
 
-<div class="notice">
+  <div class="notice">
 
-${c.name}
-پس از پیروزی نظامی به امپراتوری شما اضافه شده است.
-جمعیت، تولید و شهرهای آن در آمار کشور شما محاسبه می‌شود.
+  ${c.name}
+  پس از پیروزی نظامی به امپراتوری شما اضافه شده است
+  و جمعیت، تولید و شهرهای آن در آمار کشور شما محاسبه می‌شود.
 
-</div>
+  </div>
 
+  <div
+   class="grid2"
+   style="margin-top:10px">
 
-<div
-class="grid2"
-style="margin-top:10px"
->
+   <div class="card">
 
-<div class="card">
+    <h3>📈 اقتصاد</h3>
 
-<h3>
-📈 اقتصاد
-</h3>
+    <p>
+    تولید افزوده تقریبی:
+    +${Math.round(c.prod*.72)}
+    </p>
 
-<p>
-تولید افزوده تقریبی:
-+${Math.round(c.prod*.72)}
-</p>
+    <p>
+    جمعیت جذب‌شده:
+    +${(c.pop*.94).toFixed(1)}
+    میلیون
+    </p>
 
-<p>
-جمعیت جذب‌شده:
-+${(c.pop*.94).toFixed(1)} میلیون
-</p>
+   </div>
 
-</div>
+   <div class="card">
 
+    <h3>🏙️ توسعه</h3>
 
-<div class="card">
+    <p>
+    شهرهای اضافه‌شده:
+    +${Math.max(1,Math.round(c.prod/25))}
+    </p>
 
-<h3>
-🏙️ توسعه
-</h3>
+   </div>
 
-<p>
-شهرهای اضافه‌شده:
-+${Math.max(
-1,
-Math.round(c.prod/25)
-)}
-</p>
+  </div>
 
-</div>
-
-</div>
-
-`
-
-);
-
+ `
+ );
 }
 
-
-/* =====================================================
-   WAR UI
-===================================================== */
+/* رابط جنگ */
 
 function renderWar(){
 
-let t=C(S.target);
+ let t=C(S.target);
 
-if(!t)return;
+ if(!t)return;
 
+ let a=S.ai[t.id]||{};
 
-let a=S.ai[t.id]||{};
+ let w=
+  S.wars.find(
+   x=>x.target===t.id
+  );
 
-let w=
-S.wars.find(
-x=>x.target===t.id
-);
+ let ratio=
+  power()/
+  targetPower(t.id);
 
+ let list=
+  countries.filter(
+   c=>
+   c.id!==S.player&&
+   !conquered(c.id)
+  );
 
-let ratio=
-power()/targetPower(t.id);
+ modal(
 
+  "⚔️ فرماندهی جنگ",
 
-let list=
-countries.filter(
-c=>
-c.id!==S.player&&
-!conquered(c.id)
-);
+  `
 
+  <div class="hero">
 
-modal(
+   <div class="flagbox">
 
-"⚔️ فرماندهی جنگ",
+    <span>
+     ${F(C(S.player).iso)}
+    </span>
 
-`
+    <div>
+     <b>${C(S.player).name}</b>
+     <small>
+      قدرت ${Math.round(power())}
+     </small>
+    </div>
 
-<div class="hero">
+   </div>
 
-<div class="flagbox">
+   <div class="flagbox">
 
-<span>
-${F(C(S.player).iso)}
-</span>
+    <span>${F(t.iso)}</span>
 
-<div>
+    <div>
+     <b>${t.name}</b>
+     <small>
+      قدرت تخمینی
+      ${Math.round(targetPower(t.id))}
+     </small>
+    </div>
 
-<b>
-${C(S.player).name}
-</b>
+   </div>
 
-<small>
-قدرت ${Math.round(power())}
-</small>
+  </div>
 
-</div>
+  <div class="power">
 
-</div>
+   <div>
+    <small>آمادگی</small>
+    <b>${Math.round(S.readiness)}%</b>
+   </div>
 
+   <div>
+    <small>روحیه</small>
+    <b>${Math.round(S.morale)}%</b>
+   </div>
 
-<div class="flagbox">
+   <div>
+    <small>لجستیک</small>
+    <b>${Math.round(S.logistics)}%</b>
+   </div>
 
-<span>
-${F(t.iso)}
-</span>
+   <div>
+    <small>نسبت قدرت</small>
+    <b class="${ratio>=1?"green":"red"}">
+     ${ratio.toFixed(2)}×
+    </b>
+   </div>
 
-<div>
+  </div>
 
-<b>
-${t.name}
-</b>
+  ${
+   w
+   ?
+   `
+   <div class="card">
 
-<small>
-قدرت تخمینی
-${Math.round(targetPower(t.id))}
-</small>
+    <div
+     style="display:flex;justify-content:space-between">
 
-</div>
+     <b>⚔️ جنگ در جریان است</b>
 
-</div>
+     <span class="badge w">
+      مرحله ${w.turns}
+     </span>
 
-</div>
+    </div>
 
+    <p>
+     پیشروی شما:
+     ${Math.round(w.progress)}%
+    </p>
 
-<div class="power">
+    <div class="meter">
 
-<div>
-<small>آمادگی</small>
-<b>
-${Math.round(S.readiness)}%
-</b>
-</div>
+     <i
+      style="
+       width:${clamp(50+w.progress/2,0,100)}%
+      ">
+     </i>
 
-<div>
-<small>روحیه</small>
-<b>
-${Math.round(S.morale)}%
-</b>
-</div>
+    </div>
 
-<div>
-<small>لجستیک</small>
-<b>
-${Math.round(S.logistics)}%
-</b>
-</div>
+    <p>
+     تلفات شما:
+     ${n(w.aloss)}
+     —
+     تلفات دشمن:
+     ${n(w.dloss)}
+    </p>
 
-<div>
-<small>نسبت قدرت</small>
-<b
-class="${ratio>=1?"green":"red"}"
->
-${ratio.toFixed(2)}×
-</b>
-</div>
+   </div>
+   `
+   :
+   `
+   <div class="notice">
 
-</div>
+    هزینه آغاز جنگ
+    ${n(warCost())}
+    و ۲۰ امتیاز فرماندهی است.
 
+    نبردها در هر روز بازی
+    به‌صورت خودکار شبیه‌سازی می‌شوند.
 
-${
-w
-?
-`
+   </div>
 
-<div class="card">
+   <button
+    class="action red"
+    onclick="declareWar('${t.id}')">
 
-<div
-style="display:flex;justify-content:space-between"
->
+    ⚔️ اعلام جنگ به ${t.name}
 
-<b>
-⚔️ جنگ در جریان است
-</b>
+   </button>
+   `
+  }
 
-<span class="badge w">
-مرحله ${w.turns}
-</span>
+  <div
+   class="card"
+   style="margin-top:10px">
 
-</div>
+   <h3>🌍 انتخاب هدف</h3>
 
+   <select
+    onchange="S.target=this.value;renderWar()">
 
-<p>
-پیشروی شما:
-${Math.round(w.progress)}%
-</p>
+    ${list.map(c=>
+     `<option
+      value="${c.id}"
+      ${c.id===t.id?"selected":""}>
 
+      ${F(c.iso)}
+      ${c.name}
+      —
+      قدرت ${c.power}
 
-<div class="meter">
+     </option>`
+    ).join("")}
 
-<i
-style="width:${clamp(
-50+w.progress/2,
-0,
-100
-)}%"
->
-</i>
+   </select>
 
-</div>
+  </div>
 
+  <div
+   class="notice"
+   style="margin-top:10px">
 
-<p>
-تلفات شما:
-${n(w.aloss)}
+   💡 شناسایی، لجستیک، آمادگی و
+   تنوع نیرو روی نتیجه نبرد اثر دارند.
 
-—
+  </div>
 
-تلفات دشمن:
-${n(w.dloss)}
-</p>
-
-</div>
-
-`
-:
-`
-
-<div class="notice">
-
-هزینه آغاز جنگ
-${n(warCost())}
-و ۲۰ امتیاز فرماندهی است.
-
-نبردها در هر روز بازی
-به‌صورت خودکار شبیه‌سازی می‌شوند.
-
-</div>
-
-
-<button
-class="action red"
-onclick="declareWar('${t.id}')"
->
-⚔️ اعلام جنگ به ${t.name}
-</button>
-
-`
+ `
+ );
 }
 
-
-<div
-class="card"
-style="margin-top:10px"
->
-
-<h3>
-🌍 انتخاب هدف
-</h3>
-
-<select
-onchange="S.target=this.value;renderWar()"
->
-
-${list.map(c=>`
-
-<option
-value="${c.id}"
-${c.id===t.id?"selected":""}
->
-
-${F(c.iso)}
-${c.name}
-—
-قدرت ${c.power}
-
-</option>
-
-`).join("")}
-
-</select>
-
-</div>
-
-
-<div
-class="notice"
-style="margin-top:10px"
->
-
-💡
-شناسایی، لجستیک، آمادگی و تنوع نیرو روی نتیجه نبرد اثر دارند.
-
-</div>
-
-`
-
-);
-
-}
-
-
-/* =====================================================
-   ARMY
-===================================================== */
+/* ارتش */
 
 function army(){
 
-modal(
+ modal(
 
-"🛡️ مرکز فرماندهی ارتش",
+  "🛡️ مرکز فرماندهی ارتش",
 
-`
+  `
 
-<div class="grid3">
+  <div class="grid3">
 
-<div class="card">
+   <div class="card">
+    <small>قدرت رزمی</small>
+    <div class="big red">
+     ${Math.round(power())}
+    </div>
+   </div>
 
-<small>
-قدرت رزمی
-</small>
+   <div class="card">
+    <small>آمادگی</small>
+    <div class="big">
+     ${Math.round(S.readiness)}%
+    </div>
+   </div>
 
-<div class="big red">
-${Math.round(power())}
-</div>
+   <div class="card">
+    <small>روحیه</small>
+    <div class="big">
+     ${Math.round(S.morale)}%
+    </div>
+   </div>
 
-</div>
+  </div>
 
+  <div
+   class="notice"
+   style="margin:10px 0">
 
-<div class="card">
+   انواع نیرو در این نسخه
+   واحدهای انتزاعی بازی هستند و
+   هرکدام آمار قدرت، دفاع، تحرک
+   و نگهداری متفاوت دارند.
 
-<small>
-آمادگی
-</small>
+  </div>
 
-<div class="big">
-${Math.round(S.readiness)}%
-</div>
+  <div class="units">
 
-</div>
+  ${
+   Object.entries(units).map(
+    ([k,u])=>
 
+    `
 
-<div class="card">
+    <div class="unit">
 
-<small>
-روحیه
-</small>
+     <div class="ico">
+      ${u[1]}
+     </div>
 
-<div class="big">
-${Math.round(S.morale)}%
-</div>
+     <b>${u[0]}</b>
 
-</div>
+     <small>
+      ${u[0]}
+     </small>
 
-</div>
+     <div class="qty">
+      ${n(S.units[k])} واحد
+     </div>
 
+     <small>
+      قدرت ×${u[2]}
+      |
+      دفاع ×${u[3]}
+      |
+      تحرک ×${u[4]}
+     </small>
 
-<div
-class="notice"
-style="margin:10px 0"
->
+     <button onclick="recruit('${k}')">
+      + تولید
+     </button>
 
-انواع نیرو در این نسخه
-واحدهای انتزاعی بازی هستند و
-هرکدام آمار قدرت، دفاع، تحرک
-و نگهداری متفاوت دارند.
+    </div>
 
-</div>
+    `
+   ).join("")
+  }
 
+  </div>
 
-<div class="units">
-
-${Object.entries(units).map(
-([k,u])=>`
-
-<div class="unit">
-
-<div class="ico">
-${u[1]}
-</div>
-
-<b>
-${u[0]}
-</b>
-
-<small>
-${u[0]}
-</small>
-
-<div class="qty">
-${n(S.units[k])}
-واحد
-</div>
-
-<small>
-قدرت ×${u[2]}
-|
-دفاع ×${u[3]}
-|
-تحرک ×${u[4]}
-</small>
-
-<button
-onclick="recruit('${k}')"
->
-+ تولید
-</button>
-
-</div>
-
-`
-).join("")}
-
-</div>
-
-`
-
-);
-
+ `
+ );
 }
-
-
-/* =====================================================
-   RECRUIT
-===================================================== */
 
 function recruit(k){
 
-let u=units[k];
+ let u=units[k];
 
-let q=
-k==="infantry"
-?
-1000
-:
-100;
+ let q=
+  k==="infantry"
+  ?
+  1000
+  :
+  100;
 
+ let cost=
+  u[5]*q/100;
 
-let cost=
-u[5]*q/100;
+ if(S.money<cost){
 
+  return toast(
+   "خزانه ناکافی",
+   "بودجه کافی نیست."
+  );
 
-if(S.money<cost){
+ }
 
-return toast(
-"خزانه ناکافی",
-"بودجه کافی نیست."
-);
+ S.money-=cost;
 
+ S.units[k]+=q;
+
+ S.readiness=
+  clamp(
+   S.readiness+1.2,
+   0,
+   100
+  );
+
+ toast(
+  "🛡️ ارتش تقویت شد",
+  `${q.toLocaleString("fa-IR")} واحد ${u[0]} اضافه شد.`
+ );
+
+ army();
+ render();
 }
 
-
-S.money-=cost;
-
-S.units[k]+=q;
-
-S.readiness=
-clamp(
-S.readiness+1.2,
-0,
-100
-);
-
-
-toast(
-"🛡️ ارتش تقویت شد",
-`${q.toLocaleString("fa-IR")} واحد ${u[0]} اضافه شد.`
-);
-
-
-army();
-
-render();
-
-}
-
-
-/* =====================================================
-   STORE
-===================================================== */
+/* فروشگاه */
 
 function store(){
 
-let items=[
+ let items=[
 
-["🌾","مزرعه مکانیزه",55,3],
-["💧","سامانه آبیاری",70,4],
-["🏭","کارخانه پیشرفته",120,6],
-["🔬","آزمایشگاه ملی",220,9],
-["🏗️","راه سراسری",100,5],
-["🚆","راه‌آهن",150,7],
-["⚡","نیروگاه",140,6],
-["🏥","مرکز درمانی",90,3],
-["🏫","دانشگاه",130,5],
-["📡","شبکه ارتباطی",110,5]
+  ["🌾","مزرعه مکانیزه",55,3],
+  ["💧","سامانه آبیاری",70,4],
+  ["🏭","کارخانه پیشرفته",120,6],
+  ["🔬","آزمایشگاه ملی",220,9],
+  ["🏗️","راه سراسری",100,5],
+  ["🚆","راه‌آهن",150,7],
+  ["⚡","نیروگاه",140,6],
+  ["🏥","مرکز درمانی",90,3],
+  ["🏫","دانشگاه",130,5],
+  ["📡","شبکه ارتباطی",110,5]
 
-];
+ ];
 
+ modal(
 
-modal(
+  "🏪 فروشگاه توسعه",
 
-"🏪 فروشگاه توسعه",
+  `
 
-`
+  <div class="grid2">
 
-<div class="grid2">
+  ${
+   items.map(
+    (x,i)=>{
 
-${items.map(
-(x,i)=>{
+     let p=
+      Math.round(
+       x[2]*(1+S.infl/100)
+      );
 
-let p=
-Math.round(
-x[2]*(1+S.infl/100)
-);
+     return`
 
-return`
+      <div class="card">
 
-<div class="card">
+       <div class="row">
 
-<div
-style="display:flex;justify-content:space-between"
->
+        <b>
+         ${x[0]}
+         ${x[1]}
+        </b>
 
-<b>
-${x[0]}
-${x[1]}
-</b>
+        <span class="gold">
+         ${n(p)}
+        </span>
 
-<span class="gold">
-${n(p)}
-</span>
+       </div>
 
-</div>
+       <p>
+        افزایش دائمی تولید و توسعه کشور.
+       </p>
 
+       <button
+        class="action"
+        onclick="buy(${i})">
 
-<p>
-افزایش دائمی تولید و توسعه کشور.
-</p>
+        خرید
 
+       </button>
 
-<button
-class="action"
-onclick="buy(${i})"
->
-خرید
-</button>
+      </div>
 
-</div>
+     `;
 
-`;
+    }
+   ).join("")
+  }
 
-}).join("")}
+  </div>
 
-</div>
+ `
+ );
 
-`
-
-);
-
-
-window.shopItems=items;
-
+ window.shopItems=items;
 }
-
-
-/* =====================================================
-   BUY
-===================================================== */
 
 function buy(i){
 
-let x=shopItems[i];
+ let x=shopItems[i];
 
-let p=
-Math.round(
-x[2]*(1+S.infl/100)
-);
+ let p=
+  Math.round(
+   x[2]*(1+S.infl/100)
+  );
 
+ if(S.money<p){
 
-if(S.money<p){
+  return toast(
+   "خزانه ناکافی",
+   "بودجه کافی نیست."
+  );
 
-return toast(
-"خزانه ناکافی",
-"بودجه کافی نیست."
-);
+ }
 
+ S.money-=p;
+ S.prod+=x[3];
+
+ S.stability=
+  clamp(
+   S.stability+.8,
+   0,
+   100
+  );
+
+ newsAdd(
+  "development",
+  "🏗️ توسعه کشور",
+  `${x[1]} خریداری و فعال شد.`
+ );
+
+ store();
+ render();
 }
 
-
-S.money-=p;
-
-S.prod+=x[3];
-
-S.stability=
-clamp(
-S.stability+.8,
-0,
-100
-);
-
-
-newsAdd(
-"development",
-"🏗️ توسعه کشور",
-`${x[1]} خریداری و فعال شد.`
-);
-
-
-store();
-
-render();
-
-}
-
-
-/* =====================================================
-   GOVERNMENT
-===================================================== */
+/* دولت */
 
 function gov(){
 
-modal(
+ modal(
 
-"🏛️ دولت و مدیریت",
+  "🏛️ دولت و مدیریت",
 
-`
+  `
 
-<div class="grid2">
+  <div class="grid2">
 
-<div class="card">
+   <div class="card">
 
-<h3>
-ثبات سیاسی
-</h3>
+    <h3>ثبات سیاسی</h3>
 
-<div class="big">
-${Math.round(S.stability)}%
-</div>
+    <div class="big">
+     ${Math.round(S.stability)}%
+    </div>
 
-<div class="meter">
-<i
-style="width:${S.stability}%"
->
-</i>
-</div>
+    <div class="meter">
+     <i style="width:${S.stability}%"></i>
+    </div>
 
-<p>
-ثبات بالاتر باعث عملکرد بهتر کشور می‌شود.
-</p>
+    <p>
+     ثبات بالاتر باعث عملکرد بهتر کشور می‌شود.
+    </p>
 
-</div>
+   </div>
 
+   <div class="card">
 
-<div class="card">
+    <h3>اعتبار جهانی</h3>
 
-<h3>
-اعتبار جهانی
-</h3>
+    <div class="big">
+     ${Math.round(S.rep)}%
+    </div>
 
-<div class="big">
-${Math.round(S.rep)}%
-</div>
+    <div class="meter">
+     <i style="width:${S.rep}%"></i>
+    </div>
 
-<div class="meter">
+   </div>
 
-<i
-style="width:${S.rep}%"
->
-</i>
+  </div>
 
-</div>
+  <div
+   class="grid3"
+   style="margin-top:10px">
 
-</div>
+   <div class="card">
 
-</div>
+    <h3>🏗 زیرساخت</h3>
 
+    <p>هزینه ۵۰۰</p>
 
-<div
-class="grid3"
-style="margin-top:10px"
->
+    <button
+     class="action"
+     onclick="govAct('infra')">
 
+     سرمایه‌گذاری
 
-<div class="card">
+    </button>
 
-<h3>
-🏗 زیرساخت
-</h3>
+   </div>
 
-<p>
-هزینه ۵۰۰
-</p>
+   <div class="card">
 
-<button
-class="action"
-onclick="govAct('infra')"
->
-سرمایه‌گذاری
-</button>
+    <h3>🔬 فناوری</h3>
 
-</div>
+    <p>هزینه ۵۰۰</p>
 
+    <button
+     class="action"
+     onclick="govAct('tech')">
 
-<div class="card">
+     پژوهش
 
-<h3>
-🔬 فناوری
-</h3>
+    </button>
 
-<p>
-هزینه ۵۰۰
-</p>
+   </div>
 
-<button
-class="action"
-onclick="govAct('tech')"
->
-پژوهش
-</button>
+   <div class="card">
 
-</div>
+    <h3>🛡 دفاع</h3>
 
+    <p>هزینه ۵۰۰</p>
 
-<div class="card">
+    <button
+     class="action red"
+     onclick="govAct('def')">
 
-<h3>
-🛡 دفاع
-</h3>
+     آماده‌سازی
 
-<p>
-هزینه ۵۰۰
-</p>
+    </button>
 
-<button
-class="action red"
-onclick="govAct('def')"
->
-آماده‌سازی
-</button>
+   </div>
 
-</div>
+  </div>
 
-</div>
-
-`
-
-);
-
+ `
+ );
 }
-
-
-/* =====================================================
-   GOVERNMENT ACTION
-===================================================== */
 
 function govAct(x){
 
-if(S.money<500){
+ if(S.money<500){
 
-return toast(
-"بودجه ناکافی",
-"حداقل ۵۰۰ لازم است."
-);
+  return toast(
+   "بودجه ناکافی",
+   "حداقل ۵۰۰ لازم است."
+  );
 
+ }
+
+ S.money-=500;
+
+ if(x==="infra"){
+
+  S.prod+=6;
+  S.cities++;
+
+  S.stability=
+   clamp(
+    S.stability+1,
+    0,
+    100
+   );
+
+ }
+
+ if(x==="tech"){
+
+  S.prod+=4;
+
+  S.rep=
+   clamp(
+    S.rep+2,
+    0,
+    100
+   );
+
+ }
+
+ if(x==="def"){
+
+  S.readiness=
+   clamp(
+    S.readiness+7,
+    0,
+    100
+   );
+
+  S.logistics=
+   clamp(
+    S.logistics+3,
+    0,
+    100
+   );
+
+ }
+
+ gov();
+ render();
 }
 
-
-S.money-=500;
-
-
-if(x==="infra"){
-
-S.prod+=6;
-
-S.cities++;
-
-S.stability=
-clamp(
-S.stability+1,
-0,
-100
-);
-
-}
-
-
-if(x==="tech"){
-
-S.prod+=4;
-
-S.rep=
-clamp(
-S.rep+2,
-0,
-100
-);
-
-}
-
-
-if(x==="def"){
-
-S.readiness=
-clamp(
-S.readiness+7,
-0,
-100
-);
-
-S.logistics=
-clamp(
-S.logistics+3,
-0,
-100
-);
-
-}
-
-
-gov();
-
-render();
-
-}
-
-
-/* =====================================================
-   MY COUNTRY
-===================================================== */
+/* کشور */
 
 function myCountry(){
 
-let c=C(S.player);
+ let c=C(S.player);
 
+ modal(
 
-modal(
+  `🏳️ مدیریت ${c.name}`,
 
-`🏳️ مدیریت ${c.name}`,
+  `
 
-`
+  <div class="hero">
 
-<div class="hero">
+   <div class="flagbox">
 
-<div class="flagbox">
+    <span>${F(c.iso)}</span>
 
-<span>
-${F(c.iso)}
-</span>
+    <div>
 
-<div>
+     <b>${c.name}</b>
 
-<b>
-${c.name}
-</b>
+     <small>
+      پایتخت: ${c.capital}
+     </small>
 
-<small>
-پایتخت:
-${c.capital}
-</small>
+    </div>
 
-</div>
+   </div>
 
-</div>
+   <div class="flagbox">
 
+    <span>👑</span>
 
-<div class="flagbox">
+    <div>
 
-<span>
-👑
-</span>
+     <b>امپراتوری شما</b>
 
-<div>
+     <small>
+      ${S.owned.length}
+      کشور تحت کنترل
+     </small>
 
-<b>
-امپراتوری شما
-</b>
+    </div>
 
-<small>
-${S.owned.length}
-کشور تحت کنترل
-</small>
+   </div>
 
-</div>
+  </div>
 
-</div>
+  <div
+   class="grid3"
+   style="margin-top:10px">
 
-</div>
+   <div class="card">
+    <small>جمعیت</small>
+    <div class="big">
+     ${S.pop.toFixed(1)}M
+    </div>
+   </div>
 
+   <div class="card">
+    <small>تولید</small>
+    <div class="big green">
+     ${Math.round(S.prod)}
+    </div>
+   </div>
 
-<div
-class="grid3"
-style="margin-top:10px"
->
+   <div class="card">
+    <small>شهرها</small>
+    <div class="big">
+     ${n(S.cities)}
+    </div>
+   </div>
 
-<div class="card">
+  </div>
 
-<small>
-جمعیت
-</small>
+  <div
+   class="card"
+   style="margin-top:10px">
 
-<div class="big">
-${S.pop.toFixed(1)}M
-</div>
+   <h3>🗺️ قلمروهای شما</h3>
 
-</div>
+   <div class="grid3">
 
+   ${
+    S.owned.map(
+     id=>{
 
-<div class="card">
+      let x=C(id);
 
-<small>
-تولید
-</small>
+      return`
 
-<div class="big green">
-${Math.round(S.prod)}
-</div>
+       <div
+        class="worldRow"
+        onclick="info('${id}')">
 
-</div>
+        <span class="f">
+         ${F(x.iso)}
+        </span>
 
+        <div class="wi">
 
-<div class="card">
+         <b>${x.name}</b>
 
-<small>
-شهرها
-</small>
+         <small>
+          ${
+           id===S.player
+           ?"کشور مادر"
+           :
+           "تصرف‌شده"
+          }
+         </small>
 
-<div class="big">
-${n(S.cities)}
-</div>
+        </div>
 
-</div>
+        <span
+         class="badge ${id===S.player?"y":""}">
 
-</div>
+         ${
+          id===S.player
+          ?"اصلی"
+          :
+          "مالکیت"
+         }
 
+        </span>
 
-<div
-class="card"
-style="margin-top:10px"
->
+       </div>
 
-<h3>
-🗺️ قلمروهای شما
-</h3>
+      `;
 
-<div class="grid3">
+     }
+    ).join("")
+   }
 
-${S.owned.map(
-id=>{
+   </div>
 
-let x=C(id);
+  </div>
 
-return`
-
-<div
-class="worldRow"
-onclick="info('${id}')"
->
-
-<span class="f">
-${F(x.iso)}
-</span>
-
-<div class="wi">
-
-<b>
-${x.name}
-</b>
-
-<small>
-${id===S.player
-?
-"کشور مادر"
-:
-"تصرف‌شده"}
-</small>
-
-</div>
-
-<span
-class="badge
-${id===S.player?"y":""}"
->
-
-${id===S.player
-?
-"اصلی"
-:
-"مالکیت"}
-
-</span>
-
-</div>
-
-`;
-
-}
-).join("")}
-
-</div>
-
-</div>
-
-`
-
-);
-
+ `
+ );
 }
 
-
-/* =====================================================
-   NEWS UI
-===================================================== */
+/* اخبار */
 
 function news(){
 
-modal(
+ modal(
 
-"📰 مرکز اخبار جهان",
+  "📰 مرکز اخبار جهان",
 
-`
+  `
 
-<div class="tabs">
+  <div class="tabs">
 
-<button
-class="active"
-onclick="filterNews('all',this)"
->
-همه
-</button>
+   <button
+    class="active"
+    onclick="filterNews('all',this)">
+    همه
+   </button>
 
-<button
-onclick="filterNews('war',this)"
->
-جنگ
-</button>
+   <button
+    onclick="filterNews('war',this)">
+    جنگ
+   </button>
 
-<button
-onclick="filterNews('peace',this)"
->
-صلح
-</button>
+   <button
+    onclick="filterNews('peace',this)">
+    صلح
+   </button>
 
-<button
-onclick="filterNews('conquest',this)"
->
-تصرف
-</button>
+   <button
+    onclick="filterNews('conquest',this)">
+    تصرف
+   </button>
 
-<button
-onclick="filterNews('economy',this)"
->
-اقتصاد
-</button>
+   <button
+    onclick="filterNews('economy',this)">
+    اقتصاد
+   </button>
 
-<button
-onclick="filterNews('development',this)"
->
-توسعه
-</button>
+   <button
+    onclick="filterNews('development',this)">
+    توسعه
+   </button>
 
-</div>
+  </div>
 
+  <div id="newsList"></div>
 
-<div id="newsList"></div>
+ `
+ );
 
-`
-
-);
-
-filterNews("all");
-
+ filterNews("all");
 }
-
-
-/* =====================================================
-   NEWS FILTER
-===================================================== */
 
 function filterNews(type,el){
 
-document
-.querySelectorAll(".tabs button")
-.forEach(
-b=>b.classList.remove("active")
-);
+ document
+  .querySelectorAll(".tabs button")
+  .forEach(
+   b=>b.classList.remove("active")
+  );
 
+ if(el)
+  el.classList.add("active");
 
-if(el){
+ let a=
+  type==="all"
+  ?
+  S.news
+  :
+  S.news.filter(
+   x=>x.type===type
+  );
 
-el.classList.add("active");
+ let icons={
+  war:"⚔️",
+  peace:"🕊️",
+  conquest:"🏴",
+  economy:"💰",
+  development:"🏗️",
+  diplomacy:"🌐"
+ };
 
+ document.getElementById("newsList")
+ .innerHTML=
+
+ a.length
+
+ ?
+
+ a.map(
+  x=>
+
+  `
+
+  <div class="news">
+
+   <div class="ni">
+    ${icons[x.type]||"📰"}
+   </div>
+
+   <div>
+
+    <b>${x.title}</b>
+
+    <p>${x.text}</p>
+
+    <small>
+     سال ${x.year}
+     —
+     روز ${x.day}
+     —
+     ساعت
+     ${String(x.hour).padStart(2,"0")}:00
+    </small>
+
+   </div>
+
+  </div>
+
+  `
+ ).join("")
+
+ :
+
+ `<div class="notice">
+   خبری وجود ندارد.
+  </div>`;
 }
 
-
-let a=
-type==="all"
-?
-S.news
-:
-S.news.filter(
-x=>x.type===type
-);
-
-
-let icons={
-
-war:"⚔️",
-
-peace:"🕊️",
-
-conquest:"🏴",
-
-economy:"💰",
-
-development:"🏗️",
-
-diplomacy:"🌐"
-
-};
-
-
-document.getElementById("newsList").innerHTML=
-
-a.length
-
-?
-
-a.map(
-x=>`
-
-<div class="news">
-
-<div class="ni">
-${icons[x.type]||"📰"}
-</div>
-
-<div>
-
-<b>
-${x.title}
-</b>
-
-<p>
-${x.text}
-</p>
-
-<small>
-سال ${x.year}
-—
-روز ${x.day}
-—
-ساعت ${String(x.hour).padStart(2,"0")}:00
-</small>
-
-</div>
-
-</div>
-
-`
-).join("")
-
-:
-
-`
-<div class="notice">
-خبری وجود ندارد.
-</div>
-`;
-
-}
-
-
-/* =====================================================
-   MAIN RENDER
-===================================================== */
+/* رندر */
 
 function render(){
 
-money.textContent=
-n(S.money);
+ money.textContent=n(S.money);
 
+ pop.textContent=
+  S.pop.toFixed(1)+"M";
 
-pop.textContent=
-S.pop.toFixed(1)+"M";
+ prod.textContent=
+  Math.round(S.prod);
 
+ power.textContent=
+  Math.round(power());
 
-prod.textContent=
-Math.round(S.prod);
+ rep.textContent=
+  Math.round(S.rep)+"%";
 
+ lands.textContent=
+  n(S.owned.length);
 
-power.textContent=
-Math.round(power());
+ time.textContent=
+  `سال ${S.year} / روز ${S.day}`;
 
+ infl.textContent=
+  S.infl.toFixed(1)+"%";
 
-rep.textContent=
-Math.round(S.rep)+"%";
+ world.innerHTML=
 
+ [...countries]
+ .sort(
+  (a,b)=>b.power-a.power
+ )
+ .slice(0,10)
+ .map(
+  c=>
 
-lands.textContent=
-n(S.owned.length);
+  `
 
+  <div
+   class="worldRow"
+   onclick="info('${c.id}')">
 
-time.textContent=
-`سال ${S.year} / روز ${S.day}`;
+   <span class="f">
+    ${F(c.iso)}
+   </span>
 
+   <div class="wi">
 
-infl.textContent=
-S.infl.toFixed(1)+"%";
+    <b>${c.name}</b>
 
+    <small>
+     قدرت ${c.power}
+     |
+     تولید ${c.prod}
+    </small>
 
-world.innerHTML=
+   </div>
 
-[...countries]
+   <span
+    class="badge
+    ${
+     owned(c.id)
+     ?"y"
+     :
+     S.wars.some(
+      w=>w.target===c.id
+     )
+     ?"w"
+     :""
+    }">
 
-.sort(
-(a,b)=>b.power-a.power
-)
+    ${
+     owned(c.id)
+     ?
+     "شما"
+     :
+     S.wars.some(
+      w=>w.target===c.id
+     )
+     ?
+     "جنگ"
+     :
+     "مستقل"
+    }
 
-.slice(0,10)
+   </span>
 
-.map(
-c=>`
+  </div>
 
-<div
-class="worldRow"
-onclick="info('${c.id}')"
->
+  `
+ ).join("");
 
-<span class="f">
-${F(c.iso)}
-</span>
-
-<div class="wi">
-
-<b>
-${c.name}
-</b>
-
-<small>
-قدرت ${c.power}
-|
-تولید ${c.prod}
-</small>
-
-</div>
-
-
-<span
-class="badge
-${
-owned(c.id)
-?
-"y"
-:
-S.wars.some(
-w=>w.target===c.id
-)
-?
-"w"
-:
-""
-}"
->
-
-${
-owned(c.id)
-?
-"شما"
-:
-S.wars.some(
-w=>w.target===c.id
-)
-?
-"جنگ"
-:
-"مستقل"
+ recolor();
 }
-
-</span>
-
-</div>
-
-`
-).join("");
-
-
-recolor();
-
-}
-
-
-/* =====================================================
-   SAVE
-===================================================== */
-
-setInterval(()=>{
-
-if(S.started){
-
-localStorage.setItem(
-"worldEmpireSave",
-JSON.stringify(S)
-);
-
-}
-
-},30000);
-
-
-/* =====================================================
-   KEYBOARD
-===================================================== */
-
-window.addEventListener(
-"keydown",
-e=>{
-
-if(e.key==="Escape"){
-
-closeM();
-
-}
-
-});
-
-
-/* =====================================================
-   INIT
-===================================================== */
 
 drawSelect();
+
+window.addEventListener(
+ "keydown",
+ e=>{
+  if(e.key==="Escape")
+   closeM();
+ }
+);
+
+setInterval(
+ ()=>{
+  if(S.started)
+   localStorage.setItem(
+    "worldEmpireSave",
+    JSON.stringify(S)
+   );
+ },
+ 30000
+);
 
 </script>
 
 </body>
-    </html>
+   </html>
