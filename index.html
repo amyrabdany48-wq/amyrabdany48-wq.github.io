@@ -1,1797 +1,688 @@
-<style id="GD_DETAIL_UPDATE_V9_STYLE">
+(function(){
+'use strict';
+
+if(window.__GD_SAFE_DETAIL_PATCH_V10__) return;
+window.__GD_SAFE_DETAIL_PATCH_V10__ = true;
+
+var S = window.state;
+
+if(!S){
+    console.error('GD patch: state not found');
+    return;
+}
+
 
 /* =========================================================
-   GLOBAL DOMINION
-   DETAIL UPDATE V9
-   MAP GEOMETRY / MAP COLORS / MAP PROJECTION ARE UNTOUCHED
+   SAFE HELPERS
 ========================================================= */
 
-.gd9-effect-list{
-    margin-top:8px;
+function n(v,d){
+    v = Number(v);
+    return Number.isFinite(v) ? v : (d || 0);
+}
+
+function clamp(v,a,b){
+    return Math.max(a,Math.min(b,n(v,a)));
+}
+
+function chance(p){
+    return Math.random() * 100 < clamp(p,0,100);
+}
+
+function pick(a){
+    return Array.isArray(a) && a.length
+        ? a[Math.floor(Math.random()*a.length)]
+        : null;
+}
+
+function esc(v){
+    return String(v == null ? '' : v)
+    .replace(/[&<>"]/g,function(c){
+        return {
+            '&':'&amp;',
+            '<':'&lt;',
+            '>':'&gt;',
+            '"':'&quot;'
+        }[c];
+    });
+}
+
+function mny(v){
+    try{
+        if(typeof window.money === 'function'){
+            return window.money(v);
+        }
+    }catch(e){}
+
+    return '$' + Math.round(n(v)).toLocaleString();
+}
+
+function toast2(t,k){
+    try{
+        if(typeof window.toast === 'function'){
+            window.toast(t,k || 'info');
+        }
+    }catch(e){}
+}
+
+function openM(t,h){
+    try{
+        if(typeof window.openModal === 'function'){
+            window.openModal(t,h);
+        }
+    }catch(e){
+        console.error(e);
+    }
+}
+
+function save(){
+    try{
+        if(typeof window.saveGame === 'function'){
+            window.saveGame();
+        }
+    }catch(e){}
+}
+
+function render(){
+    try{
+        if(typeof window.renderAll === 'function'){
+            window.renderAll();
+        }
+    }catch(e){}
+}
+
+function cName(id){
+    try{
+        if(typeof window.countryName === 'function'){
+            return window.countryName(id);
+        }
+
+        if(typeof window.countryById === 'function'){
+            var c = window.countryById(id);
+            return c ? (c.nameFa || c.name || id) : id;
+        }
+    }catch(e){}
+
+    return id;
+}
+
+function cFlag(id){
+    try{
+        if(typeof window.countryById === 'function'){
+            var c = window.countryById(id);
+            return c && c.flag ? c.flag : '🌐';
+        }
+    }catch(e){}
+
+    return '🌐';
+}
+
+function rel(id){
+    try{
+        if(typeof window.relation === 'function'){
+            return n(window.relation(id));
+        }
+    }catch(e){}
+
+    return n(S.relations && S.relations[id]);
+}
+
+function setRel(id,v){
+    try{
+        if(typeof window.setRelation === 'function'){
+            window.setRelation(id,clamp(v,-100,100));
+            return;
+        }
+    }catch(e){}
+
+    S.relations = S.relations || {};
+    S.relations[id] = clamp(v,-100,100);
+}
+
+function playerId(){
+    return S.playerId || S.player || null;
+}
+
+function countryIds(){
+    if(Array.isArray(window.WORLD_COUNTRIES)){
+        return window.WORLD_COUNTRIES.map(function(c){
+            return c.id;
+        });
+    }
+
+    return Object.keys(S.ai || {});
+}
+
+function warWith(id){
+    try{
+        if(typeof window.activeWarAgainst === 'function'){
+            var w1 = window.activeWarAgainst(id);
+            if(w1) return w1;
+        }
+    }catch(e){}
+
+    try{
+        if(typeof window.playerWarAgainst === 'function'){
+            var w2 = window.playerWarAgainst(id);
+            if(w2) return w2;
+        }
+    }catch(e){}
+
+    var p = playerId();
+
+    if(!p || !Array.isArray(S.wars)){
+        return null;
+    }
+
+    return S.wars.find(function(w){
+        var active =
+            w &&
+            (
+                w.status === 'war' ||
+                w.status === 'active'
+            );
+
+        if(!active) return false;
+
+        return (
+            (w.attacker === p && w.defender === id) ||
+            (w.defender === p && w.attacker === id)
+        );
+    }) || null;
+}
+
+function dayKey(){
+    var d = S.date || {};
+
+    return [
+        n(d.year,2026),
+        n(d.month,1),
+        n(d.day,1)
+    ].join('-');
+}
+
+function absDay(){
+    var d = S.date || {};
+
+    return (
+        n(d.year,2026) * 360 +
+        (n(d.month,1)-1) * 30 +
+        n(d.day,1)
+    );
+}
+
+function hash(s){
+    var h = 2166136261;
+
+    s = String(s);
+
+    for(var i=0;i<s.length;i++){
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h,16777619);
+    }
+
+    return h >>> 0;
+}
+
+
+/* =========================================================
+   CSS INJECTION
+   SAFE INSIDE EXISTING SCRIPT
+========================================================= */
+
+var css = `
+.gd10-effects{
     display:flex;
     flex-direction:column;
-    gap:5px;
+    gap:6px;
+    margin-top:8px
 }
 
-.gd9-effect-line{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:8px;
-    min-height:31px;
-    padding:6px 8px;
+.gd10-effect{
+    padding:7px 8px;
+    border:1px solid rgba(255,255,255,.08);
     border-radius:9px;
-    border:1px solid rgba(255,255,255,.065);
     background:rgba(255,255,255,.035);
     font-size:8px;
-    line-height:1.7;
+    line-height:1.7
 }
 
-.gd9-effect-line span{
-    color:#cbdce4;
+.gd10-effect b{
+    color:#5ee3b1
 }
 
-.gd9-effect-line b{
-    color:#55e5b2;
-    font-size:8px;
-    text-align:left;
-}
-
-.gd9-effect-line.warning b{
-    color:#ffc967;
-}
-
-.gd9-effect-line.info b{
-    color:#69caff;
-}
-
-.gd9-country-grid{
+.gd10-country-grid{
     display:grid;
     grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:7px;
+    gap:7px
 }
 
-.gd9-country-button{
-    width:100%;
-    min-height:67px;
-    border:1px solid rgba(255,255,255,.1);
-    border-radius:12px;
+.gd10-country{
     padding:8px;
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:11px;
     background:rgba(255,255,255,.035);
     color:#fff;
     text-align:right;
-    cursor:pointer;
+    cursor:pointer
 }
 
-.gd9-country-button:hover{
-    border-color:rgba(61,225,173,.5);
+.gd10-country.sel{
+    border-color:#50dfaf;
+    background:rgba(40,150,115,.18)
 }
 
-.gd9-country-button.selected{
-    background:rgba(34,131,101,.22);
-    border-color:#3de1ad;
-}
-
-.gd9-country-button b{
-    display:block;
-    font-size:9px;
-}
-
-.gd9-country-button small{
-    display:block;
-    margin-top:4px;
-    color:#90a9b5;
-    font-size:7px;
-}
-
-.gd9-trade-resource{
+.gd10-trade-row{
+    padding:9px;
     margin-bottom:8px;
     border:1px solid rgba(255,255,255,.08);
-    border-radius:12px;
-    padding:9px;
-    background:rgba(255,255,255,.025);
+    border-radius:11px;
+    background:rgba(255,255,255,.03)
 }
 
-.gd9-trade-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-}
-
-.gd9-trade-fields{
+.gd10-fields{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:6px;
-    margin-top:8px;
+    margin-top:7px
 }
 
-.gd9-field{
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-}
-
-.gd9-field small{
-    color:#8ea6b2;
-    font-size:7px;
-}
-
-.gd9-field input,
-.gd9-field select{
-    width:100%;
+.gd10-fields input{
     height:36px;
-    border:1px solid rgba(255,255,255,.12);
     border-radius:9px;
-    outline:none;
-    padding:0 8px;
+    border:1px solid rgba(255,255,255,.12);
     background:#0a2230;
     color:#fff;
-    font-size:8px;
+    padding:0 8px;
+    width:100%;
+    box-sizing:border-box
 }
 
-.gd9-offer{
-    border-right:3px solid #ffc75d;
+.gd10-msg{
+    border-right:3px solid #5bb8e8
 }
 
-.gd9-offer.accepted{
-    border-right-color:#45dfa9;
+.gd10-msg.trade{
+    border-right-color:#55dfa9
 }
 
-.gd9-offer.rejected{
-    border-right-color:#ff5d73;
+.gd10-msg.military{
+    border-right-color:#ff667a
 }
 
-.gd9-offer.cancelled{
-    border-right-color:#82939b;
+.gd10-msg.economic{
+    border-right-color:#e9bd61
 }
 
-.gd9-ai-message{
-    position:relative;
-    overflow:hidden;
+.gd10-msg.warning{
+    border-right-color:#ff9e50
 }
 
-.gd9-ai-message::before{
-    content:"";
-    position:absolute;
-    top:0;
-    bottom:0;
-    right:0;
-    width:3px;
-    background:#5fa8d5;
+.gd10-msg.crisis{
+    border-right-color:#ff5f76
 }
 
-.gd9-ai-message.trade::before{
-    background:#47dda9;
+.gd10-msg.alliance{
+    border-right-color:#9a78eb
 }
 
-.gd9-ai-message.economic::before{
-    background:#e8bd60;
+.gd10-msg.intelligence{
+    border-right-color:#55cfff
 }
 
-.gd9-ai-message.diplomatic::before{
-    background:#5caee0;
-}
-
-.gd9-ai-message.warning::before{
-    background:#ff9e54;
-}
-
-.gd9-ai-message.crisis::before{
-    background:#ff5f75;
-}
-
-.gd9-ai-message.military::before{
-    background:#db6074;
-}
-
-.gd9-ai-message.intelligence::before{
-    background:#55cfff;
-}
-
-.gd9-ai-message.alliance::before{
-    background:#9672ea;
-}
-
-.gd9-ai-meta{
-    display:flex;
-    flex-wrap:wrap;
-    gap:5px;
-    margin-top:7px;
-}
-
-.gd9-badge{
-    display:inline-flex;
-    align-items:center;
-    min-height:20px;
-    padding:2px 6px;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:999px;
-    background:rgba(255,255,255,.035);
-    color:#9eb6c1;
-    font-size:7px;
-}
-
-.gd9-additional-actions{
-    margin-top:10px;
-    padding-top:9px;
-    border-top:1px solid rgba(255,255,255,.08);
-}
-
-.gd9-impact-report{
-    border-right:3px solid #ff6177;
-}
-
-.gd9-impact-report.intercepted{
-    border-right-color:#62d5ff;
-}
-
-#gd9MissileFxLayer{
+#gd10Fx{
     position:absolute;
     inset:0;
-    z-index:120;
-    overflow:hidden;
+    z-index:160;
     pointer-events:none;
+    overflow:hidden
 }
 
-.gd9-missile{
+.gd10-missile,
+.gd10-interceptor{
+    position:absolute;
+    height:4px;
+    border-radius:999px;
+    transform-origin:center;
+    z-index:5
+}
+
+.gd10-missile{
+    width:20px;
+    background:linear-gradient(
+        90deg,
+        #fff,
+        #ffe078 30%,
+        #ff7c48 60%,
+        rgba(255,80,45,0)
+    );
+    filter:drop-shadow(0 0 6px #ff9d55)
+}
+
+.gd10-interceptor{
+    width:16px;
+    background:linear-gradient(
+        90deg,
+        #fff,
+        #74ddff,
+        rgba(75,190,255,0)
+    );
+    filter:drop-shadow(0 0 6px #69d8ff)
+}
+
+.gd10-explosion{
     position:absolute;
     width:20px;
-    height:5px;
-    margin-left:-10px;
-    margin-top:-2.5px;
-    border-radius:999px;
-    transform-origin:50% 50%;
-    background:
-        linear-gradient(
-            90deg,
-            #fff 0 20%,
-            #ffe47c 30%,
-            #ff8947 55%,
-            rgba(255,89,40,0) 100%
-        );
-    filter:
-        drop-shadow(0 0 4px #fff)
-        drop-shadow(0 0 9px #ff874a);
-    z-index:4;
-}
-
-.gd9-missile::after{
-    content:"";
-    position:absolute;
-    right:14px;
-    top:1px;
-    width:32px;
-    height:3px;
-    border-radius:999px;
-    background:
-        linear-gradient(
-            90deg,
-            rgba(255,177,80,.8),
-            rgba(255,81,40,0)
-        );
-}
-
-.gd9-interceptor{
-    position:absolute;
-    width:17px;
-    height:4px;
-    margin-left:-8px;
-    margin-top:-2px;
-    border-radius:999px;
-    transform-origin:50% 50%;
-    background:
-        linear-gradient(
-            90deg,
-            #fff,
-            #7ae0ff 38%,
-            rgba(68,180,255,0)
-        );
-    filter:
-        drop-shadow(0 0 5px #62d6ff);
-    z-index:6;
-}
-
-.gd9-trail{
-    position:absolute;
-    height:2px;
-    transform-origin:0 50%;
-    background:
-        linear-gradient(
-            90deg,
-            rgba(255,173,79,.05),
-            rgba(255,160,73,.48),
-            rgba(255,106,55,0)
-        );
-    z-index:2;
-    opacity:.75;
-}
-
-.gd9-trail.blue{
-    background:
-        linear-gradient(
-            90deg,
-            rgba(86,202,255,.04),
-            rgba(86,202,255,.52),
-            rgba(86,202,255,0)
-        );
-}
-
-.gd9-explosion{
-    position:absolute;
-    width:22px;
-    height:22px;
-    margin-left:-11px;
-    margin-top:-11px;
+    height:20px;
+    margin:-10px;
     border-radius:50%;
-    z-index:10;
-    background:
-        radial-gradient(
-            circle,
-            #fff 0 8%,
-            #fff176 9% 20%,
-            #ffb044 21% 37%,
-            #ff6543 38% 53%,
-            rgba(255,75,42,.35) 54% 67%,
-            rgba(255,75,42,0) 73%
-        );
-    box-shadow:
-        0 0 15px rgba(255,225,100,.85),
-        0 0 35px rgba(255,100,50,.55);
-    animation:gd9Explosion .9s ease-out forwards;
+    background:radial-gradient(
+        circle,
+        #fff 0 8%,
+        #ffe067 9% 22%,
+        #ff9145 23% 45%,
+        rgba(255,80,40,.65) 46% 60%,
+        rgba(255,80,40,0) 72%
+    );
+    animation:gd10boom .9s ease-out forwards
 }
 
-.gd9-intercept-ring{
+.gd10-label{
     position:absolute;
-    width:18px;
-    height:18px;
-    margin-left:-9px;
-    margin-top:-9px;
-    border-radius:50%;
-    border:2px solid #88e9ff;
-    box-shadow:
-        0 0 10px #68d8ff,
-        inset 0 0 8px rgba(100,220,255,.7);
-    z-index:11;
-    animation:gd9Intercept .9s ease-out forwards;
-}
-
-.gd9-result-label{
-    position:absolute;
-    min-width:120px;
-    max-width:190px;
-    padding:6px 9px;
-    border:1px solid rgba(255,255,255,.15);
-    border-radius:9px;
-    background:rgba(3,17,25,.94);
-    color:#fff;
-    text-align:center;
-    font-size:8px;
-    line-height:1.6;
     transform:translate(-50%,-50%);
-    z-index:15;
-    animation:gd9Label 2.4s ease forwards;
+    padding:6px 9px;
+    border-radius:8px;
+    background:rgba(3,17,25,.94);
+    border:1px solid rgba(255,255,255,.18);
+    color:#fff;
+    font-size:8px;
+    white-space:nowrap;
+    animation:gd10label 2.2s ease forwards
 }
 
-.gd9-result-label.intercepted{
-    border-color:rgba(91,210,255,.55);
-}
-
-.gd9-result-label.hit{
-    border-color:rgba(255,91,112,.55);
-}
-
-@keyframes gd9Explosion{
-    0%{
-        opacity:0;
-        transform:scale(.1);
-    }
-    12%{
+@keyframes gd10boom{
+    from{
         opacity:1;
+        transform:scale(.2)
+    }
+    to{
+        opacity:0;
+        transform:scale(4.5)
+    }
+}
+
+@keyframes gd10label{
+    0%{
+        opacity:0
+    }
+    15%,75%{
+        opacity:1
     }
     100%{
         opacity:0;
-        transform:scale(4.4);
-    }
-}
-
-@keyframes gd9Intercept{
-    0%{
-        opacity:1;
-        transform:scale(.2);
-    }
-    100%{
-        opacity:0;
-        transform:scale(4.2);
-    }
-}
-
-@keyframes gd9Label{
-    0%{
-        opacity:0;
-        transform:translate(-50%,-30%);
-    }
-    15%{
-        opacity:1;
-        transform:translate(-50%,-50%);
-    }
-    78%{
-        opacity:1;
-    }
-    100%{
-        opacity:0;
-        transform:translate(-50%,-80%);
+        transform:translate(-50%,-85%)
     }
 }
 
 @media(max-width:700px){
-
-    .gd9-country-grid{
-        grid-template-columns:repeat(2,minmax(0,1fr));
+    .gd10-country-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr))
     }
 
-    .gd9-trade-fields{
-        grid-template-columns:1fr;
-    }
-
-}
-
-</style>
-
-<script>
-"use strict";
-
-(function(){
-
-/* =========================================================
-   GUARD
-========================================================= */
-
-if(
-    window.__GD_DETAIL_UPDATE_V9__
-){
-    return;
-}
-
-window.__GD_DETAIL_UPDATE_V9__=
-    true;
-
-
-/* =========================================================
-   BASIC HELPERS
-========================================================= */
-
-function GD9Number(
-    value,
-    fallback=
-        0
-)
-{
-    const result=
-        Number(
-            value
-        );
-
-    return Number.isFinite(
-        result
-    )
-    ?
-    result
-    :
-    fallback;
-}
-
-
-function GD9Clamp(
-    value,
-    minimum,
-    maximum
-)
-{
-    return Math.max(
-        minimum,
-        Math.min(
-            maximum,
-            GD9Number(
-                value,
-                minimum
-            )
-        )
-    );
-}
-
-
-function GD9Chance(
-    percentage
-)
-{
-    return Math.random()*
-    100<
-    GD9Clamp(
-        percentage,
-        0,
-        100
-    );
-}
-
-
-function GD9Random(
-    minimum,
-    maximum
-)
-{
-    return minimum+
-    Math.random()*
-    (
-        maximum-
-        minimum
-    );
-}
-
-
-function GD9RandomInt(
-    minimum,
-    maximum
-)
-{
-    return Math.floor(
-        GD9Random(
-            minimum,
-            maximum+
-            1
-        )
-    );
-}
-
-
-function GD9Pick(
-    array
-)
-{
-    if(
-        !Array.isArray(
-            array
-        )||
-        array.length===
-        0
-    ){
-        return null;
-    }
-
-    return array[
-        Math.floor(
-            Math.random()*
-            array.length
-        )
-    ];
-}
-
-
-function GD9Safe(
-    value
-)
-{
-    return String(
-        value??
-        ""
-    )
-    .replaceAll(
-        "&",
-        "&amp;"
-    )
-    .replaceAll(
-        "<",
-        "&lt;"
-    )
-    .replaceAll(
-        ">",
-        "&gt;"
-    )
-    .replaceAll(
-        '"',
-        "&quot;"
-    );
-}
-
-
-function GD9Money(
-    value
-)
-{
-    try{
-
-        if(
-            typeof money===
-            "function"
-        ){
-            return money(
-                value
-            );
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    const number=
-        GD9Number(
-            value
-        );
-
-    return "$"+
-    Math.round(
-        number
-    )
-    .toLocaleString();
-}
-
-
-function GD9Toast(
-    text
-)
-{
-    try{
-
-        if(
-            typeof toast===
-            "function"
-        ){
-            toast(
-                text
-            );
-        }
-
-    }
-    catch(
-        error
-    ){
+    .gd10-fields{
+        grid-template-columns:1fr
     }
 }
+`;
 
+if(!document.getElementById('GD_SAFE_DETAIL_PATCH_V10_STYLE')){
+    var st = document.createElement('style');
 
-function GD9OpenModal(
-    title,
-    html
-)
-{
-    try{
+    st.id = 'GD_SAFE_DETAIL_PATCH_V10_STYLE';
+    st.textContent = css;
 
-        if(
-            typeof openModal===
-            "function"
-        ){
-            openModal(
-                title,
-                html
-            );
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-}
-
-
-function GD9Save()
-{
-    try{
-
-        if(
-            typeof saveGame===
-            "function"
-        ){
-            saveGame();
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-}
-
-
-function GD9Render()
-{
-    try{
-
-        if(
-            typeof renderAll===
-            "function"
-        ){
-            renderAll();
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    try{
-
-        if(
-            typeof updateMapStyles===
-            "function"
-        ){
-            updateMapStyles();
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-}
-
-
-function GD9CountryName(
-    code
-)
-{
-    try{
-
-        if(
-            typeof countryName===
-            "function"
-        ){
-            return countryName(
-                code
-            );
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    return code;
-}
-
-
-function GD9Flag(
-    code
-)
-{
-    try{
-
-        if(
-            typeof flagEmoji===
-            "function"
-        ){
-            return flagEmoji(
-                code
-            );
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    return "🌐";
-}
-
-
-function GD9PlayerCode()
-{
-    return(
-        state.player||
-        state.playerId||
-        null
-    );
-}
-
-
-function GD9Relation(
-    code
-)
-{
-    try{
-
-        if(
-            typeof relation===
-            "function"
-        ){
-            return GD9Number(
-                relation(
-                    code
-                )
-            );
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    state.relations=
-        state.relations||
-        {};
-
-    return GD9Number(
-        state.relations[
-            code
-        ]
-    );
-}
-
-
-function GD9SetRelation(
-    code,
-    value
-)
-{
-    try{
-
-        if(
-            typeof setRelation===
-            "function"
-        ){
-            setRelation(
-                code,
-                value
-            );
-
-            return;
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    state.relations=
-        state.relations||
-        {};
-
-    state.relations[
-        code
-    ]=
-        GD9Clamp(
-            value,
-            -100,
-            100
-        );
-}
-
-
-function GD9ChangeRelation(
-    code,
-    amount
-)
-{
-    GD9SetRelation(
-        code,
-        GD9Relation(
-            code
-        )+
-        amount
-    );
-}
-
-
-function GD9CountryCodes()
-{
-    if(
-        typeof COUNTRY_CODES!==
-        "undefined"&&
-        Array.isArray(
-            COUNTRY_CODES
-        )
-    ){
-        return COUNTRY_CODES;
-    }
-
-    return Object.keys(
-        state.ai||
-        {}
-    );
-}
-
-
-function GD9AI(
-    code
-)
-{
-    state.ai=
-        state.ai||
-        {};
-
-    state.ai[
-        code
-    ]=
-        state.ai[
-            code
-        ]||
-        {};
-
-    return state.ai[
-        code
-    ];
+    document.head.appendChild(st);
 }
 
 
 /* =========================================================
-   DATE HELPERS
+   RESOURCES
 ========================================================= */
 
-function GD9DateKey()
-{
-    return[
-        GD9Number(
-            state.date&&
-            state.date.year,
-            2026
-        ),
-        GD9Number(
-            state.date&&
-            state.date.month,
-            1
-        ),
-        GD9Number(
-            state.date&&
-            state.date.day,
-            1
-        )
-    ]
-    .join(
-        "-"
-    );
-}
-
-
-function GD9AbsoluteGameDay()
-{
-    const year=
-        GD9Number(
-            state.date&&
-            state.date.year,
-            2026
-        );
-
-    const month=
-        GD9Number(
-            state.date&&
-            state.date.month,
-            1
-        );
-
-    const day=
-        GD9Number(
-            state.date&&
-            state.date.day,
-            1
-        );
-
-    return(
-        year*
-        360+
-        (
-            month-
-            1
-        )*
-        30+
-        day
-    );
-}
-
-
-/* =========================================================
-   RESOURCE DEFINITIONS
-========================================================= */
-
-const GD9_RESOURCES=
-[
+var RES = [
     {
-        id:
-            "food",
-
-        icon:
-            "🌾",
-
-        name:
-            "غذا",
-
-        basePrice:
-            32,
-
-        buyEffect:
-            "ذخیره غذا بالا می‌رود",
-
-        detail:
-        [
-            "👥 کمبود غذا فشار روی رضایت و ثبات را کمتر می‌کند.",
-            "📉 ذخیره بیشتر ریسک تورم غذایی را پایین می‌آورد.",
-            "🪖 برای پشتیبانی و تقویت نیروها استفاده می‌شود."
+        id:'food',
+        icon:'🌾',
+        name:'غذا',
+        base:32,
+        effects:[
+            '+ موجودی غذا',
+            'کاهش ریسک کمبود و فشار روی رضایت',
+            'کمک به کنترل تورم غذایی',
+            'پشتیبانی بهتر از نیروی انسانی'
         ]
     },
 
     {
-        id:
-            "energy",
-
-        icon:
-            "⚡",
-
-        name:
-            "انرژی",
-
-        basePrice:
-            50,
-
-        buyEffect:
-            "پایداری تولید صنعتی بالا می‌رود",
-
-        detail:
-        [
-            "🏭 کمبود انرژی سرعت و بازده صنعت را کاهش می‌دهد.",
-            "🏗️ انرژی کافی از کند شدن ساخت‌وساز جلوگیری می‌کند.",
-            "📊 ذخیره مناسب فشار تورمی ناشی از کمبود انرژی را کمتر می‌کند."
+        id:'energy',
+        icon:'⚡',
+        name:'انرژی',
+        base:50,
+        effects:[
+            '+ موجودی انرژی',
+            'حفظ سرعت صنعت',
+            'جلوگیری از کند شدن ساخت‌وساز',
+            'کاهش فشار تورمی ناشی از کمبود انرژی'
         ]
     },
 
     {
-        id:
-            "oil",
-
-        icon:
-            "🛢️",
-
-        name:
-            "نفت",
-
-        basePrice:
-            72,
-
-        buyEffect:
-            "توان پشتیبانی تجهیزات متحرک بالا می‌رود",
-
-        detail:
-        [
-            "✈️ هواگردها و تجهیزات متحرک به نفت نیاز دارند.",
-            "🚢 نگهداری نیروی دریایی از ذخیره نفت تأثیر می‌گیرد.",
-            "💰 نفت در بحران‌های جهانی ارزش تجاری بیشتری پیدا می‌کند."
+        id:'oil',
+        icon:'🛢️',
+        name:'نفت',
+        base:72,
+        effects:[
+            '+ موجودی نفت',
+            'پشتیبانی بهتر از تجهیزات متحرک',
+            'کمک به آمادگی هوایی و دریایی',
+            'افزایش ظرفیت صادرات انرژی'
         ]
     },
 
     {
-        id:
-            "steel",
-
-        icon:
-            "⛓️",
-
-        name:
-            "فولاد",
-
-        basePrice:
-            66,
-
-        buyEffect:
-            "ظرفیت تولید و ساخت تجهیزات بیشتر می‌شود",
-
-        detail:
-        [
-            "🏗️ پروژه‌های صنعتی و زیرساختی به فولاد وابسته‌اند.",
-            "🛡️ تولید تجهیزات زمینی فولاد مصرف می‌کند.",
-            "⚙️ ذخیره بالاتر اجازه فعال ماندن خطوط تولید بیشتری می‌دهد."
+        id:'steel',
+        icon:'⛓️',
+        name:'فولاد',
+        base:66,
+        effects:[
+            '+ موجودی فولاد',
+            'پشتیبانی ساخت زیرساخت',
+            'مواد اولیه تجهیزات زمینی و صنایع سنگین'
         ]
     },
 
     {
-        id:
-            "electronics",
+        id:'aluminum',
+        icon:'🔩',
+        name:'آلومینیوم',
+        base:78,
+        effects:[
+            '+ موجودی آلومینیوم',
+            'مواد اولیه صنایع هوایی',
+            'پشتیبانی تجهیزات پیشرفته'
+        ]
+    },
 
-        icon:
-            "💻",
+    {
+        id:'rareEarth',
+        icon:'🧪',
+        name:'مواد کمیاب',
+        base:110,
+        effects:[
+            '+ موجودی مواد کمیاب',
+            'پشتیبانی فناوری پیشرفته',
+            'نیاز اصلی بخشی از رادار، هواگرد و سامانه‌های مدرن'
+        ]
+    },
 
-        name:
-            "الکترونیک",
+    {
+        id:'gold',
+        icon:'🪙',
+        name:'طلا',
+        base:120,
+        effects:[
+            '+ ذخیره طلا',
+            'کمک به تاب‌آوری مالی',
+            'ارزش بالاتر در بحران‌های جهانی'
+        ]
+    },
 
-        basePrice:
-            95,
-
-        buyEffect:
-            "دسترسی به تولیدات فناوری‌محور بیشتر می‌شود",
-
-        detail:
-        [
-            "🧠 صنایع پیشرفته و فناوری بالا به قطعات الکترونیکی نیاز دارند.",
-            "📡 رادار و پدافند از الکترونیک استفاده می‌کنند.",
-            "✈️ هواگردها و تجهیزات مدرن مصرف الکترونیک بالاتری دارند."
+    {
+        id:'consumerGoods',
+        icon:'🛍️',
+        name:'کالاهای مصرفی',
+        base:45,
+        effects:[
+            '+ کالاهای مصرفی',
+            'کمک به رضایت عمومی',
+            'کاهش فشار ناشی از کمبود مصرفی'
         ]
     }
 ];
 
 
 /* =========================================================
-   BUILDING EFFECT DESCRIPTION
+   STATE NORMALIZATION
 ========================================================= */
 
-const GD9_BUILDING_EFFECTS=
-{
-    farm:
-    [
-        "🌾 تولید روزانه غذا بیشتر می‌شود.",
-        "👥 ریسک کمبود غذایی کاهش پیدا می‌کند.",
-        "📉 فشار تورمی غذا کمتر می‌شود."
-    ],
+function ensureState(){
 
-    power:
-    [
-        "⚡ تولید روزانه انرژی افزایش می‌یابد.",
-        "🏭 صنعت در کمبود انرژی کمتر آسیب می‌بیند.",
-        "🏗️ پروژه‌های ساخت‌وساز پایدارتر پیش می‌روند."
-    ],
+    S.tradeSystem =
+        S.tradeSystem || {};
 
-    solar:
-    [
-        "☀️ انرژی پایدار تولید می‌کند.",
-        "🙂 رضایت عمومی کمی افزایش می‌یابد.",
-        "⚡ وابستگی به تولید سنتی انرژی کمتر می‌شود."
-    ],
+    S.tradeSystem.offers =
+        Array.isArray(S.tradeSystem.offers)
+        ? S.tradeSystem.offers
+        : [];
 
-    oilField:
-    [
-        "🛢️ تولید روزانه نفت افزایش می‌یابد.",
-        "✈️ پشتیبانی تجهیزات متحرک آسان‌تر می‌شود.",
-        "💰 ظرفیت صادرات انرژی افزایش پیدا می‌کند."
-    ],
+    S.tradeSystem.history =
+        Array.isArray(S.tradeSystem.history)
+        ? S.tradeSystem.history
+        : [];
 
-    refinery:
-    [
-        "🏭 قدرت صنعتی افزایش پیدا می‌کند.",
-        "🛢️ زنجیره ارزش انرژی تقویت می‌شود.",
-        "💰 تولید اقتصادی بهتر می‌شود."
-    ],
+    S.tradeSystem.aiResources =
+        S.tradeSystem.aiResources || {};
 
-    steelMill:
-    [
-        "⛓️ فولاد بیشتری تولید می‌شود.",
-        "🏗️ پروژه‌های سنگین راحت‌تر اجرا می‌شوند.",
-        "⚙️ تولید تجهیزات نظامی بهتر پشتیبانی می‌شود."
-    ],
+    S.aiNews =
+        Array.isArray(S.aiNews)
+        ? S.aiNews
+        : [];
 
-    electronicsPlant:
-    [
-        "💻 الکترونیک بیشتری تولید می‌شود.",
-        "🧠 صنایع فناوری‌محور تقویت می‌شوند.",
-        "📡 تولید تجهیزات پیشرفته آسان‌تر می‌شود."
-    ],
+    S.missileHistory =
+        Array.isArray(S.missileHistory)
+        ? S.missileHistory
+        : [];
 
-    civilFactory:
-    [
-        "🏭 صنعت ملی افزایش می‌یابد.",
-        "💰 ظرفیت اقتصادی بیشتر می‌شود.",
-        "🏗️ توسعه کشور سرعت می‌گیرد."
-    ],
+    S.gd10 =
+        S.gd10 || {};
 
-    groundFactory:
-    [
-        "🛡️ تولید تجهیزات زمینی ممکن می‌شود.",
-        "🎯 تولید بخشی از توپخانه و پدافند ممکن می‌شود.",
-        "⚙️ ظرفیت صنایع دفاعی افزایش می‌یابد."
-    ],
+    S.resources =
+        S.resources || {};
 
-    airFactory:
-    [
-        "✈️ تولید جنگنده و هواگرد ممکن می‌شود.",
-        "🚁 تولید بالگرد و پهپاد ممکن می‌شود.",
-        "📡 تجهیزات پشتیبانی هوایی قابل تولید می‌شوند."
-    ],
+    S.inventory =
+        S.inventory || {};
 
-    missileFactory:
-    [
-        "🚀 تولید موشک ممکن می‌شود.",
-        "⚙️ ظرفیت صنایع موشکی بالا می‌رود.",
-        "💻 نیاز و مصرف الکترونیک پیشرفته بیشتر می‌شود."
-    ],
+    S.economy =
+        S.economy || {};
 
-    navalYard:
-    [
-        "🚢 تولید شناور جنگی ممکن می‌شود.",
-        "⚓ تولید زیردریایی ممکن می‌شود.",
-        "🛳️ پایه صنایع دریایی سنگین ایجاد می‌شود."
-    ],
+    S.nation =
+        S.nation || {};
 
-    airBase:
-    [
-        "✈️ آمادگی نیروی هوایی افزایش می‌یابد.",
-        "🎖️ نگهداری هواگردها بهتر می‌شود.",
-        "📡 توان پشتیبانی هوایی افزایش پیدا می‌کند."
-    ],
+    S.inbox =
+        Array.isArray(S.inbox)
+        ? S.inbox
+        : [];
 
-    navalBase:
-    [
-        "⚓ آمادگی نیروی دریایی افزایش می‌یابد.",
-        "🚢 نگهداری شناورها بهتر انجام می‌شود.",
-        "🌊 توان دریایی کشور تقویت می‌شود."
-    ],
+    RES.forEach(function(r){
+        S.resources[r.id] =
+            n(S.resources[r.id],0);
+    });
 
-    radar:
-    [
-        "📡 اطلاعات و هشدار افزایش می‌یابد.",
-        "🛡️ عملکرد پدافند بهتر می‌شود.",
-        "🛰️ آگاهی اطلاعاتی کشور افزایش پیدا می‌کند."
-    ],
+    countryIds().forEach(function(id){
 
-    road:
-    [
-        "🛣️ لجستیک افزایش می‌یابد.",
-        "🏗️ ساخت‌وساز سریع‌تر می‌شود.",
-        "🏭 صنعت کمی تقویت می‌شود."
-    ],
-
-    rail:
-    [
-        "🚆 لجستیک به‌طور محسوسی افزایش می‌یابد.",
-        "📦 جابه‌جایی اقتصادی بهتر می‌شود.",
-        "🏭 صنعت تقویت می‌شود."
-    ],
-
-    port:
-    [
-        "🚢 قدرت تجارت افزایش می‌یابد.",
-        "💰 درآمد تجاری بیشتر می‌شود.",
-        "🏭 صنعت کمی تقویت می‌شود."
-    ],
-
-    airport:
-    [
-        "🛬 اتصال اقتصادی کشور بهتر می‌شود.",
-        "📦 لجستیک افزایش می‌یابد.",
-        "🌍 قدرت تجارت بیشتر می‌شود."
-    ],
-
-    university:
-    [
-        "🎓 آموزش افزایش می‌یابد.",
-        "🧠 فناوری رشد می‌کند.",
-        "🔬 توسعه بلندمدت علمی بهتر می‌شود."
-    ],
-
-    hospital:
-    [
-        "🏥 سلامت عمومی افزایش می‌یابد.",
-        "🙂 رضایت عمومی بهتر می‌شود.",
-        "👥 رشد و پایداری جمعیت تقویت می‌شود."
-    ],
-
-    housing:
-    [
-        "🏘️ فقر کاهش می‌یابد.",
-        "🙂 رضایت عمومی افزایش می‌یابد.",
-        "🏛️ ثبات اجتماعی بهتر می‌شود."
-    ],
-
-    police:
-    [
-        "👮 ثبات داخلی بیشتر می‌شود.",
-        "🚨 جرم کاهش پیدا می‌کند.",
-        "🏛️ ریسک ناآرامی پایین می‌آید."
-    ]
-};
-
-
-/* =========================================================
-   STATE MIGRATION
-========================================================= */
-
-function GD9Migrate()
-{
-    if(
-        typeof state===
-        "undefined"||
-        !state
-    ){
-        return;
-    }
-
-    state.tradeSystem=
-        state.tradeSystem||
-        {};
-
-    state.tradeSystem.offers=
-        Array.isArray(
-            state.tradeSystem.offers
-        )
-        ?
-        state.tradeSystem.offers
-        :
-        [];
-
-    state.tradeSystem.history=
-        Array.isArray(
-            state.tradeSystem.history
-        )
-        ?
-        state.tradeSystem.history
-        :
-        [];
-
-    state.tradeSystem.selectedCountry=
-        state.tradeSystem.selectedCountry||
-        null;
-
-    state.tradeSystem.aiResources=
-        state.tradeSystem.aiResources||
-        {};
-
-    state.tradeSystem.lastProcessedDate=
-        state.tradeSystem.lastProcessedDate||
-        null;
-
-    state.aiNews=
-        Array.isArray(
-            state.aiNews
-        )
-        ?
-        state.aiNews
-        :
-        [];
-
-    state.missileHistory=
-        Array.isArray(
-            state.missileHistory
-        )
-        ?
-        state.missileHistory
-        :
-        [];
-
-    state.gd9=
-        state.gd9||
-        {};
-
-    state.gd9.lastDetailDate=
-        state.gd9.lastDetailDate||
-        null;
-
-    state.resources=
-        state.resources||
-        {};
-
-    state.inventory=
-        state.inventory||
-        {};
-
-    state.inbox=
-        Array.isArray(
-            state.inbox
-        )
-        ?
-        state.inbox
-        :
-        [];
-
-    state.economy=
-        state.economy||
-        {};
-
-    state.nation=
-        state.nation||
-        {};
-
-    for(
-        const resource of
-        GD9_RESOURCES
-    ){
-        state.resources[
-            resource.id
-        ]=
-            GD9Number(
-                state.resources[
-                    resource.id
-                ],
-                0
-            );
-    }
-
-    GD9InitializeAIResources();
-}
-
-
-/* =========================================================
-   AI RESOURCE INITIALIZATION
-========================================================= */
-
-function GD9StableSeed(
-    text
-)
-{
-    try{
-
-        if(
-            typeof hashString===
-            "function"
-        ){
-            return(
-                hashString(
-                    text
-                )%
-                100000
-            )/
-            100000;
+        if(id === playerId()){
+            return;
         }
 
-    }
-    catch(
-        error
-    ){
-    }
+        S.tradeSystem.aiResources[id] =
+            S.tradeSystem.aiResources[id] || {};
 
-    let hash=
-        2166136261;
-
-    const value=
-        String(
-            text
-        );
-
-    for(
-        let index=
-            0;
-        index<
-            value.length;
-        index++
-    ){
-        hash^=
-            value.charCodeAt(
-                index
-            );
-
-        hash=
-            Math.imul(
-                hash,
-                16777619
-            );
-    }
-
-    return(
-        (
-            hash>>>
-            0
-        )%
-        100000
-    )/
-    100000;
-}
-
-
-function GD9InitialAIResource(
-    code,
-    resourceId
-)
-{
-    const ai=
-        GD9AI(
-            code
-        );
-
-    const economy=
-        GD9Number(
-            ai.economy,
-            50
-        );
-
-    const technology=
-        GD9Number(
-            ai.technology,
-            50
-        );
-
-    const military=
-        GD9Number(
-            ai.military,
-            50
-        );
-
-    const randomFactor=
-        GD9StableSeed(
-            code+
-            ":"+
-            resourceId
-        );
-
-    if(
-        resourceId===
-        "food"
-    ){
-        return 35+
-        economy*
-        .55+
-        randomFactor*
-        70;
-    }
-
-    if(
-        resourceId===
-        "energy"
-    ){
-        return 30+
-        economy*
-        .55+
-        technology*
-        .22+
-        randomFactor*
-        60;
-    }
-
-    if(
-        resourceId===
-        "oil"
-    ){
-        return 20+
-        military*
-        .15+
-        randomFactor*
-        160;
-    }
-
-    if(
-        resourceId===
-        "steel"
-    ){
-        return 25+
-        economy*
-        .68+
-        randomFactor*
-        70;
-    }
-
-    if(
-        resourceId===
-        "electronics"
-    ){
-        return 12+
-        technology*
-        .72+
-        randomFactor*
-        50;
-    }
-
-    return 50;
-}
-
-
-function GD9InitializeAIResources()
-{
-    if(
-        !state.tradeSystem||
-        !state.tradeSystem.aiResources
-    ){
-        return;
-    }
-
-    for(
-        const code of
-        GD9CountryCodes()
-    ){
-        if(
-            code===
-            GD9PlayerCode()
-        ){
-            continue;
-        }
-
-        state.tradeSystem.aiResources[
-            code
-        ]=
-            state.tradeSystem.aiResources[
-                code
-            ]||
-            {};
-
-        for(
-            const resource of
-            GD9_RESOURCES
-        ){
-            const current=
-                state.tradeSystem.aiResources[
-                    code
-                ][
-                    resource.id
-                ];
+        RES.forEach(function(r){
 
             if(
                 !Number.isFinite(
                     Number(
-                        current
+                        S.tradeSystem.aiResources[id][r.id]
                     )
                 )
             ){
-                state.tradeSystem.aiResources[
-                    code
-                ][
-                    resource.id
-                ]=
-                    GD9InitialAIResource(
-                        code,
-                        resource.id
-                    );
+                var ai =
+                    S.ai && S.ai[id]
+                    ? S.ai[id]
+                    : {};
+
+                var seed =
+                    Math.abs(
+                        hash(id+':'+r.id)%1000
+                    )/1000;
+
+                var econ =
+                    n(ai.economy,50);
+
+                var tech =
+                    n(ai.technology,50);
+
+                var mil =
+                    n(ai.military,50);
+
+                var v =
+                    40 +
+                    seed*70 +
+                    econ*.35;
+
+                if(r.id === 'oil'){
+                    v =
+                        20 +
+                        seed*150 +
+                        mil*.12;
+                }
+
+                if(r.id === 'rareEarth'){
+                    v =
+                        12 +
+                        seed*80 +
+                        tech*.25;
+                }
+
+                if(r.id === 'gold'){
+                    v =
+                        20 +
+                        seed*100 +
+                        econ*.20;
+                }
+
+                if(r.id === 'consumerGoods'){
+                    v =
+                        35 +
+                        seed*60 +
+                        econ*.45;
+                }
+
+                S.tradeSystem.aiResources[id][r.id] =
+                    v;
             }
-        }
-    }
-}
-
-
-function GD9AIResource(
-    code,
-    resourceId
-)
-{
-    GD9InitializeAIResources();
-
-    return GD9Number(
-        state.tradeSystem.aiResources[
-            code
-        ]&&
-        state.tradeSystem.aiResources[
-            code
-        ][
-            resourceId
-        ],
-        0
-    );
-}
-
-
-function GD9SetAIResource(
-    code,
-    resourceId,
-    amount
-)
-{
-    GD9InitializeAIResources();
-
-    state.tradeSystem.aiResources[
-        code
-    ][
-        resourceId
-    ]=
-        Math.max(
-            0,
-            GD9Number(
-                amount
-            )
-        );
-}
-
-
-/* =========================================================
-   AI RESOURCE DAILY ECONOMY
-========================================================= */
-
-function GD9ProcessAIResources()
-{
-    for(
-        const code of
-        GD9CountryCodes()
-    ){
-        if(
-            code===
-            GD9PlayerCode()
-        ){
-            continue;
-        }
-
-        const ai=
-            GD9AI(
-                code
-            );
-
-        const economy=
-            GD9Number(
-                ai.economy,
-                50
-            );
-
-        const technology=
-            GD9Number(
-                ai.technology,
-                50
-            );
-
-        const military=
-            GD9Number(
-                ai.military,
-                50
-            );
-
-        const food=
-            GD9AIResource(
-                code,
-                "food"
-            )+
-            economy*
-            .006-
-            military*
-            .0025;
-
-        const energy=
-            GD9AIResource(
-                code,
-                "energy"
-            )+
-            economy*
-            .005+
-            technology*
-            .001-
-            military*
-            .002;
-
-        const oil=
-            GD9AIResource(
-                code,
-                "oil"
-            )+
-            GD9StableSeed(
-                code+
-                ":oil-production"
-            )*
-            .18-
-            military*
-            .0018;
-
-        const steel=
-            GD9AIResource(
-                code,
-                "steel"
-            )+
-            economy*
-            .0045-
-            military*
-            .0015;
-
-        const electronics=
-            GD9AIResource(
-                code,
-                "electronics"
-            )+
-            technology*
-            .0038-
-            military*
-            .0014;
-
-        GD9SetAIResource(
-            code,
-            "food",
-            food
-        );
-
-        GD9SetAIResource(
-            code,
-            "energy",
-            energy
-        );
-
-        GD9SetAIResource(
-            code,
-            "oil",
-            oil
-        );
-
-        GD9SetAIResource(
-            code,
-            "steel",
-            steel
-        );
-
-        GD9SetAIResource(
-            code,
-            "electronics",
-            electronics
-        );
-    }
+        });
+    });
 }
 
 
@@ -1799,96 +690,44 @@ function GD9ProcessAIResources()
    RESOURCE PRICE
 ========================================================= */
 
-function GD9ResourcePrice(
-    resourceId
-)
-{
-    try{
+function price(id){
 
-        if(
-            typeof resourcePrice===
-            "function"
-        ){
-            return GD9Number(
-                resourcePrice(
-                    resourceId
-                ),
-                50
+    try{
+        if(typeof window.getResourcePrice === 'function'){
+            return Math.max(
+                1,
+                n(
+                    window.getResourcePrice(id),
+                    50
+                )
             );
         }
+    }catch(e){}
 
-    }
-    catch(
-        error
-    ){
-    }
+    var r =
+        RES.find(function(x){
+            return x.id === id;
+        });
 
-    const definition=
-        GD9_RESOURCES.find(
-            item=>
-                item.id===
-                resourceId
-        );
+    var base =
+        r
+        ? r.base
+        : 50;
 
-    const base=
-        definition
-        ?
-        definition.basePrice
-        :
-        50;
+    var inf =
+        n(S.economy.inflation,0);
 
-    const inflation=
-        GD9Number(
-            state.economy.inflation,
-            0
-        );
-
-    const stock=
-        GD9Number(
-            state.resources[
-                resourceId
-            ],
-            0
-        );
-
-    const shortage=
+    var shortage =
         Math.max(
             0,
-            50-
-            stock
+            50-n(S.resources[id],0)
         );
-
-    const wars=
-        Array.isArray(
-            state.wars
-        )
-        ?
-        state.wars.filter(
-            war=>
-                war.status===
-                "active"||
-                war.status===
-                "war"
-        ).length
-        :
-        0;
 
     return Math.max(
         1,
-        base+
-        inflation*
-        .65+
-        shortage*
-        .25+
-        wars*
-        (
-            resourceId===
-            "oil"
-            ?
-            5
-            :
-            2
-        )
+        base +
+        inf*.6 +
+        shortage*.2
     );
 }
 
@@ -1897,584 +736,177 @@ function GD9ResourcePrice(
    RESOURCE EFFECT HTML
 ========================================================= */
 
-function GD9ResourceEffectsHTML(
-    resource,
-    purchaseAmount=
-        10
-)
-{
-    return(
-        '<div class="gd9-effect-list">'+
+function effectHTML(r){
 
-        '<div class="gd9-effect-line">'+
-        '<span>خرید '+
-        purchaseAmount+
-        ' واحد</span>'+
-        '<b>+'+
-        purchaseAmount+
-        ' موجودی '+
-        GD9Safe(
-            resource.name
-        )+
-        '</b>'+
-        '</div>'+
+    return (
+        '<div class="gd10-effects">'+
 
-        '<div class="gd9-effect-line info">'+
-        '<span>اثر اصلی</span>'+
-        '<b>'+
-        GD9Safe(
-            resource.buyEffect
-        )+
-        '</b>'+
-        '</div>'+
+        r.effects.map(function(x,i){
 
-        resource.detail
-        .map(
-            text=>
-                '<div class="gd9-effect-line">'+
-                '<span>'+
-                GD9Safe(
-                    text
+            return (
+                '<div class="gd10-effect">'+
+                esc(x)+
+                (
+                    i === 0
+                    ? ' <b>بعد از خرید مستقیم افزایش می‌یابد</b>'
+                    : ''
                 )+
-                '</span>'+
-                '<b>اثر گیم‌پلی</b>'+
                 '</div>'
-        )
-        .join("")+
-
-        '</div>'
-    );
-}
-
-
-/* =========================================================
-   BUILDING EFFECT HTML
-========================================================= */
-
-function GD9BuildingEffectsHTML(
-    building
-)
-{
-    const effects=
-        GD9_BUILDING_EFFECTS[
-            building.id
-        ]||
-        [];
-
-    if(
-        !effects.length
-    ){
-        return "";
-    }
-
-    return(
-        '<div class="gd9-effect-list">'+
-        effects
-        .map(
-            text=>
-                '<div class="gd9-effect-line">'+
-                '<span>'+
-                GD9Safe(
-                    text
-                )+
-                '</span>'+
-                '<b>بعد از تکمیل</b>'+
-                '</div>'
-        )
-        .join("")+
-        '</div>'
-    );
-}
-
-
-/* =========================================================
-   ORIGINAL FUNCTIONS
-========================================================= */
-
-const GD9OriginalOpenEconomy=
-    typeof window.openEconomy===
-    "function"
-    ?
-    window.openEconomy
-    :
-    null;
-
-const GD9OriginalOpenInfrastructure=
-    typeof window.openInfrastructure===
-    "function"
-    ?
-    window.openInfrastructure
-    :
-    null;
-
-const GD9OriginalOpenCountryPanel=
-    typeof window.openCountryPanel===
-    "function"
-    ?
-    window.openCountryPanel
-    :
-    null;
-
-const GD9OriginalOpenAIInbox=
-    typeof window.openAIInbox===
-    "function"
-    ?
-    window.openAIInbox
-    :
-    null;
-
-const GD9OriginalNextDay=
-    typeof window.nextDay===
-    "function"
-    ?
-    window.nextDay
-    :
-    null;
-
-const GD9OriginalProcessDailySimulation=
-    typeof window.processDailySimulation===
-    "function"
-    ?
-    window.processDailySimulation
-    :
-    null;
-
-
-/* =========================================================
-   ECONOMY RESOURCES PANEL
-========================================================= */
-
-function GD9OpenEconomy(
-    tab=
-        "overview"
-)
-{
-    if(
-        tab!==
-        "resources"
-    ){
-        if(
-            GD9OriginalOpenEconomy
-        ){
-            GD9OriginalOpenEconomy(
-                tab
             );
 
-            return;
-        }
+        }).join('')+
+
+        '</div>'
+    );
+}
+
+
+/* =========================================================
+   ECONOMY PANEL PATCH
+========================================================= */
+
+var oldEconomy =
+    typeof window.openEconomyPanel === 'function'
+    ? window.openEconomyPanel
+    : null;
+
+
+window.openEconomyPanel =
+function(tab){
+
+    tab = tab || 'overview';
+
+    if(
+        tab !== 'resources' &&
+        oldEconomy
+    ){
+        return oldEconomy(tab);
     }
 
-    const tabs=
+    ensureState();
+
+    var body =
         '<div class="tabs">'+
-        '<button class="tab" onclick="openEconomy(\'overview\')">📊 نمای کلی</button>'+
-        '<button class="tab" onclick="openEconomy(\'budget\')">🧾 بودجه</button>'+
-        '<button class="tab" onclick="openEconomy(\'inflation\')">📈 تورم</button>'+
-        '<button class="tab" onclick="openEconomy(\'bank\')">🏦 بانک</button>'+
-        '<button class="tab active" onclick="openEconomy(\'resources\')">📦 منابع</button>'+
+
+        '<button class="tab" onclick="openEconomyPanel(\'overview\')">'+
+        '📊 نمای کلی'+
+        '</button>'+
+
+        '<button class="tab" onclick="openEconomyPanel(\'budget\')">'+
+        '🧾 بودجه'+
+        '</button>'+
+
+        '<button class="tab" onclick="openEconomyPanel(\'finance\')">'+
+        '🏦 بانک و بدهی'+
+        '</button>'+
+
+        '<button class="tab active" onclick="openEconomyPanel(\'resources\')">'+
+        '📦 منابع'+
+        '</button>'+
+
+        '</div>'+
+
+        '<div class="grid">';
+
+    RES.forEach(function(r){
+
+        body +=
+            '<div class="card">'+
+
+            '<div class="card-head">'+
+
+            '<div class="icon-box">'+
+            r.icon+
+            '</div>'+
+
+            '<div>'+
+
+            '<div class="card-title">'+
+            r.name+
+            '</div>'+
+
+            '<div class="card-sub">'+
+            'موجودی '+
+            n(S.resources[r.id]).toFixed(1)+
+            '</div>'+
+
+            '</div>'+
+
+            '</div>'+
+
+            '<div class="card-desc">'+
+            'قیمت بازار: '+
+            mny(price(r.id))+
+            '</div>'+
+
+            effectHTML(r)+
+
+            '<div class="row">'+
+
+            '<button class="btn blue" onclick="buyResource(\''+
+            r.id+
+            '\',10)">'+
+            'خرید ۱۰'+
+            '</button>'+
+
+            '<button class="btn blue" onclick="buyResource(\''+
+            r.id+
+            '\',50)">'+
+            'خرید ۵۰'+
+            '</button>'+
+
+            '<button class="btn green" onclick="sellResource(\''+
+            r.id+
+            '\',10)">'+
+            'فروش ۱۰'+
+            '</button>'+
+
+            '<button class="btn purple" onclick="openGD10Trade(\''+
+            r.id+
+            '\')">'+
+            '🌍 معامله کشورها'+
+            '</button>'+
+
+            '</div>'+
+
+            '</div>';
+    });
+
+    body +=
         '</div>';
 
-    const cards=
-        GD9_RESOURCES
-        .map(
-            resource=>
-            {
-                const stock=
-                    GD9Number(
-                        state.resources[
-                            resource.id
-                        ],
-                        0
-                    );
+    openM(
+        '💰 اقتصاد ملی',
+        body
+    );
+};
 
-                const price=
-                    GD9ResourcePrice(
-                        resource.id
-                    );
 
-                return(
-                    '<div class="card">'+
+/* =========================================================
+   AI RESOURCE STOCK
+========================================================= */
 
-                    '<div class="card-head">'+
+function aiStock(id,res){
 
-                    '<div class="icon">'+
-                    resource.icon+
-                    '</div>'+
+    ensureState();
 
-                    '<div>'+
-                    '<div class="card-title">'+
-                    resource.name+
-                    '</div>'+
-                    '<div class="card-sub">موجودی '+
-                    stock.toFixed(
-                        1
-                    )+
-                    '</div>'+
-                    '</div>'+
-
-                    '</div>'+
-
-                    '<div class="card-desc">'+
-                    'قیمت فعلی بازار: '+
-                    GD9Money(
-                        price
-                    )+
-                    '</div>'+
-
-                    GD9ResourceEffectsHTML(
-                        resource,
-                        10
-                    )+
-
-                    '<div class="row">'+
-
-                    '<button class="btn blue" onclick="buyResource(\''+
-                    resource.id+
-                    '\',10)">خرید ۱۰</button>'+
-
-                    '<button class="btn blue" onclick="buyResource(\''+
-                    resource.id+
-                    '\',50)">خرید ۵۰</button>'+
-
-                    '<button class="btn green" onclick="sellResource(\''+
-                    resource.id+
-                    '\',10)">فروش ۱۰</button>'+
-
-                    '<button class="btn purple" onclick="openTradeHub(\''+
-                    resource.id+
-                    '\')">🌍 معامله با کشورها</button>'+
-
-                    '</div>'+
-
-                    '</div>'
-                );
-            }
-        )
-        .join("");
-
-    GD9OpenModal(
-        "💰 اقتصاد ملی",
-        tabs+
-        '<div class="notice good">'+
-        'اثر هر منبع قبل از خرید نمایش داده می‌شود؛ خرید منبع موجودی را بالا می‌برد و از کمبودهایی که روی اقتصاد، صنعت و نیروها اثر دارند جلوگیری می‌کند.'+
-        '</div>'+
-        '<div class="grid">'+
-        cards+
-        '</div>'
+    return n(
+        S.tradeSystem.aiResources[id] &&
+        S.tradeSystem.aiResources[id][res],
+        0
     );
 }
 
 
-/* =========================================================
-   INFRASTRUCTURE PANEL
-========================================================= */
+function setAiStock(id,res,v){
 
-function GD9OpenInfrastructure(
-    category=
-        "all"
-)
-{
-    if(
-        typeof BUILDINGS===
-        "undefined"||
-        !Array.isArray(
-            BUILDINGS
-        )
-    ){
-        if(
-            GD9OriginalOpenInfrastructure
-        ){
-            GD9OriginalOpenInfrastructure(
-                category
-            );
-        }
+    ensureState();
 
-        return;
-    }
-
-    const categories=
-    [
-        [
-            "all",
-            "همه"
-        ],
-        [
-            "resource",
-            "منابع"
-        ],
-        [
-            "energy",
-            "انرژی"
-        ],
-        [
-            "industry",
-            "صنعت"
-        ],
-        [
-            "military",
-            "نظامی"
-        ],
-        [
-            "infrastructure",
-            "زیرساخت"
-        ],
-        [
-            "public",
-            "عمومی"
-        ]
-    ];
-
-    const filtered=
-        BUILDINGS.filter(
-            building=>
-                category===
-                "all"||
-                building.category===
-                category
+    S.tradeSystem.aiResources[id][res] =
+        Math.max(
+            0,
+            n(v)
         );
-
-    const queue=
-        Array.isArray(
-            state.construction
-        )
-        ?
-        state.construction
-        :
-        [];
-
-    let queueHTML=
-        "";
-
-    if(
-        queue.length
-    ){
-        queueHTML=
-            '<div class="section-title">پروژه‌های فعال</div>'+
-            queue
-            .map(
-                project=>
-                {
-                    const building=
-                        BUILDINGS.find(
-                            item=>
-                                item.id===
-                                project.buildingId
-                        );
-
-                    const total=
-                        Math.max(
-                            1,
-                            GD9Number(
-                                project.totalDays,
-                                1
-                            )
-                        );
-
-                    const left=
-                        Math.max(
-                            0,
-                            GD9Number(
-                                project.daysLeft,
-                                0
-                            )
-                        );
-
-                    const progress=
-                        GD9Clamp(
-                            (
-                                total-
-                                left
-                            )/
-                            total*
-                            100,
-                            0,
-                            100
-                        );
-
-                    return(
-                        '<div class="card">'+
-                        '<div class="card-title">'+
-                        GD9Safe(
-                            building
-                            ?
-                            building.icon+
-                            " "+
-                            building.name
-                            :
-                            project.buildingId
-                        )+
-                        '</div>'+
-                        '<div class="card-sub">سطح هدف '+
-                        GD9Number(
-                            project.targetLevel
-                        )+
-                        " • "+
-                        Math.ceil(
-                            left
-                        )+
-                        ' روز باقی مانده</div>'+
-                        '<div class="progress"><div style="width:'+
-                        progress+
-                        '%"></div></div>'+
-                        '</div>'
-                    );
-                }
-            )
-            .join("");
-    }
-
-    const buildingsHTML=
-        filtered
-        .map(
-            building=>
-            {
-                const level=
-                    GD9Number(
-                        state.buildings&&
-                        state.buildings[
-                            building.id
-                        ],
-                        0
-                    );
-
-                const maxLevel=
-                    GD9Number(
-                        building.max,
-                        GD9Number(
-                            building.maxLevel,
-                            20
-                        )
-                    );
-
-                const baseCost=
-                    GD9Number(
-                        building.cost,
-                        1000
-                    );
-
-                const cost=
-                    Math.round(
-                        baseCost*
-                        Math.pow(
-                            1.16,
-                            level
-                        )
-                    );
-
-                const queued=
-                    queue.some(
-                        project=>
-                            project.buildingId===
-                            building.id
-                    );
-
-                return(
-                    '<div class="card">'+
-
-                    '<div class="card-head">'+
-                    '<div class="icon">'+
-                    GD9Safe(
-                        building.icon||
-                        "🏗️"
-                    )+
-                    '</div>'+
-                    '<div>'+
-                    '<div class="card-title">'+
-                    GD9Safe(
-                        building.name
-                    )+
-                    '</div>'+
-                    '<div class="card-sub">سطح '+
-                    level+
-                    " / "+
-                    maxLevel+
-                    '</div>'+
-                    '</div>'+
-                    '</div>'+
-
-                    '<div class="card-desc">'+
-                    '💵 هزینه: '+
-                    GD9Money(
-                        cost
-                    )+
-                    '<br>'+
-                    '⏳ زمان پایه: '+
-                    GD9Number(
-                        building.days,
-                        GD9Number(
-                            building.buildDays,
-                            0
-                        )
-                    )+
-                    ' روز'+
-                    '</div>'+
-
-                    GD9BuildingEffectsHTML(
-                        building
-                    )+
-
-                    '<button class="btn green" '+
-                    (
-                        queued||
-                        level>=
-                        maxLevel
-                        ?
-                        "disabled"
-                        :
-                        ""
-                    )+
-                    ' onclick="startConstruction(\''+
-                    GD9Safe(
-                        building.id
-                    )+
-                    '\')">'+
-                    (
-                        queued
-                        ?
-                        "در حال ساخت"
-                        :
-                        level>=
-                        maxLevel
-                        ?
-                        "حداکثر سطح"
-                        :
-                        "🏗️ ساخت / ارتقا"
-                    )+
-                    '</button>'+
-
-                    '</div>'
-                );
-            }
-        )
-        .join("");
-
-    GD9OpenModal(
-        "🏗️ ساخت زیرساخت",
-        '<div class="tabs">'+
-        categories
-        .map(
-            item=>
-                '<button class="tab '+
-                (
-                    item[0]===
-                    category
-                    ?
-                    "active"
-                    :
-                    ""
-                )+
-                '" onclick="openInfrastructure(\''+
-                item[0]+
-                '\')">'+
-                item[1]+
-                '</button>'
-        )
-        .join("")+
-        '</div>'+
-        queueHTML+
-        '<div class="grid">'+
-        buildingsHTML+
-        '</div>'
-    );
 }
 
 
@@ -2482,184 +914,110 @@ function GD9OpenInfrastructure(
    TRADE ACCEPTANCE
 ========================================================= */
 
-function GD9TradeAcceptance(
-    countryCode,
-    resourceId,
-    direction,
+function acceptance(
+    id,
+    res,
+    dir,
     amount,
     unitPrice
-)
-{
-    const ai=
-        GD9AI(
-            countryCode
-        );
+){
 
-    const relationValue=
-        GD9Relation(
-            countryCode
-        );
+    var ai =
+        S.ai && S.ai[id]
+        ? S.ai[id]
+        : {};
 
-    const reputation=
-        GD9Number(
-            state.nation.reputation,
-            50
-        );
-
-    const tradeInterest=
-        GD9Number(
-            ai.tradeInterest,
-            50
-        );
-
-    const aiStock=
-        GD9AIResource(
-            countryCode,
-            resourceId
-        );
-
-    const marketPrice=
-        Math.max(
-            1,
-            GD9ResourcePrice(
-                resourceId
-            )
-        );
-
-    let score=
-        42;
-
-    score+=
-        relationValue*
-        .22;
-
-    score+=
+    var score =
+        44 +
+        rel(id)*.22 +
         (
-            reputation-
-            50
-        )*
-        .12;
-
-    score+=
+            n(S.nation.reputation,50)-50
+        )*.1 +
         (
-            tradeInterest-
-            50
-        )*
-        .20;
+            n(ai.tradeInterest,50)-50
+        )*.18;
 
-    if(
-        direction===
-        "buy"
-    ){
-        const pricePremium=
-            (
-                unitPrice/
-                marketPrice-
-                1
-            )*
-            100;
+    var mk =
+        price(res);
 
-        score+=
-            GD9Clamp(
-                pricePremium*
-                .45,
-                -22,
-                24
+    var stock =
+        aiStock(id,res);
+
+    if(dir === 'buy'){
+
+        score +=
+            clamp(
+                (
+                    unitPrice/mk-
+                    1
+                )*
+                45,
+                -20,
+                22
             );
 
-        score+=
-            GD9Clamp(
+        score +=
+            clamp(
                 (
-                    aiStock-
+                    stock-
                     60
                 )*
                 .12,
-                -20,
-                20
+                -22,
+                22
             );
 
         if(
-            aiStock<
-            amount+
-            10
+            stock <
+            amount+5
         ){
-            score-=
-                35;
+            score -= 40;
         }
     }
     else{
-        const discount=
-            (
-                1-
-                unitPrice/
-                marketPrice
-            )*
-            100;
 
-        score+=
-            GD9Clamp(
-                discount*
-                .45,
+        score +=
+            clamp(
+                (
+                    1-
+                    unitPrice/mk
+                )*
+                45,
+                -20,
+                22
+            );
+
+        score +=
+            clamp(
+                (
+                    70-
+                    stock
+                )*
+                .15,
                 -22,
                 24
             );
-
-        score+=
-            GD9Clamp(
-                (
-                    70-
-                    aiStock
-                )*
-                .15,
-                -20,
-                24
-            );
-    }
-
-    score-=
-        Math.max(
-            0,
-            amount-
-            20
-        )*
-        .12;
-
-    try{
-
-        if(
-            typeof isSanctioned===
-            "function"&&
-            isSanctioned(
-                countryCode
-            )
-        ){
-            score-=
-                35;
-        }
-
-    }
-    catch(
-        error
-    ){
     }
 
     if(
-        GD9WarWith(
-            countryCode
-        )
+        warWith(id)
     ){
-        score-=
-            100;
+        score -= 100;
     }
 
-    score+=
-        GD9Random(
-            -7,
-            7
-        );
+    score -=
+        Math.max(
+            0,
+            amount-20
+        )*
+        .1;
 
-    return GD9Clamp(
-        score,
+    return clamp(
+        score+
+        (
+            Math.random()*12-
+            6
+        ),
         0,
         100
     );
@@ -2667,2558 +1025,1398 @@ function GD9TradeAcceptance(
 
 
 /* =========================================================
-   CREATE PLAYER TRADE OFFER
+   AI NEWS
 ========================================================= */
 
-function GD9CreateTradeOffer(
-    countryCode,
-    resourceId,
-    direction,
-    amount,
-    unitPrice
-)
-{
-    GD9Migrate();
-
-    amount=
-        Math.max(
-            1,
-            Math.floor(
-                GD9Number(
-                    amount,
-                    1
-                )
-            )
-        );
-
-    unitPrice=
-        Math.max(
-            1,
-            GD9Number(
-                unitPrice,
-                GD9ResourcePrice(
-                    resourceId
-                )
-            )
-        );
-
-    const player=
-        GD9PlayerCode();
-
-    if(
-        !countryCode||
-        countryCode===
-        player
-    ){
-        GD9Toast(
-            "کشور مقصد معتبر نیست"
-        );
-
-        return;
-    }
-
-    const resource=
-        GD9_RESOURCES.find(
-            item=>
-                item.id===
-                resourceId
-        );
-
-    if(
-        !resource
-    ){
-        return;
-    }
-
-    if(
-        GD9WarWith(
-            countryCode
-        )
-    ){
-        GD9Toast(
-            "در زمان جنگ معامله مستقیم ممکن نیست"
-        );
-
-        return;
-    }
-
-    if(
-        direction===
-        "sell"&&
-        GD9Number(
-            state.resources[
-                resourceId
-            ],
-            0
-        )<
-        amount
-    ){
-        GD9Toast(
-            "موجودی کافی نیست"
-        );
-
-        return;
-    }
-
-    const total=
-        amount*
-        unitPrice;
-
-    if(
-        direction===
-        "buy"&&
-        GD9Number(
-            state.economy.money,
-            0
-        )<
-        total
-    ){
-        GD9Toast(
-            "بودجه کافی نیست"
-        );
-
-        return;
-    }
-
-    const currentDay=
-        GD9AbsoluteGameDay();
-
-    const offer=
-    {
-        id:
-            "TRADE-"+Date.now()+"-"+Math.random()
-            .toString(
-                36
-            )
-            .slice(
-                2
-            ),
-
-        countryCode,
-
-        resourceId,
-
-        direction,
-
-        amount,
-
-        unitPrice,
-
-        total,
-
-        status:
-            "pending",
-
-        createdDay:
-            currentDay,
-
-        resolveDay:
-            currentDay+
-            GD9RandomInt(
-                1,
-                2
-            ),
-
-        acceptanceScore:
-            GD9TradeAcceptance(
-                countryCode,
-                resourceId,
-                direction,
-                amount,
-                unitPrice
-            ),
-
-        createdDate:
-            GD9DateKey()
-    };
-
-    state.tradeSystem.offers.unshift(
-        offer
-    );
-
-    state.tradeSystem.history.unshift(
-        offer
-    );
-
-    GD9PushAINews(
-        {
-            from:
-                countryCode,
-
-            type:
-                "trade",
-
-            title:
-                "پیشنهاد تجاری در حال بررسی",
-
-            text:
-                `${GD9CountryName(countryCode)} پیشنهاد ${direction==="buy"?"فروش":"خرید"} ${amount} واحد ${resource.name} را دریافت کرده و در حال بررسی آن است.`,
-
-            importance:
-                1
-        }
-    );
-
-    GD9Toast(
-        "📨 پیشنهاد تجاری ارسال شد"
-    );
-
-    GD9Save();
-
-    GD9OpenTradeHub(
-        resourceId,
-        countryCode
-    );
-}
-
-
-/* =========================================================
-   RESOLVE PLAYER TRADE OFFERS
-========================================================= */
-
-function GD9ResolveTradeOffers()
-{
-    const currentDay=
-        GD9AbsoluteGameDay();
-
-    for(
-        const offer of
-        state.tradeSystem.offers
-    ){
-        if(
-            offer.status!==
-            "pending"||
-            currentDay<
-            GD9Number(
-                offer.resolveDay,
-                currentDay
-            )
-        ){
-            continue;
-        }
-
-        const resource=
-            GD9_RESOURCES.find(
-                item=>
-                    item.id===
-                    offer.resourceId
-            );
-
-        if(
-            !resource
-        ){
-            offer.status=
-                "cancelled";
-
-            continue;
-        }
-
-        if(
-            GD9WarWith(
-                offer.countryCode
-            )
-        ){
-            offer.status=
-                "rejected";
-
-            offer.reason=
-                "آغاز جنگ";
-
-            continue;
-        }
-
-        let acceptance=
-            GD9Number(
-                offer.acceptanceScore,
-                0
-            );
-
-        acceptance+=
-            GD9Relation(
-                offer.countryCode
-            )*
-            .03;
-
-        const accepted=
-            GD9Chance(
-                acceptance
-            );
-
-        if(
-            !accepted
-        ){
-            offer.status=
-                "rejected";
-
-            offer.resolvedDate=
-                GD9DateKey();
-
-            GD9ChangeRelation(
-                offer.countryCode,
-                -.5
-            );
-
-            GD9PushAINews(
-                {
-                    from:
-                        offer.countryCode,
-
-                    type:
-                        "trade",
-
-                    title:
-                        "پیشنهاد تجاری رد شد",
-
-                    text:
-                        `${GD9CountryName(offer.countryCode)} شرایط معامله ${resource.name} را نپذیرفت.`,
-
-                    importance:
-                        1
-                }
-            );
-
-            continue;
-        }
-
-        if(
-            offer.direction===
-            "buy"
-        ){
-            const aiStock=
-                GD9AIResource(
-                    offer.countryCode,
-                    offer.resourceId
-                );
-
-            if(
-                aiStock<
-                offer.amount
-            ){
-                offer.status=
-                    "rejected";
-
-                offer.reason=
-                    "کمبود موجودی طرف مقابل";
-
-                offer.resolvedDate=
-                    GD9DateKey();
-
-                continue;
-            }
-
-            if(
-                GD9Number(
-                    state.economy.money,
-                    0
-                )<
-                offer.total
-            ){
-                offer.status=
-                    "cancelled";
-
-                offer.reason=
-                    "کمبود بودجه هنگام اجرا";
-
-                offer.resolvedDate=
-                    GD9DateKey();
-
-                continue;
-            }
-
-            state.economy.money-=
-                offer.total;
-
-            state.resources[
-                offer.resourceId
-            ]+=
-                offer.amount;
-
-            GD9SetAIResource(
-                offer.countryCode,
-                offer.resourceId,
-                aiStock-
-                offer.amount
-            );
-
-            state.economy.imports=
-                GD9Number(
-                    state.economy.imports,
-                    0
-                )+
-                offer.total;
-        }
-        else{
-            if(
-                GD9Number(
-                    state.resources[
-                        offer.resourceId
-                    ],
-                    0
-                )<
-                offer.amount
-            ){
-                offer.status=
-                    "cancelled";
-
-                offer.reason=
-                    "موجودی شما هنگام اجرا کافی نبود";
-
-                offer.resolvedDate=
-                    GD9DateKey();
-
-                continue;
-            }
-
-            state.resources[
-                offer.resourceId
-            ]-=
-                offer.amount;
-
-            state.economy.money+=
-                offer.total;
-
-            GD9SetAIResource(
-                offer.countryCode,
-                offer.resourceId,
-                GD9AIResource(
-                    offer.countryCode,
-                    offer.resourceId
-                )+
-                offer.amount
-            );
-
-            state.economy.exports=
-                GD9Number(
-                    state.economy.exports,
-                    0
-                )+
-                offer.total;
-        }
-
-        offer.status=
-            "accepted";
-
-        offer.resolvedDate=
-            GD9DateKey();
-
-        GD9ChangeRelation(
-            offer.countryCode,
-            2+
-            Math.min(
-                4,
-                offer.amount/
-                25
-            )
-        );
-
-        GD9PushAINews(
-            {
-                from:
-                    offer.countryCode,
-
-                type:
-                    "trade",
-
-                title:
-                    "معامله تجاری پذیرفته شد",
-
-                text:
-                    offer.direction===
-                    "buy"
-                    ?
-                    `${GD9CountryName(offer.countryCode)} با فروش ${offer.amount} واحد ${resource.name} به کشور شما موافقت کرد.`
-                    :
-                    `${GD9CountryName(offer.countryCode)} با خرید ${offer.amount} واحد ${resource.name} از کشور شما موافقت کرد.`,
-
-                importance:
-                    2
-            }
-        );
-
-        GD9Toast(
-            "✅ یک پیشنهاد تجاری پذیرفته شد"
-        );
-    }
-}
-
-
-/* =========================================================
-   TRADE HUB
-========================================================= */
-
-function GD9OpenTradeHub(
-    defaultResource=
-        "food",
-    selectedCountry=
-        null
-)
-{
-    GD9Migrate();
-
-    const player=
-        GD9PlayerCode();
-
-    const countries=
-        GD9CountryCodes()
-        .filter(
-            code=>
-                code!==
-                player
-        )
-        .sort(
-            (
-                first,
-                second
-            )=>
-                GD9Relation(
-                    second
-                )-
-                GD9Relation(
-                    first
-                )
-        );
-
-    if(
-        !countries.length
-    ){
-        GD9Toast(
-            "کشوری برای تجارت وجود ندارد"
-        );
-
-        return;
-    }
-
-    const selected=
-        selectedCountry||
-        state.tradeSystem.selectedCountry||
-        countries[0];
-
-    state.tradeSystem.selectedCountry=
-        selected;
-
-    const selectedAI=
-        GD9AI(
-            selected
-        );
-
-    const selectedName=
-        GD9CountryName(
-            selected
-        );
-
-    const countriesHTML=
-        countries
-        .map(
-            code=>
-                '<button class="gd9-country-button '+
-                (
-                    code===
-                    selected
-                    ?
-                    "selected"
-                    :
-                    ""
-                )+
-                '" data-gd9-country="'+
-                code+
-                '" onclick="openTradeHub(\''+
-                defaultResource+
-                '\',\''+
-                code+
-                '\')">'+
-
-                '<b>'+
-                GD9Flag(
-                    code
-                )+
-                " "+
-                GD9Safe(
-                    GD9CountryName(
-                        code
-                    )
-                )+
-                '</b>'+
-
-                '<small>'+
-                'رابطه '+
-                GD9Relation(
-                    code
-                )
-                .toFixed(
-                    0
-                )+
-                " • تمایل تجاری "+
-                GD9Number(
-                    GD9AI(
-                        code
-                    ).tradeInterest,
-                    50
-                )
-                .toFixed(
-                    0
-                )+
-                '</small>'+
-
-                '</button>'
-        )
-        .join("");
-
-    const resourcesHTML=
-        GD9_RESOURCES
-        .map(
-            resource=>
-            {
-                const market=
-                    GD9ResourcePrice(
-                        resource.id
-                    );
-
-                const playerStock=
-                    GD9Number(
-                        state.resources[
-                            resource.id
-                        ],
-                        0
-                    );
-
-                const aiStock=
-                    GD9AIResource(
-                        selected,
-                        resource.id
-                    );
-
-                return(
-                    '<div class="gd9-trade-resource">'+
-
-                    '<div class="gd9-trade-top">'+
-
-                    '<div>'+
-                    '<div class="card-title">'+
-                    resource.icon+
-                    " "+
-                    resource.name+
-                    '</div>'+
-                    '<div class="card-sub">'+
-                    'شما: '+
-                    playerStock.toFixed(
-                        1
-                    )+
-                    " • "+
-                    GD9Safe(
-                        selectedName
-                    )+
-                    ": "+
-                    aiStock.toFixed(
-                        1
-                    )+
-                    " • بازار: "+
-                    GD9Money(
-                        market
-                    )+
-                    '</div>'+
-                    '</div>'+
-
-                    '</div>'+
-
-                    '<div class="gd9-trade-fields">'+
-
-                    '<label class="gd9-field">'+
-                    '<small>مقدار معامله</small>'+
-                    '<input id="gd9_amount_'+
-                    resource.id+
-                    '" type="number" min="1" step="1" value="10">'+
-                    '</label>'+
-
-                    '<label class="gd9-field">'+
-                    '<small>قیمت پیشنهادی هر واحد</small>'+
-                    '<input id="gd9_price_'+
-                    resource.id+
-                    '" type="number" min="1" step="1" value="'+
-                    Math.round(
-                        market
-                    )+
-                    '">'+
-                    '</label>'+
-
-                    '</div>'+
-
-                    '<div class="row">'+
-
-                    '<button class="btn blue" onclick="sendGD9TradeOffer(\''+
-                    selected+
-                    '\',\''+
-                    resource.id+
-                    '\',\'buy\')">'+
-                    '📥 خرید از '+
-                    GD9Safe(
-                        selectedName
-                    )+
-                    '</button>'+
-
-                    '<button class="btn green" onclick="sendGD9TradeOffer(\''+
-                    selected+
-                    '\',\''+
-                    resource.id+
-                    '\',\'sell\')">'+
-                    '📤 فروش به '+
-                    GD9Safe(
-                        selectedName
-                    )+
-                    '</button>'+
-
-                    '</div>'+
-
-                    '</div>'
-                );
-            }
-        )
-        .join("");
-
-    const history=
-        state.tradeSystem.history
-        .slice(
-            0,
-            12
-        );
-
-    const historyHTML=
-        history.length
-        ?
-        history
-        .map(
-            offer=>
-            {
-                const resource=
-                    GD9_RESOURCES.find(
-                        item=>
-                            item.id===
-                            offer.resourceId
-                    );
-
-                const statusText=
-                    offer.status===
-                    "accepted"
-                    ?
-                    "✅ پذیرفته شد"
-                    :
-                    offer.status===
-                    "rejected"
-                    ?
-                    "❌ رد شد"
-                    :
-                    offer.status===
-                    "cancelled"
-                    ?
-                    "⚪ لغو شد"
-                    :
-                    "⏳ در حال بررسی";
-
-                const wait=
-                    offer.status===
-                    "pending"
-                    ?
-                    Math.max(
-                        0,
-                        GD9Number(
-                            offer.resolveDay
-                        )-
-                        GD9AbsoluteGameDay()
-                    )
-                    :
-                    0;
-
-                return(
-                    '<div class="card gd9-offer '+
-                    offer.status+
-                    '">'+
-
-                    '<div class="card-title">'+
-                    GD9Flag(
-                        offer.countryCode
-                    )+
-                    " "+
-                    GD9Safe(
-                        GD9CountryName(
-                            offer.countryCode
-                        )
-                    )+
-                    '</div>'+
-
-                    '<div class="card-desc">'+
-                    (
-                        offer.direction===
-                        "buy"
-                        ?
-                        "خرید از کشور مقابل"
-                        :
-                        "فروش به کشور مقابل"
-                    )+
-                    "<br>"+
-                    (
-                        resource
-                        ?
-                        resource.icon+
-                        " "+
-                        resource.name
-                        :
-                        offer.resourceId
-                    )+
-                    " • "+
-                    offer.amount+
-                    " واحد • "+
-                    GD9Money(
-                        offer.unitPrice
-                    )+
-                    " هر واحد"+
-                    "<br>"+
-                    statusText+
-                    (
-                        offer.status===
-                        "pending"
-                        ?
-                        " • پاسخ تقریبی تا "+
-                        wait+
-                        " روز"
-                        :
-                        ""
-                    )+
-                    (
-                        offer.reason
-                        ?
-                        "<br>دلیل: "+
-                        GD9Safe(
-                            offer.reason
-                        )
-                        :
-                        ""
-                    )+
-                    '</div>'+
-
-                    '</div>'
-                );
-            }
-        )
-        .join("")
-        :
-        '<div class="notice">هنوز معامله‌ای ثبت نشده است.</div>';
-
-    GD9OpenModal(
-        "🌍 تجارت بین‌المللی",
-        '<div class="notice good">'+
-        'با تمام کشورها و روی تمام منابع می‌توانی مقدار و قیمت دلخواه پیشنهاد بدهی. کشور مقابل بعد از بررسی بر اساس رابطه، نیاز واقعی به منبع، ذخیره خودش، قیمت پیشنهادی و شخصیت هوش مصنوعی قبول یا رد می‌کند.'+
-        '</div>'+
-
-        '<div class="section-title">کشور طرف معامله</div>'+
-
-        '<input class="search" placeholder="جستجوی کشور..." oninput="filterGD9TradeCountries(this.value)">'+
-
-        '<div id="gd9TradeCountries" class="gd9-country-grid" style="margin-top:8px">'+
-        countriesHTML+
-        '</div>'+
-
-        '<div class="section-title">'+
-        GD9Flag(
-            selected
-        )+
-        " "+
-        GD9Safe(
-            selectedName
-        )+
-        '</div>'+
-
-        '<div class="kpis">'+
-
-        '<div class="kpi">'+
-        '<small>رابطه</small>'+
-        '<b>'+
-        GD9Relation(
-            selected
-        )
-        .toFixed(
-            0
-        )+
-        '</b>'+
-        '</div>'+
-
-        '<div class="kpi">'+
-        '<small>اقتصاد</small>'+
-        '<b>'+
-        GD9Number(
-            selectedAI.economy,
-            50
-        )
-        .toFixed(
-            0
-        )+
-        '</b>'+
-        '</div>'+
-
-        '<div class="kpi">'+
-        '<small>تمایل تجاری</small>'+
-        '<b>'+
-        GD9Number(
-            selectedAI.tradeInterest,
-            50
-        )
-        .toFixed(
-            0
-        )+
-        '</b>'+
-        '</div>'+
-
-        '<div class="kpi">'+
-        '<small>ثبات</small>'+
-        '<b>'+
-        GD9Number(
-            selectedAI.stability,
-            50
-        )
-        .toFixed(
-            0
-        )+
-        '</b>'+
-        '</div>'+
-
-        '</div>'+
-
-        '<div class="section-title">منابع قابل معامله</div>'+
-        resourcesHTML+
-
-        '<div class="section-title">تاریخچه پیشنهادها</div>'+
-        historyHTML
-    );
-}
-
-
-/* =========================================================
-   SEND TRADE OFFER FROM UI
-========================================================= */
-
-function GD9SendTradeOffer(
-    countryCode,
-    resourceId,
-    direction
-)
-{
-    const amountElement=
-        document.getElementById(
-            "gd9_amount_"+
-            resourceId
-        );
-
-    const priceElement=
-        document.getElementById(
-            "gd9_price_"+
-            resourceId
-        );
-
-    const amount=
-        amountElement
-        ?
-        GD9Number(
-            amountElement.value,
-            10
-        )
-        :
-        10;
-
-    const price=
-        priceElement
-        ?
-        GD9Number(
-            priceElement.value,
-            GD9ResourcePrice(
-                resourceId
-            )
-        )
-        :
-        GD9ResourcePrice(
-            resourceId
-        );
-
-    GD9CreateTradeOffer(
-        countryCode,
-        resourceId,
-        direction,
-        amount,
-        price
-    );
-}
-
-
-/* =========================================================
-   FILTER TRADE COUNTRIES
-========================================================= */
-
-function GD9FilterTradeCountries(
-    value
-)
-{
-    const query=
-        String(
-            value||
-            ""
-        )
-        .trim()
-        .toLowerCase();
-
-    const buttons=
-        document.querySelectorAll(
-            "[data-gd9-country]"
-        );
-
-    for(
-        const button of
-        buttons
-    ){
-        const code=
-            button.dataset.gd9Country;
-
-        const name=
-            GD9CountryName(
-                code
-            )
-            .toLowerCase();
-
-        button.style.display=
-            (
-                !query||
-                name.includes(
-                    query
-                )||
-                code.toLowerCase()
-                .includes(
-                    query
-                )
-            )
-            ?
-            ""
-            :
-            "none";
-    }
-}
-
-
-/* =========================================================
-   AI NEWS TEMPLATES
-========================================================= */
-
-const GD9_AI_TEMPLATES=
-{
-    diplomatic:
-    [
-        "برای برگزاری نشست دوجانبه اعلام آمادگی کرده است.",
-        "خواستار افزایش سطح روابط سیاسی شده است.",
-        "از موضع اخیر دولت شما استقبال کرده است.",
-        "خواستار کاهش تنش‌های سیاسی شده است.",
-        "پیشنهاد تبادل هیئت دیپلماتیک داده است.",
-        "در حال بررسی تغییر سیاست خود نسبت به کشور شما است.",
-        "خواهان ایجاد کانال گفت‌وگوی مستقیم شده است.",
-        "نسبت به یکی از تصمیم‌های اخیر دولت شما ابراز نگرانی کرده است."
+var NEWS = {
+
+    diplomatic:[
+        'خواستار افزایش روابط سیاسی شده است.',
+        'برای نشست دوجانبه اعلام آمادگی کرده است.',
+        'از موضع اخیر شما استقبال کرده است.',
+        'خواستار کاهش تنش شده است.',
+        'پیشنهاد تبادل هیئت دیپلماتیک داده است.',
+        'خواستار ایجاد کانال گفت‌وگوی مستقیم شده است.'
     ],
 
-    trade:
-    [
-        "برای گسترش تجارت دوجانبه اعلام آمادگی کرده است.",
-        "به دنبال قرارداد بلندمدت منابع است.",
-        "قصد دارد واردات مواد اولیه را افزایش دهد.",
-        "در حال بررسی افزایش صادرات انرژی است.",
-        "به دنبال بازار جدید برای محصولات صنعتی است.",
-        "خواستار کاهش محدودیت‌های تجاری شده است.",
-        "مذاکرات اقتصادی با چند کشور دیگر را آغاز کرده است.",
-        "به دنبال خرید محصولات فناوری‌محور است."
+    trade:[
+        'به دنبال قرارداد بلندمدت منابع است.',
+        'قصد افزایش واردات مواد اولیه دارد.',
+        'در حال بررسی افزایش صادرات است.',
+        'به دنبال بازار جدید برای محصولات صنعتی است.',
+        'خواستار گسترش تجارت دوجانبه شده است.',
+        'در حال مذاکره برای یک قرارداد تجاری جدید است.'
     ],
 
-    economic:
-    [
-        "برنامه جدید کنترل تورم را آغاز کرده است.",
-        "سرمایه‌گذاری صنعتی را افزایش داده است.",
-        "با کاهش اعتماد مصرف‌کننده مواجه شده است.",
-        "نرخ بهره داخلی را تغییر داده است.",
-        "پروژه بزرگ زیرساختی آغاز کرده است.",
-        "رشد اقتصادی بالاتری نسبت به ماه قبل ثبت کرده است.",
-        "با افزایش هزینه انرژی روبه‌رو شده است.",
-        "بودجه عمومی خود را بازتنظیم کرده است.",
-        "برنامه کاهش بیکاری را آغاز کرده است."
+    economic:[
+        'برنامه جدید کنترل تورم آغاز کرده است.',
+        'سرمایه‌گذاری صنعتی را افزایش داده است.',
+        'پروژه بزرگ زیرساختی شروع کرده است.',
+        'با فشار هزینه انرژی روبه‌رو شده است.',
+        'برنامه کاهش بیکاری را اجرا می‌کند.',
+        'بودجه عمومی خود را بازتنظیم کرده است.'
     ],
 
-    military:
-    [
-        "بودجه دفاعی را افزایش داده است.",
-        "آمادگی نیروهای مسلح را بالا برده است.",
-        "خرید تجهیزات جدید را بررسی می‌کند.",
-        "تولید داخلی تجهیزات را افزایش داده است.",
-        "رزمایش نظامی نمایشی برگزار کرده است.",
-        "شبکه پدافندی خود را تقویت کرده است.",
-        "سطح آماده‌باش نیروها را تغییر داده است."
+    military:[
+        'بودجه دفاعی را افزایش داده است.',
+        'آمادگی نیروها را بالا برده است.',
+        'تولید تجهیزات داخلی را افزایش داده است.',
+        'شبکه پدافندی خود را تقویت کرده است.',
+        'سطح آماده‌باش نیروها را تغییر داده است.'
     ],
 
-    warning:
-    [
-        "نسبت به کاهش روابط دوجانبه هشدار داده است.",
-        "از سیاست اخیر کشور شما انتقاد کرده است.",
-        "خواهان توضیح رسمی درباره افزایش تنش شده است.",
-        "تهدید کرده سطح همکاری اقتصادی را کاهش دهد.",
-        "نسبت به ادامه تحریم‌ها اعتراض کرده است.",
-        "خواستار توقف فشار سیاسی شده است."
+    warning:[
+        'نسبت به کاهش روابط هشدار داده است.',
+        'از سیاست اخیر شما انتقاد کرده است.',
+        'خواستار توضیح درباره تنش شده است.',
+        'تهدید کرده سطح همکاری اقتصادی را کاهش دهد.'
     ],
 
-    crisis:
-    [
-        "با موج اعتراضات داخلی روبه‌رو شده است.",
-        "افزایش تورم فشار زیادی بر دولت وارد کرده است.",
-        "کاهش ارزش پول ملی باعث نگرانی بازار شده است.",
-        "کمبود انرژی روی صنعت داخلی اثر گذاشته است.",
-        "دولت جلسه اضطراری اقتصادی برگزار کرده است.",
-        "افزایش بیکاری باعث کاهش رضایت عمومی شده است."
+    crisis:[
+        'با افزایش تورم روبه‌رو شده است.',
+        'کاهش ارزش پول ملی باعث نگرانی شده است.',
+        'کمبود انرژی به صنعت فشار آورده است.',
+        'افزایش بیکاری رضایت را کاهش داده است.',
+        'با بحران اقتصادی داخلی مواجه شده است.'
     ],
 
-    intelligence:
-    [
-        "نشانه‌هایی از تغییر اولویت‌های دیپلماتیک نشان می‌دهد.",
-        "فعالیت اقتصادی غیرعادی در بازار منطقه‌ای ثبت کرده است.",
-        "در حال نزدیک شدن به یک شریک سیاسی جدید است.",
-        "سطح فعالیت اطلاعاتی خود را افزایش داده است.",
-        "احتمال پیوستن به یک توافق جدید را بررسی می‌کند.",
-        "در حال تغییر بخشی از سیاست تجاری خود است."
+    alliance:[
+        'برای همکاری راهبردی نزدیک‌تر اعلام آمادگی کرده است.',
+        'در حال بررسی پیمان سیاسی جدید است.',
+        'خواستار هماهنگی بیشتر شده است.',
+        'از افزایش همکاری با کشور شما استقبال کرده است.'
     ],
 
-    alliance:
-    [
-        "برای همکاری راهبردی نزدیک‌تر اعلام آمادگی کرده است.",
-        "در حال بررسی یک پیمان سیاسی جدید است.",
-        "خواستار هماهنگی بیشتر در سیاست خارجی شده است.",
-        "از افزایش همکاری با کشور شما استقبال کرده است.",
-        "پیشنهاد چارچوب همکاری بلندمدت را بررسی می‌کند."
+    intelligence:[
+        'نشانه‌هایی از تغییر اولویت‌های دیپلماتیک دیده می‌شود.',
+        'فعالیت اقتصادی غیرعادی ثبت شده است.',
+        'احتمال یک توافق جدید وجود دارد.',
+        'تحرک سیاسی تازه‌ای در آن کشور مشاهده شده است.'
     ]
 };
 
 
-/* =========================================================
-   PUSH AI NEWS
-========================================================= */
+function pushNews(
+    id,
+    type,
+    title,
+    text,
+    importance
+){
 
-function GD9PushAINews(
-    message
-)
-{
-    GD9Migrate();
+    ensureState();
 
-    state.aiNews.unshift(
-        {
-            id:
-                message.id||
-                (
-                    "AI-"+
-                    Date.now()+
-                    "-"+
-                    Math.random()
-                    .toString(
-                        36
-                    )
-                    .slice(
-                        2
-                    )
-                ),
+    S.aiNews.unshift({
+        id:
+            'N-'+
+            Date.now()+
+            '-'+
+            Math.random()
+            .toString(36)
+            .slice(2),
 
-            from:
-                message.from,
+        from:
+            id,
 
-            type:
-                message.type||
-                "diplomatic",
+        type:
+            type,
 
-            title:
-                message.title||
-                "خبر بین‌المللی",
+        title:
+            title,
 
-            text:
-                message.text||
-                "",
+        text:
+            text,
 
-            importance:
-                GD9Clamp(
-                    message.importance||
-                    1,
-                    1,
-                    3
-                ),
+        importance:
+            importance || 1,
 
-            date:
-                GD9DateKey()
-        }
-    );
+        date:
+            dayKey()
+    });
 
     if(
-        state.aiNews.length>
-        180
+        S.aiNews.length>
+        150
     ){
-        state.aiNews.length=
-            180;
+        S.aiNews.length =
+            150;
     }
 }
 
 
-/* =========================================================
-   DETAILED AI NEWS GENERATION
-========================================================= */
+function genNews(){
 
-function GD9GenerateAINews()
-{
-    const countries=
-        GD9CountryCodes()
-        .filter(
-            code=>
-                code!==
-                GD9PlayerCode()
-        );
-
-    if(
-        !countries.length
-    ){
-        return;
-    }
-
-    const count=
-        state.difficulty===
-        "expert"
-        ?
-        5
-        :
-        state.difficulty===
-        "hard"
-        ?
-        4
-        :
-        3;
+    var ids =
+        countryIds()
+        .filter(function(id){
+            return id !== playerId();
+        });
 
     for(
-        let index=
-            0;
-        index<
-            count;
-        index++
+        var i=0;
+        i<3;
+        i++
     ){
-        const code=
-            GD9Pick(
-                countries
-            );
+        var id =
+            pick(ids);
 
-        if(
-            !code
-        ){
-            continue;
+        if(!id){
+            break;
         }
 
-        const ai=
-            GD9AI(
-                code
-            );
+        var ai =
+            S.ai && S.ai[id]
+            ? S.ai[id]
+            : {};
 
-        const relationValue=
-            GD9Relation(
-                code
-            );
-
-        const types=
-        [
-            "diplomatic",
-            "trade",
-            "economic",
-            "intelligence"
+        var types = [
+            'diplomatic',
+            'trade',
+            'economic',
+            'intelligence'
         ];
 
         if(
-            GD9Number(
-                ai.aggression,
-                50
-            )>
-            58
+            n(ai.aggression,50)>
+            60
         ){
             types.push(
-                "military"
+                'military'
             );
         }
 
         if(
-            GD9Number(
-                ai.stability,
-                60
-            )<
-            42
+            n(ai.stability,60)<
+            40
         ){
             types.push(
-                "crisis"
+                'crisis'
             );
         }
 
         if(
-            relationValue>
-            42
+            rel(id)>
+            40
         ){
             types.push(
-                "alliance"
+                'alliance'
             );
         }
 
         if(
-            relationValue<
+            rel(id)<
             -35
         ){
             types.push(
-                "warning"
+                'warning'
             );
         }
 
-        const type=
-            GD9Pick(
-                types
-            );
+        var type =
+            pick(types);
 
-        const template=
-            GD9Pick(
-                GD9_AI_TEMPLATES[
-                    type
-                ]
-            );
-
-        const titles=
-        {
+        var titles = {
             diplomatic:
-                "پیام دیپلماتیک",
+                'پیام دیپلماتیک',
 
             trade:
-                "تحولات تجاری",
+                'تحولات تجاری',
 
             economic:
-                "گزارش اقتصادی",
+                'گزارش اقتصادی',
 
             military:
-                "تحولات دفاعی",
+                'تحولات دفاعی',
 
             warning:
-                "هشدار سیاسی",
+                'هشدار سیاسی',
 
             crisis:
-                "بحران داخلی",
-
-            intelligence:
-                "گزارش اطلاعاتی",
+                'بحران داخلی',
 
             alliance:
-                "تحرک راهبردی"
+                'تحرک راهبردی',
+
+            intelligence:
+                'گزارش اطلاعاتی'
         };
 
-        GD9PushAINews(
-            {
-                from:
-                    code,
-
-                type,
-
-                title:
-                    titles[
-                        type
-                    ],
-
-                text:
-                    `${GD9CountryName(code)} ${template}`,
-
-                importance:
-                    (
-                        type===
-                        "crisis"||
-                        type===
-                        "warning"
-                    )
-                    ?
-                    3
-                    :
-                    type===
-                    "military"
-                    ?
-                    2
-                    :
-                    1
-            }
-        );
-    }
-}
-
-
-/* =========================================================
-   DIRECT AI PROPOSALS
-========================================================= */
-
-function GD9GenerateAIProposal()
-{
-    const countries=
-        GD9CountryCodes()
-        .filter(
-            code=>
-                code!==
-                GD9PlayerCode()&&
-                !GD9WarWith(
-                    code
-                )
-        );
-
-    if(
-        !countries.length
-    ){
-        return;
-    }
-
-    const code=
-        GD9Pick(
-            countries
-        );
-
-    const ai=
-        GD9AI(
-            code
-        );
-
-    const relationValue=
-        GD9Relation(
-            code
-        );
-
-    const roll=
-        Math.random();
-
-    if(
-        roll<
-        .28&&
-        GD9Number(
-            ai.tradeInterest,
-            50
-        )>
-        40
-    ){
-        const resource=
-            GD9Pick(
-                GD9_RESOURCES
-            );
-
-        const aiStock=
-            GD9AIResource(
-                code,
-                resource.id
-            );
-
-        const playerStock=
-            GD9Number(
-                state.resources[
-                    resource.id
-                ],
-                0
-            );
-
-        const aiWantsBuy=
-            aiStock<
-            55||
-            playerStock>
-            100;
-
-        const amount=
-            GD9Pick(
-                [
-                    10,
-                    15,
-                    20,
-                    30
-                ]
-            );
-
-        const market=
-            GD9ResourcePrice(
-                resource.id
-            );
-
-        const unitPrice=
-            aiWantsBuy
-            ?
-            market*
-            GD9Random(
-                .94,
-                1.12
+        pushNews(
+            id,
+            type,
+            titles[type],
+            cName(id)+' '+pick(NEWS[type]),
+            (
+                type === 'warning' ||
+                type === 'crisis'
             )
-            :
-            market*
-            GD9Random(
-                .90,
-                1.05
-            );
-
-        state.inbox.unshift(
-            {
-                id:
-                    "AIPROP-"+
-                    Date.now()+
-                    "-"+
-                    Math.random()
-                    .toString(
-                        36
-                    )
-                    .slice(
-                        2
-                    ),
-
-                from:
-                    code,
-
-                type:
-                    aiWantsBuy
-                    ?
-                    "resourceBuyFromPlayer"
-                    :
-                    "resourceSellToPlayer",
-
-                resourceId:
-                    resource.id,
-
-                amount,
-
-                unitPrice,
-
-                title:
-                    aiWantsBuy
-                    ?
-                    "درخواست خرید منبع"
-                    :
-                    "پیشنهاد فروش منبع",
-
-                text:
-                    aiWantsBuy
-                    ?
-                    `${GD9CountryName(code)} می‌خواهد ${amount} واحد ${resource.name} از کشور شما خریداری کند.`
-                    :
-                    `${GD9CountryName(code)} پیشنهاد فروش ${amount} واحد ${resource.name} به کشور شما را داده است.`,
-
-                status:
-                    "pending"
-            }
-        );
-
-        GD9Toast(
-            "📨 پیشنهاد تجاری جدید"
-        );
-
-        return;
-    }
-
-    if(
-        roll<
-        .46&&
-        relationValue>
-        20
-    ){
-        state.inbox.unshift(
-            {
-                id:
-                    "AIPROP-"+
-                    Date.now(),
-
-                from:
-                    code,
-
-                type:
-                    "economicCooperation",
-
-                title:
-                    "همکاری اقتصادی",
-
-                text:
-                    `${GD9CountryName(code)} پیشنهاد برنامه مشترک صنعتی و تجاری داده است.`,
-
-                value:
-                    GD9RandomInt(
-                        800,
-                        2200
-                    ),
-
-                status:
-                    "pending"
-            }
-        );
-
-        return;
-    }
-
-    if(
-        roll<
-        .62&&
-        relationValue>
-        40
-    ){
-        state.inbox.unshift(
-            {
-                id:
-                    "AIPROP-"+
-                    Date.now(),
-
-                from:
-                    code,
-
-                type:
-                    "research",
-
-                title:
-                    "همکاری فناوری",
-
-                text:
-                    `${GD9CountryName(code)} پیشنهاد همکاری علمی و فناوری داده است.`,
-
-                status:
-                    "pending"
-            }
-        );
-
-        return;
-    }
-
-    if(
-        roll<
-        .76&&
-        relationValue<
-        -25
-    ){
-        state.inbox.unshift(
-            {
-                id:
-                    "AIPROP-"+
-                    Date.now(),
-
-                from:
-                    code,
-
-                type:
-                    "warning",
-
-                title:
-                    "درخواست کاهش تنش",
-
-                text:
-                    `${GD9CountryName(code)} خواهان کاهش فوری تنش‌های سیاسی شده است.`,
-
-                status:
-                    "pending"
-            }
-        );
-
-        return;
-    }
-
-    if(
-        roll<
-        .88&&
-        relationValue>
-        10
-    ){
-        state.inbox.unshift(
-            {
-                id:
-                    "AIPROP-"+
-                    Date.now(),
-
-                from:
-                    code,
-
-                type:
-                    "aid",
-
-                title:
-                    "کمک اقتصادی",
-
-                text:
-                    `${GD9CountryName(code)} پیشنهاد بسته کمک اقتصادی داده است.`,
-
-                value:
-                    GD9RandomInt(
-                        500,
-                        1900
-                    ),
-
-                status:
-                    "pending"
-            }
+            ? 3
+            : type === 'military'
+            ? 2
+            : 1
         );
     }
 }
 
 
 /* =========================================================
-   AI INBOX
+   TRADE OFFER CREATION
 ========================================================= */
 
-function GD9OpenAIInbox(
-    tab=
-        "messages"
-)
-{
-    GD9Migrate();
+function createTrade(
+    id,
+    res,
+    dir,
+    amount,
+    unitPrice
+){
 
-    const pending=
-        state.inbox.filter(
-            item=>
-                item.status===
-                "pending"
+    ensureState();
+
+    amount =
+        Math.max(
+            1,
+            Math.floor(
+                n(amount,1)
+            )
         );
 
-    const tabs=
-        '<div class="tabs">'+
-        '<button class="tab '+
+    unitPrice =
+        Math.max(
+            1,
+            n(
+                unitPrice,
+                price(res)
+            )
+        );
+
+    if(
+        !id ||
+        id === playerId()
+    ){
+        return;
+    }
+
+    if(
+        warWith(id)
+    ){
+        toast2(
+            'در زمان جنگ معامله مستقیم ممکن نیست',
+            'warn'
+        );
+
+        return;
+    }
+
+    if(
+        dir === 'sell' &&
+        n(S.resources[res])<
+        amount
+    ){
+        toast2(
+            'موجودی کافی نیست',
+            'bad'
+        );
+
+        return;
+    }
+
+    if(
+        dir === 'buy' &&
+        n(S.economy.money)<
+        amount*
+        unitPrice
+    ){
+        toast2(
+            'بودجه کافی نیست',
+            'bad'
+        );
+
+        return;
+    }
+
+    var offer = {
+
+        id:
+            'TR-'+
+            Date.now()+
+            '-'+
+            Math.random()
+            .toString(36)
+            .slice(2),
+
+        countryId:
+            id,
+
+        resourceId:
+            res,
+
+        direction:
+            dir,
+
+        amount:
+            amount,
+
+        unitPrice:
+            unitPrice,
+
+        total:
+            amount*
+            unitPrice,
+
+        status:
+            'pending',
+
+        resolveDay:
+            absDay()+
+            1+
+            Math.floor(
+                Math.random()*2
+            ),
+
+        score:
+            acceptance(
+                id,
+                res,
+                dir,
+                amount,
+                unitPrice
+            ),
+
+        date:
+            dayKey()
+    };
+
+    S.tradeSystem.offers.unshift(
+        offer
+    );
+
+    S.tradeSystem.history.unshift(
+        offer
+    );
+
+    pushNews(
+        id,
+        'trade',
+        'پیشنهاد تجاری در حال بررسی',
+        cName(id)+
+        ' پیشنهاد '+
         (
-            tab===
-            "messages"
-            ?
-            "active"
-            :
-            ""
+            dir === 'buy'
+            ? 'فروش'
+            : 'خرید'
         )+
-        '" onclick="openAIInbox(\'messages\')">📨 پیشنهادها '+
-        pending.length+
-        '</button>'+
-        '<button class="tab '+
-        (
-            tab===
-            "news"
-            ?
-            "active"
-            :
-            ""
-        )+
-        '" onclick="openAIInbox(\'news\')">🌍 اخبار کشورها</button>'+
-        '<button class="tab '+
-        (
-            tab===
-            "intelligence"
-            ?
-            "active"
-            :
-            ""
-        )+
-        '" onclick="openAIInbox(\'intelligence\')">🛰️ اطلاعات</button>'+
+        ' منبع را دریافت کرده است.',
+        1
+    );
+
+    save();
+
+    toast2(
+        '📨 پیشنهاد ارسال شد',
+        'good'
+    );
+
+    window.openGD10Trade(
+        res,
+        id
+    );
+}
+
+
+/* =========================================================
+   RESOLVE TRADE OFFERS
+========================================================= */
+
+function resolveTrades(){
+
+    ensureState();
+
+    var now =
+        absDay();
+
+    S.tradeSystem.offers.forEach(function(o){
+
+        if(
+            o.status !== 'pending' ||
+            now <
+            n(o.resolveDay)
+        ){
+            return;
+        }
+
+        var r =
+            RES.find(function(x){
+                return x.id === o.resourceId;
+            });
+
+        if(!r){
+            o.status = 'cancelled';
+            return;
+        }
+
+        if(
+            warWith(o.countryId)
+        ){
+            o.status =
+                'rejected';
+
+            o.reason =
+                'جنگ فعال';
+
+            return;
+        }
+
+        if(
+            !chance(o.score)
+        ){
+            o.status =
+                'rejected';
+
+            o.reason =
+                'شرایط معامله پذیرفته نشد';
+
+            setRel(
+                o.countryId,
+                rel(o.countryId)-.5
+            );
+
+            pushNews(
+                o.countryId,
+                'trade',
+                'پیشنهاد تجاری رد شد',
+                cName(o.countryId)+
+                ' شرایط معامله '+
+                r.name+
+                ' را رد کرد.',
+                1
+            );
+
+            return;
+        }
+
+        if(
+            o.direction === 'buy'
+        ){
+
+            if(
+                aiStock(
+                    o.countryId,
+                    o.resourceId
+                )<
+                o.amount
+            ){
+                o.status =
+                    'rejected';
+
+                o.reason =
+                    'موجودی طرف مقابل کافی نبود';
+
+                return;
+            }
+
+            if(
+                n(S.economy.money)<
+                o.total
+            ){
+                o.status =
+                    'cancelled';
+
+                o.reason =
+                    'بودجه شما کافی نبود';
+
+                return;
+            }
+
+            S.economy.money -=
+                o.total;
+
+            S.resources[
+                o.resourceId
+            ] +=
+                o.amount;
+
+            setAiStock(
+                o.countryId,
+                o.resourceId,
+                aiStock(
+                    o.countryId,
+                    o.resourceId
+                )-
+                o.amount
+            );
+
+            S.economy.imports =
+                n(S.economy.imports)+
+                o.total;
+        }
+        else{
+
+            if(
+                n(
+                    S.resources[
+                        o.resourceId
+                    ]
+                )<
+                o.amount
+            ){
+                o.status =
+                    'cancelled';
+
+                o.reason =
+                    'موجودی شما کافی نبود';
+
+                return;
+            }
+
+            S.resources[
+                o.resourceId
+            ] -=
+                o.amount;
+
+            S.economy.money +=
+                o.total;
+
+            setAiStock(
+                o.countryId,
+                o.resourceId,
+                aiStock(
+                    o.countryId,
+                    o.resourceId
+                )+
+                o.amount
+            );
+
+            S.economy.exports =
+                n(S.economy.exports)+
+                o.total;
+        }
+
+        o.status =
+            'accepted';
+
+        setRel(
+            o.countryId,
+            rel(o.countryId)+
+            2+
+            Math.min(
+                4,
+                o.amount/25
+            )
+        );
+
+        pushNews(
+            o.countryId,
+            'trade',
+            'معامله پذیرفته شد',
+            cName(o.countryId)+
+            ' معامله '+
+            r.name+
+            ' را پذیرفت.',
+            2
+        );
+
+        toast2(
+            '✅ یک معامله پذیرفته شد',
+            'good'
+        );
+    });
+}
+
+
+/* =========================================================
+   TRADE PANEL
+========================================================= */
+
+window.openGD10Trade =
+function(defaultRes,selected){
+
+    ensureState();
+
+    var ids =
+        countryIds()
+        .filter(function(id){
+            return id !== playerId();
+        })
+        .sort(function(a,b){
+            return rel(b)-rel(a);
+        });
+
+    if(!ids.length){
+        toast2(
+            'کشوری برای تجارت نیست',
+            'warn'
+        );
+
+        return;
+    }
+
+    selected =
+        selected ||
+        S.tradeSystem.selectedCountry ||
+        ids[0];
+
+    S.tradeSystem.selectedCountry =
+        selected;
+
+    var html =
+        '<div class="notice good">'+
+        'با هر کشور می‌توانی روی هر منبع مقدار و قیمت دلخواه پیشنهاد بدهی. پاسخ پس از ۱ تا ۲ روز بازی می‌آید.'+
+        '</div>'+
+
+        '<input class="search" placeholder="جستجوی کشور..." oninput="filterGD10Countries(this.value)">'+
+
+        '<div class="gd10-country-grid" id="gd10Countries" style="margin-top:8px">';
+
+    ids.forEach(function(id){
+
+        html +=
+            '<button class="gd10-country '+
+            (
+                id === selected
+                ? 'sel'
+                : ''
+            )+
+            '" data-gd10country="'+
+            id+
+            '" onclick="openGD10Trade(\''+
+            (defaultRes || 'food')+
+            '\',\''+
+            id+
+            '\')">'+
+
+            '<b>'+
+            cFlag(id)+
+            ' '+
+            esc(cName(id))+
+            '</b>'+
+
+            '<small>'+
+            'رابطه '+
+            rel(id).toFixed(0)+
+            '</small>'+
+
+            '</button>';
+    });
+
+    html +=
+        '</div>'+
+
+        '<div class="section-title">'+
+        cFlag(selected)+
+        ' '+
+        esc(cName(selected))+
         '</div>';
 
-    let body=
-        "";
+    RES.forEach(function(r){
 
-    if(
-        tab===
-        "messages"
-    ){
-        body=
-            pending.length
-            ?
-            pending
-            .map(
-                proposal=>
-                {
-                    const resource=
-                        proposal.resourceId
-                        ?
-                        GD9_RESOURCES.find(
-                            item=>
-                                item.id===
-                                proposal.resourceId
-                        )
-                        :
-                        null;
+        html +=
+            '<div class="gd10-trade-row">'+
 
-                    let details=
-                        "";
+            '<div class="card-title">'+
+            r.icon+
+            ' '+
+            r.name+
+            '</div>'+
 
-                    if(
-                        resource
-                    ){
-                        details=
-                            '<div class="gd9-effect-list">'+
-                            '<div class="gd9-effect-line"><span>منبع</span><b>'+
-                            resource.icon+
-                            " "+
-                            resource.name+
-                            '</b></div>'+
-                            '<div class="gd9-effect-line"><span>مقدار</span><b>'+
-                            GD9Number(
-                                proposal.amount
-                            )+
-                            '</b></div>'+
-                            '<div class="gd9-effect-line"><span>قیمت هر واحد</span><b>'+
-                            GD9Money(
-                                proposal.unitPrice
-                            )+
-                            '</b></div>'+
-                            '<div class="gd9-effect-line"><span>ارزش کل</span><b>'+
-                            GD9Money(
-                                GD9Number(
-                                    proposal.amount
-                                )*
-                                GD9Number(
-                                    proposal.unitPrice
-                                )
-                            )+
-                            '</b></div>'+
-                            '</div>';
-                    }
+            '<div class="card-sub">'+
+            'شما: '+
+            n(S.resources[r.id]).toFixed(1)+
+            ' • '+
+            esc(cName(selected))+
+            ': '+
+            aiStock(
+                selected,
+                r.id
+            ).toFixed(1)+
+            ' • بازار: '+
+            mny(price(r.id))+
+            '</div>'+
 
-                    return(
-                        '<div class="card gd9-ai-message trade">'+
+            '<div class="gd10-fields">'+
 
-                        '<div class="card-head">'+
-                        '<div class="icon">'+
-                        GD9Flag(
-                            proposal.from
-                        )+
-                        '</div>'+
-                        '<div>'+
-                        '<div class="card-title">'+
-                        GD9Safe(
-                            proposal.title
-                        )+
-                        '</div>'+
-                        '<div class="card-sub">'+
-                        GD9Safe(
-                            GD9CountryName(
-                                proposal.from
-                            )
-                        )+
-                        " • رابطه "+
-                        GD9Relation(
-                            proposal.from
-                        )
-                        .toFixed(
-                            0
-                        )+
-                        '</div>'+
-                        '</div>'+
-                        '</div>'+
+            '<input id="gd10a_'+
+            r.id+
+            '" type="number" min="1" value="10">'+
 
-                        '<div class="card-desc">'+
-                        GD9Safe(
-                            proposal.text
-                        )+
-                        '</div>'+
+            '<input id="gd10p_'+
+            r.id+
+            '" type="number" min="1" value="'+
+            Math.round(
+                price(r.id)
+            )+
+            '">'+
 
-                        details+
+            '</div>'+
 
-                        '<div class="row">'+
-                        '<button class="btn green" onclick="respondGD9Proposal(\''+
-                        proposal.id+
-                        '\',true)">✅ قبول</button>'+
-                        '<button class="btn red" onclick="respondGD9Proposal(\''+
-                        proposal.id+
-                        '\',false)">❌ رد</button>'+
-                        '</div>'+
+            '<div class="row">'+
 
-                        '</div>'
-                    );
-                }
-            )
-            .join("")
-            :
-            '<div class="notice">پیشنهاد جدیدی وجود ندارد.</div>';
-    }
+            '<button class="btn blue" onclick="sendGD10Trade(\''+
+            selected+
+            '\',\''+
+            r.id+
+            '\',\'buy\')">'+
+            'خرید از کشور'+
+            '</button>'+
 
-    if(
-        tab===
-        "news"
-    ){
-        body=
-            state.aiNews.length
-            ?
-            state.aiNews
-            .slice(
-                0,
-                80
-            )
-            .map(
-                news=>
-                    '<div class="card gd9-ai-message '+
-                    GD9Safe(
-                        news.type
-                    )+
-                    '">'+
+            '<button class="btn green" onclick="sendGD10Trade(\''+
+            selected+
+            '\',\''+
+            r.id+
+            '\',\'sell\')">'+
+            'فروش به کشور'+
+            '</button>'+
 
-                    '<div class="card-head">'+
-                    '<div class="icon">'+
-                    GD9Flag(
-                        news.from
-                    )+
-                    '</div>'+
-                    '<div>'+
-                    '<div class="card-title">'+
-                    GD9Safe(
-                        news.title
-                    )+
-                    '</div>'+
-                    '<div class="card-sub">'+
-                    GD9Safe(
-                        GD9CountryName(
-                            news.from
-                        )
-                    )+
-                    " • "+
-                    GD9Safe(
-                        news.date
-                    )+
-                    '</div>'+
-                    '</div>'+
-                    '</div>'+
+            '</div>'+
 
-                    '<div class="card-desc">'+
-                    GD9Safe(
-                        news.text
-                    )+
-                    '</div>'+
+            '</div>';
+    });
 
-                    '<div class="gd9-ai-meta">'+
-                    '<span class="gd9-badge">'+
-                    GD9NewsTypeLabel(
-                        news.type
-                    )+
-                    '</span>'+
-                    '<span class="gd9-badge">اهمیت '+
-                    news.importance+
-                    '/3</span>'+
-                    '</div>'+
+    html +=
+        '<div class="section-title">'+
+        'آخرین پیشنهادها'+
+        '</div>';
 
-                    '</div>'
-            )
-            .join("")
-            :
-            '<div class="notice">هنوز خبری ثبت نشده است.</div>';
-    }
+    S.tradeSystem.history
+    .slice(0,10)
+    .forEach(function(o){
 
-    if(
-        tab===
-        "intelligence"
-    ){
-        const countries=
-            GD9CountryCodes()
-            .filter(
-                code=>
-                    code!==
-                    GD9PlayerCode()
-            )
-            .sort(
-                (
-                    first,
-                    second
-                )=>
-                    GD9Number(
-                        GD9AI(
-                            second
-                        ).military,
-                        0
-                    )-
-                    GD9Number(
-                        GD9AI(
-                            first
-                        ).military,
-                        0
-                    )
-            )
-            .slice(
-                0,
-                36
+        var rr =
+            RES.find(function(x){
+                return x.id === o.resourceId;
+            });
+
+        html +=
+            '<div class="card">'+
+
+            '<div class="card-title">'+
+            cFlag(o.countryId)+
+            ' '+
+            esc(cName(o.countryId))+
+            '</div>'+
+
+            '<div class="card-desc">'+
+
+            (
+                o.direction === 'buy'
+                ? 'خرید'
+                : 'فروش'
+            )+
+            ' '+
+
+            o.amount+
+            ' '+
+
+            (
+                rr
+                ? rr.name
+                : o.resourceId
+            )+
+
+            ' • '+
+
+            mny(o.total)+
+
+            '<br>'+
+
+            (
+                o.status === 'pending'
+                ? '⏳ در حال بررسی'
+
+                : o.status === 'accepted'
+                ? '✅ پذیرفته شد'
+
+                : o.status === 'rejected'
+                ? '❌ رد شد'
+
+                : '⚪ لغو شد'
+            )+
+
+            (
+                o.reason
+                ? '<br>'+esc(o.reason)
+                : ''
+            )+
+
+            '</div>'+
+
+            '</div>';
+    });
+
+    openM(
+        '🌍 تجارت بین‌المللی',
+        html
+    );
+};
+
+
+/* =========================================================
+   TRADE UI HANDLERS
+========================================================= */
+
+window.sendGD10Trade =
+function(id,res,dir){
+
+    var a =
+        document.getElementById(
+            'gd10a_'+res
+        );
+
+    var p =
+        document.getElementById(
+            'gd10p_'+res
+        );
+
+    createTrade(
+        id,
+        res,
+        dir,
+        n(
+            a && a.value,
+            10
+        ),
+        n(
+            p && p.value,
+            price(res)
+        )
+    );
+};
+
+
+window.filterGD10Countries =
+function(v){
+
+    v =
+        String(v || '')
+        .trim()
+        .toLowerCase();
+
+    document
+    .querySelectorAll(
+        '[data-gd10country]'
+    )
+    .forEach(function(b){
+
+        var id =
+            b.getAttribute(
+                'data-gd10country'
             );
 
-        body=
-            '<div class="grid">'+
-            countries
-            .map(
-                code=>
-                {
-                    const ai=
-                        GD9AI(
-                            code
-                        );
-
-                    return(
-                        '<div class="card">'+
-
-                        '<div class="card-head">'+
-                        '<div class="icon">'+
-                        GD9Flag(
-                            code
-                        )+
-                        '</div>'+
-                        '<div>'+
-                        '<div class="card-title">'+
-                        GD9Safe(
-                            GD9CountryName(
-                                code
-                            )
-                        )+
-                        '</div>'+
-                        '<div class="card-sub">رابطه '+
-                        GD9Relation(
-                            code
-                        )
-                        .toFixed(
-                            0
-                        )+
-                        '</div>'+
-                        '</div>'+
-                        '</div>'+
-
-                        '<div class="card-desc">'+
-                        '📊 اقتصاد: '+
-                        GD9Number(
-                            ai.economy,
-                            50
-                        )
-                        .toFixed(
-                            0
-                        )+
-                        '<br>'+
-                        '⚔️ قدرت نظامی: '+
-                        GD9Number(
-                            ai.military,
-                            50
-                        )
-                        .toFixed(
-                            0
-                        )+
-                        '<br>'+
-                        '🧠 فناوری: '+
-                        GD9Number(
-                            ai.technology,
-                            50
-                        )
-                        .toFixed(
-                            0
-                        )+
-                        '<br>'+
-                        '🏛️ ثبات: '+
-                        GD9Number(
-                            ai.stability,
-                            50
-                        )
-                        .toFixed(
-                            0
-                        )+
-                        '<br>'+
-                        '🔥 تهاجمی بودن: '+
-                        GD9Number(
-                            ai.aggression,
-                            50
-                        )
-                        .toFixed(
-                            0
-                        )+
-                        '<br>'+
-                        '📦 تمایل تجاری: '+
-                        GD9Number(
-                            ai.tradeInterest,
-                            50
-                        )
-                        .toFixed(
-                            0
-                        )+
-                        '</div>'+
-
-                        '</div>'
-                    );
-                }
+        var name =
+            String(
+                cName(id)
             )
-            .join("")+
+            .toLowerCase();
+
+        b.style.display =
+            (
+                !v ||
+                id.toLowerCase().includes(v) ||
+                name.includes(v)
+            )
+            ? ''
+            : 'none';
+    });
+};
+
+
+/* =========================================================
+   AI NEWS PANEL
+========================================================= */
+
+window.openGD10News =
+function(){
+
+    ensureState();
+
+    var html =
+        '<div class="tabs">'+
+
+        '<button class="tab active">'+
+        '🌍 اخبار جهان'+
+        '</button>'+
+
+        '<button class="tab" onclick="openGD10Trade(\'food\')">'+
+        '📦 تجارت'+
+        '</button>'+
+
+        '</div>';
+
+    if(!S.aiNews.length){
+        html +=
+            '<div class="notice">'+
+            'هنوز خبری ثبت نشده است.'+
             '</div>';
     }
 
-    GD9OpenModal(
-        "🤖 هوش مصنوعی و اخبار جهان",
-        tabs+
-        body
+    S.aiNews
+    .slice(0,70)
+    .forEach(function(x){
+
+        html +=
+            '<div class="card gd10-msg '+
+            esc(x.type)+
+            '">'+
+
+            '<div class="card-head">'+
+
+            '<div class="icon-box">'+
+            cFlag(x.from)+
+            '</div>'+
+
+            '<div>'+
+
+            '<div class="card-title">'+
+            esc(x.title)+
+            '</div>'+
+
+            '<div class="card-sub">'+
+            esc(cName(x.from))+
+            ' • '+
+            esc(x.date)+
+            '</div>'+
+
+            '</div>'+
+
+            '</div>'+
+
+            '<div class="card-desc">'+
+            esc(x.text)+
+            '</div>'+
+
+            '</div>';
+    });
+
+    openM(
+        '🤖 هوش مصنوعی و اخبار جهان',
+        html
     );
-}
-
-
-function GD9NewsTypeLabel(
-    type
-)
-{
-    const labels=
-    {
-        diplomatic:
-            "🏛️ سیاسی",
-
-        trade:
-            "📦 تجاری",
-
-        economic:
-            "📊 اقتصادی",
-
-        military:
-            "⚔️ نظامی",
-
-        warning:
-            "🚨 هشدار",
-
-        crisis:
-            "⚠️ بحران",
-
-        intelligence:
-            "🛰️ اطلاعاتی",
-
-        alliance:
-            "🤝 راهبردی"
-    };
-
-    return labels[
-        type
-    ]||
-    "🌍 بین‌المللی";
-}
+};
 
 
 /* =========================================================
-   RESPOND TO AI PROPOSALS
+   MISSILE FX
 ========================================================= */
 
-function GD9RespondProposal(
-    proposalId,
-    accepted
-)
-{
-    const proposal=
-        state.inbox.find(
-            item=>
-                item.id===
-                proposalId
+function fxLayer(){
+
+    var v =
+        document.getElementById(
+            'mapViewport'
         );
 
-    if(
-        !proposal||
-        proposal.status!==
-        "pending"
-    ){
-        return;
-    }
-
-    if(
-        !accepted
-    ){
-        proposal.status=
-            "rejected";
-
-        GD9ChangeRelation(
-            proposal.from,
-            -3
-        );
-
-        GD9PushAINews(
-            {
-                from:
-                    proposal.from,
-
-                type:
-                    "diplomatic",
-
-                title:
-                    "پیشنهاد رد شد",
-
-                text:
-                    `${GD9CountryName(proposal.from)} از رد شدن پیشنهاد خود ابراز نارضایتی کرد.`,
-
-                importance:
-                    1
-            }
-        );
-
-        GD9Save();
-
-        GD9OpenAIInbox(
-            "messages"
-        );
-
-        return;
-    }
-
-    const resource=
-        proposal.resourceId
-        ?
-        GD9_RESOURCES.find(
-            item=>
-                item.id===
-                proposal.resourceId
-        )
-        :
-        null;
-
-    if(
-        proposal.type===
-        "resourceBuyFromPlayer"
-    ){
-        const amount=
-            GD9Number(
-                proposal.amount,
-                0
-            );
-
-        const unitPrice=
-            GD9Number(
-                proposal.unitPrice,
-                0
-            );
-
-        if(
-            GD9Number(
-                state.resources[
-                    proposal.resourceId
-                ],
-                0
-            )<
-            amount
-        ){
-            GD9Toast(
-                "موجودی شما برای اجرای معامله کافی نیست"
-            );
-
-            return;
-        }
-
-        state.resources[
-            proposal.resourceId
-        ]-=
-            amount;
-
-        state.economy.money+=
-            amount*
-            unitPrice;
-
-        GD9SetAIResource(
-            proposal.from,
-            proposal.resourceId,
-            GD9AIResource(
-                proposal.from,
-                proposal.resourceId
-            )+
-            amount
-        );
-
-        state.economy.exports=
-            GD9Number(
-                state.economy.exports,
-                0
-            )+
-            amount*
-            unitPrice;
-
-        GD9ChangeRelation(
-            proposal.from,
-            5
-        );
-    }
-
-    if(
-        proposal.type===
-        "resourceSellToPlayer"
-    ){
-        const amount=
-            GD9Number(
-                proposal.amount,
-                0
-            );
-
-        const unitPrice=
-            GD9Number(
-                proposal.unitPrice,
-                0
-            );
-
-        const total=
-            amount*
-            unitPrice;
-
-        if(
-            GD9Number(
-                state.economy.money,
-                0
-            )<
-            total
-        ){
-            GD9Toast(
-                "بودجه کافی برای اجرای معامله نیست"
-            );
-
-            return;
-        }
-
-        if(
-            GD9AIResource(
-                proposal.from,
-                proposal.resourceId
-            )<
-            amount
-        ){
-            GD9Toast(
-                "کشور مقابل دیگر موجودی کافی ندارد"
-            );
-
-            proposal.status=
-                "cancelled";
-
-            GD9Save();
-
-            GD9OpenAIInbox(
-                "messages"
-            );
-
-            return;
-        }
-
-        state.economy.money-=
-            total;
-
-        state.resources[
-            proposal.resourceId
-        ]+=
-            amount;
-
-        GD9SetAIResource(
-            proposal.from,
-            proposal.resourceId,
-            GD9AIResource(
-                proposal.from,
-                proposal.resourceId
-            )-
-            amount
-        );
-
-        state.economy.imports=
-            GD9Number(
-                state.economy.imports,
-                0
-            )+
-            total;
-
-        GD9ChangeRelation(
-            proposal.from,
-            5
-        );
-    }
-
-    if(
-        proposal.type===
-        "economicCooperation"
-    ){
-        state.economy.money+=
-            GD9Number(
-                proposal.value,
-                1000
-            )*
-            .30;
-
-        state.nation.industry=
-            GD9Number(
-                state.nation.industry,
-                50
-            )+
-            .8;
-
-        state.nation.trade=
-            GD9Number(
-                state.nation.trade,
-                50
-            )+
-            1;
-
-        GD9ChangeRelation(
-            proposal.from,
-            8
-        );
-    }
-
-    if(
-        proposal.type===
-        "research"
-    ){
-        state.nation.technology=
-            GD9Number(
-                state.nation.technology,
-                50
-            )+
-            .7;
-
-        if(
-            state.society
-        ){
-            state.society.education=
-                GD9Number(
-                    state.society.education,
-                    50
-                )+
-                .5;
-        }
-
-        GD9ChangeRelation(
-            proposal.from,
-            7
-        );
-    }
-
-    if(
-        proposal.type===
-        "warning"
-    ){
-        GD9ChangeRelation(
-            proposal.from,
-            10
-        );
-
-        state.nation.reputation=
-            GD9Clamp(
-                GD9Number(
-                    state.nation.reputation,
-                    50
-                )-
-                1,
-                0,
-                100
-            );
-    }
-
-    if(
-        proposal.type===
-        "aid"
-    ){
-        state.economy.money+=
-            GD9Number(
-                proposal.value,
-                1000
-            );
-
-        GD9ChangeRelation(
-            proposal.from,
-            5
-        );
-    }
-
-    proposal.status=
-        "accepted";
-
-    GD9PushAINews(
-        {
-            from:
-                proposal.from,
-
-            type:
-                proposal.type.includes(
-                    "resource"
-                )
-                ?
-                "trade"
-                :
-                "diplomatic",
-
-            title:
-                "توافق اجرا شد",
-
-            text:
-                resource
-                ?
-                `توافق مربوط به ${resource.name} با ${GD9CountryName(proposal.from)} اجرا شد.`
-                :
-                `توافق جدید با ${GD9CountryName(proposal.from)} اجرا شد.`,
-
-            importance:
-                2
-        }
-    );
-
-    GD9Toast(
-        "✅ پیشنهاد پذیرفته و اجرا شد"
-    );
-
-    GD9Save();
-
-    GD9Render();
-
-    GD9OpenAIInbox(
-        "messages"
-    );
-}
-
-
-/* =========================================================
-   WAR CHECK WITH FALLBACK
-========================================================= */
-
-function GD9WarWith(
-    countryCode
-)
-{
-    try{
-
-        if(
-            typeof playerWarAgainst===
-            "function"
-        ){
-            const result=
-                playerWarAgainst(
-                    countryCode
-                );
-
-            if(
-                result
-            ){
-                return result;
-            }
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    const player=
-        GD9PlayerCode();
-
-    if(
-        !player||
-        !Array.isArray(
-            state.wars
-        )
-    ){
+    if(!v){
         return null;
     }
 
-    return state.wars.find(
-        war=>
-        {
-            const active=
-                war.status===
-                "active"||
-                war.status===
-                "war";
+    var l =
+        document.getElementById(
+            'gd10Fx'
+        );
+
+    if(!l){
+        l =
+            document.createElement(
+                'div'
+            );
+
+        l.id =
+            'gd10Fx';
+
+        v.appendChild(l);
+    }
+
+    return l;
+}
+
+
+function mapCenter(id){
+
+    try{
+        if(
+            typeof window.mapCenters !== 'undefined' &&
+            window.mapCenters &&
+            window.mapCenters[id]
+        ){
+            return window.mapCenters[id];
+        }
+    }catch(e){}
+
+    try{
+        if(typeof window.countryById === 'function'){
+            var c =
+                window.countryById(id);
 
             if(
-                !active
+                c &&
+                c.center
             ){
-                return false;
+                return [
+                    c.center.x,
+                    c.center.y
+                ];
             }
-
-            return(
-                (
-                    war.attacker===
-                    player&&
-                    war.defender===
-                    countryCode
-                )||
-                (
-                    war.defender===
-                    player&&
-                    war.attacker===
-                    countryCode
-                )
-            );
         }
-    )||
-    null;
+    }catch(e){}
+
+    return [
+        800,
+        400
+    ];
+}
+
+
+function toScreen(pt){
+
+    var camera =
+        document.getElementById(
+            'camera'
+        );
+
+    var vp =
+        document.getElementById(
+            'mapViewport'
+        );
+
+    var svg =
+        document.getElementById(
+            'worldSvg'
+        ) ||
+        document.getElementById(
+            'worldMap'
+        );
+
+    if(
+        !camera ||
+        !vp ||
+        !svg
+    ){
+        return {
+            x:0,
+            y:0
+        };
+    }
+
+    var m =
+        camera.getScreenCTM &&
+        camera.getScreenCTM();
+
+    if(!m){
+        return {
+            x:0,
+            y:0
+        };
+    }
+
+    var p =
+        svg.createSVGPoint();
+
+    p.x =
+        pt[0];
+
+    p.y =
+        pt[1];
+
+    var q =
+        p.matrixTransform(m);
+
+    var r =
+        vp.getBoundingClientRect();
+
+    return {
+        x:
+            q.x-r.left,
+
+        y:
+            q.y-r.top
+    };
+}
+
+
+function projectile(
+    el,
+    a,
+    b,
+    dur,
+    arc
+){
+
+    return new Promise(function(resolve){
+
+        var st =
+            performance.now();
+
+        var dx =
+            b.x-a.x;
+
+        var dy =
+            b.y-a.y;
+
+        function f(t){
+
+            var p =
+                clamp(
+                    (t-st)/dur,
+                    0,
+                    1
+                );
+
+            var e =
+                p<.5
+                ? 2*p*p
+                : 1-Math.pow(-2*p+2,2)/2;
+
+            var ar =
+                Math.sin(
+                    Math.PI*p
+                )*
+                arc;
+
+            var x =
+                a.x+
+                dx*e;
+
+            var y =
+                a.y+
+                dy*e-
+                ar;
+
+            var ang =
+                Math.atan2(
+                    dy-
+                    Math.cos(
+                        Math.PI*p
+                    )*
+                    Math.PI*
+                    arc,
+                    dx
+                )*
+                180/
+                Math.PI;
+
+            el.style.left =
+                x+'px';
+
+            el.style.top =
+                y+'px';
+
+            el.style.transform =
+                'rotate('+
+                ang+
+                'deg)';
+
+            if(p<1){
+                requestAnimationFrame(f);
+            }
+            else{
+                resolve();
+            }
+        }
+
+        requestAnimationFrame(f);
+    });
+}
+
+
+function boom(p,text){
+
+    var l =
+        fxLayer();
+
+    if(!l){
+        return;
+    }
+
+    var e =
+        document.createElement(
+            'div'
+        );
+
+    e.className =
+        'gd10-explosion';
+
+    e.style.left =
+        p.x+'px';
+
+    e.style.top =
+        p.y+'px';
+
+    l.appendChild(e);
+
+    var lb =
+        document.createElement(
+            'div'
+        );
+
+    lb.className =
+        'gd10-label';
+
+    lb.textContent =
+        text;
+
+    lb.style.left =
+        p.x+'px';
+
+    lb.style.top =
+        (p.y-28)+'px';
+
+    l.appendChild(lb);
+
+    setTimeout(function(){
+
+        e.remove();
+        lb.remove();
+
+    },2300);
+}
+
+
+async function playMissile(
+    target,
+    intercepted
+){
+
+    var l =
+        fxLayer();
+
+    if(!l){
+        return;
+    }
+
+    var a =
+        toScreen(
+            mapCenter(
+                playerId()
+            )
+        );
+
+    var b =
+        toScreen(
+            mapCenter(
+                target
+            )
+        );
+
+    var dist =
+        Math.hypot(
+            b.x-a.x,
+            b.y-a.y
+        );
+
+    var arc =
+        Math.min(
+            120,
+            Math.max(
+                35,
+                dist*.16
+            )
+        );
+
+    var m =
+        document.createElement(
+            'div'
+        );
+
+    m.className =
+        'gd10-missile';
+
+    l.appendChild(m);
+
+    if(!intercepted){
+
+        await projectile(
+            m,
+            a,
+            b,
+            1700,
+            arc
+        );
+
+        m.remove();
+
+        boom(
+            b,
+            '💥 اصابت ثبت شد'
+        );
+
+        return;
+    }
+
+    var ip = {
+        x:
+            a.x+
+            (b.x-a.x)*.78,
+
+        y:
+            a.y+
+            (b.y-a.y)*.78-
+            Math.sin(
+                Math.PI*.78
+            )*
+            arc
+    };
+
+    var ds = {
+        x:
+            b.x+
+            (
+                Math.random()*50-
+                25
+            ),
+
+        y:
+            b.y+
+            35
+    };
+
+    var it =
+        document.createElement(
+            'div'
+        );
+
+    it.className =
+        'gd10-interceptor';
+
+    l.appendChild(it);
+
+    var p1 =
+        projectile(
+            m,
+            a,
+            ip,
+            1450,
+            arc*.72
+        );
+
+    await new Promise(function(r){
+        setTimeout(
+            r,
+            650
+        );
+    });
+
+    var p2 =
+        projectile(
+            it,
+            ds,
+            ip,
+            760,
+            22
+        );
+
+    await Promise.all([
+        p1,
+        p2
+    ]);
+
+    m.remove();
+
+    it.remove();
+
+    boom(
+        ip,
+        '🛡️ موشک رهگیری شد'
+    );
 }
 
 
@@ -5226,1219 +2424,44 @@ function GD9WarWith(
    MISSILE INVENTORY
 ========================================================= */
 
-function GD9Missiles()
-{
+function missileList(){
+
     if(
-        typeof EQUIPMENT===
-        "undefined"||
         !Array.isArray(
-            EQUIPMENT
+            window.EQUIPMENT
         )
     ){
-        return[];
+        return [];
     }
 
-    return EQUIPMENT.filter(
-        equipment=>
-            equipment.category===
-            "missile"&&
-            GD9Number(
-                state.inventory[
-                    equipment.id
-                ],
-                0
+    return window.EQUIPMENT
+    .filter(function(e){
+
+        return (
+            e.category === 'missile' &&
+            n(
+                S.inventory[e.id]
             )>
             0
-    );
+        );
+    });
 }
 
 
-/* =========================================================
-   TARGET DEFENSE
-========================================================= */
+function defense(id){
 
-function GD9TargetDefense(
-    countryCode
-)
-{
-    const ai=
-        GD9AI(
-            countryCode
-        );
+    var ai =
+        S.ai && S.ai[id]
+        ? S.ai[id]
+        : {};
 
-    let defense=
-        GD9Number(
-            ai.technology,
-            50
-        )*
-        .25+
-        GD9Number(
-            ai.military,
-            50
-        )*
-        .18+
-        GD9Number(
-            ai.readiness,
-            60
-        )*
-        .20;
-
-    const countryBonus=
-    {
-        US:
-            20,
-
-        RU:
-            19,
-
-        CN:
-            18,
-
-        IL:
-            22,
-
-        KR:
-            16,
-
-        JP:
-            15,
-
-        DE:
-            12,
-
-        FR:
-            12,
-
-        GB:
-            12,
-
-        IN:
-            11,
-
-        SA:
-            10,
-
-        TR:
-            9
-    }[
-        countryCode
-    ]||
-    0;
-
-    defense+=
-        countryBonus;
-
-    return GD9Clamp(
-        defense,
+    return clamp(
+        n(ai.technology,50)*.25 +
+        n(ai.military,50)*.18 +
+        n(ai.readiness,60)*.20,
         5,
-        95
+        90
     );
-}
-
-
-/* =========================================================
-   MAP CENTER READ ONLY
-========================================================= */
-
-function GD9MapCenter(
-    code
-)
-{
-    try{
-
-        if(
-            typeof mapCenters!==
-            "undefined"&&
-            mapCenters&&
-            mapCenters[
-                code
-            ]
-        ){
-            return mapCenters[
-                code
-            ];
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    try{
-
-        if(
-            typeof mapCenter===
-            "function"
-        ){
-            const result=
-                mapCenter(
-                    code
-                );
-
-            if(
-                result
-            ){
-                return result;
-            }
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    return[
-        800,
-        400
-    ];
-}
-
-
-/* =========================================================
-   PERFECT SVG LOCAL POINT -> SCREEN POINT
-========================================================= */
-
-function GD9MapPointToScreen(
-    point
-)
-{
-    const svg=
-        document.getElementById(
-            "worldSvg"
-        );
-
-    const camera=
-        document.getElementById(
-            "camera"
-        );
-
-    const viewport=
-        document.getElementById(
-            "mapViewport"
-        );
-
-    if(
-        !svg||
-        !camera||
-        !viewport
-    ){
-        return{
-            x:
-                0,
-
-            y:
-                0
-        };
-    }
-
-    const matrix=
-        camera.getScreenCTM();
-
-    if(
-        !matrix
-    ){
-        return{
-            x:
-                0,
-
-            y:
-                0
-        };
-    }
-
-    let screenX=
-        0;
-
-    let screenY=
-        0;
-
-    if(
-        typeof DOMPoint===
-        "function"
-    ){
-        const transformed=
-            new DOMPoint(
-                point[0],
-                point[1]
-            )
-            .matrixTransform(
-                matrix
-            );
-
-        screenX=
-            transformed.x;
-
-        screenY=
-            transformed.y;
-    }
-    else{
-        const svgPoint=
-            svg.createSVGPoint();
-
-        svgPoint.x=
-            point[0];
-
-        svgPoint.y=
-            point[1];
-
-        const transformed=
-            svgPoint.matrixTransform(
-                matrix
-            );
-
-        screenX=
-            transformed.x;
-
-        screenY=
-            transformed.y;
-    }
-
-    const viewportRect=
-        viewport.getBoundingClientRect();
-
-    return{
-        x:
-            screenX-
-            viewportRect.left,
-
-        y:
-            screenY-
-            viewportRect.top
-    };
-}
-
-
-/* =========================================================
-   MISSILE FX LAYER
-========================================================= */
-
-function GD9FxLayer()
-{
-    let layer=
-        document.getElementById(
-            "gd9MissileFxLayer"
-        );
-
-    if(
-        layer
-    ){
-        return layer;
-    }
-
-    const viewport=
-        document.getElementById(
-            "mapViewport"
-        );
-
-    if(
-        !viewport
-    ){
-        return null;
-    }
-
-    layer=
-        document.createElement(
-            "div"
-        );
-
-    layer.id=
-        "gd9MissileFxLayer";
-
-    viewport.appendChild(
-        layer
-    );
-
-    return layer;
-}
-
-
-/* =========================================================
-   CREATE TRAIL
-========================================================= */
-
-function GD9CreateTrail(
-    from,
-    to,
-    blue=
-        false
-)
-{
-    const layer=
-        GD9FxLayer();
-
-    if(
-        !layer
-    ){
-        return null;
-    }
-
-    const dx=
-        to.x-
-        from.x;
-
-    const dy=
-        to.y-
-        from.y;
-
-    const length=
-        Math.hypot(
-            dx,
-            dy
-        );
-
-    const angle=
-        Math.atan2(
-            dy,
-            dx
-        )*
-        180/
-        Math.PI;
-
-    const trail=
-        document.createElement(
-            "div"
-        );
-
-    trail.className=
-        "gd9-trail"+
-        (
-            blue
-            ?
-            " blue"
-            :
-            ""
-        );
-
-    trail.style.left=
-        from.x+
-        "px";
-
-    trail.style.top=
-        from.y+
-        "px";
-
-    trail.style.width=
-        length+
-        "px";
-
-    trail.style.transform=
-        "rotate("+
-        angle+
-        "deg)";
-
-    layer.appendChild(
-        trail
-    );
-
-    return trail;
-}
-
-
-/* =========================================================
-   PROJECTILE ANIMATION
-========================================================= */
-
-function GD9AnimateProjectile(
-    element,
-    from,
-    to,
-    duration,
-    arcHeight
-)
-{
-    const dx=
-        to.x-
-        from.x;
-
-    const dy=
-        to.y-
-        from.y;
-
-    const start=
-        performance.now();
-
-    return new Promise(
-        resolve=>
-        {
-            function frame(
-                time
-            ){
-                const linear=
-                    GD9Clamp(
-                        (
-                            time-
-                            start
-                        )/
-                        duration,
-                        0,
-                        1
-                    );
-
-                const eased=
-                    linear<
-                    .5
-                    ?
-                    2*
-                    linear*
-                    linear
-                    :
-                    1-
-                    Math.pow(
-                        -2*
-                        linear+
-                        2,
-                        2
-                    )/
-                    2;
-
-                const arc=
-                    Math.sin(
-                        Math.PI*
-                        linear
-                    )*
-                    arcHeight;
-
-                const x=
-                    from.x+
-                    dx*
-                    eased;
-
-                const y=
-                    from.y+
-                    dy*
-                    eased-
-                    arc;
-
-                const arcDerivative=
-                    -Math.cos(
-                        Math.PI*
-                        linear
-                    )*
-                    Math.PI*
-                    arcHeight;
-
-                const angle=
-                    Math.atan2(
-                        dy+
-                        arcDerivative,
-                        dx
-                    )*
-                    180/
-                    Math.PI;
-
-                element.style.left=
-                    x+
-                    "px";
-
-                element.style.top=
-                    y+
-                    "px";
-
-                element.style.transform=
-                    "rotate("+
-                    angle+
-                    "deg)";
-
-                if(
-                    linear<
-                    1
-                ){
-                    requestAnimationFrame(
-                        frame
-                    );
-                }
-                else{
-                    resolve();
-                }
-            }
-
-            requestAnimationFrame(
-                frame
-            );
-        }
-    );
-}
-
-
-/* =========================================================
-   EXPLOSION
-========================================================= */
-
-function GD9Explosion(
-    point
-)
-{
-    const layer=
-        GD9FxLayer();
-
-    if(
-        !layer
-    ){
-        return;
-    }
-
-    const explosion=
-        document.createElement(
-            "div"
-        );
-
-    explosion.className=
-        "gd9-explosion";
-
-    explosion.style.left=
-        point.x+
-        "px";
-
-    explosion.style.top=
-        point.y+
-        "px";
-
-    layer.appendChild(
-        explosion
-    );
-
-    setTimeout(
-        function(){
-
-            explosion.remove();
-
-        },
-        1000
-    );
-}
-
-
-/* =========================================================
-   INTERCEPT RING
-========================================================= */
-
-function GD9InterceptRing(
-    point
-)
-{
-    const layer=
-        GD9FxLayer();
-
-    if(
-        !layer
-    ){
-        return;
-    }
-
-    const ring=
-        document.createElement(
-            "div"
-        );
-
-    ring.className=
-        "gd9-intercept-ring";
-
-    ring.style.left=
-        point.x+
-        "px";
-
-    ring.style.top=
-        point.y+
-        "px";
-
-    layer.appendChild(
-        ring
-    );
-
-    setTimeout(
-        function(){
-
-            ring.remove();
-
-        },
-        1000
-    );
-}
-
-
-/* =========================================================
-   RESULT LABEL
-========================================================= */
-
-function GD9ResultLabel(
-    point,
-    text,
-    type
-)
-{
-    const layer=
-        GD9FxLayer();
-
-    if(
-        !layer
-    ){
-        return;
-    }
-
-    const label=
-        document.createElement(
-            "div"
-        );
-
-    label.className=
-        "gd9-result-label "+
-        type;
-
-    label.textContent=
-        text;
-
-    label.style.left=
-        point.x+
-        "px";
-
-    label.style.top=
-        (
-            point.y-
-            28
-        )+
-        "px";
-
-    layer.appendChild(
-        label
-    );
-
-    setTimeout(
-        function(){
-
-            label.remove();
-
-        },
-        2500
-    );
-}
-
-
-/* =========================================================
-   MISSILE ANIMATION
-========================================================= */
-
-async function GD9PlayMissile(
-    targetCode,
-    intercepted
-)
-{
-    const layer=
-        GD9FxLayer();
-
-    if(
-        !layer
-    ){
-        return;
-    }
-
-    const sourceMap=
-        GD9MapCenter(
-            GD9PlayerCode()
-        );
-
-    const targetMap=
-        GD9MapCenter(
-            targetCode
-        );
-
-    const source=
-        GD9MapPointToScreen(
-            sourceMap
-        );
-
-    const target=
-        GD9MapPointToScreen(
-            targetMap
-        );
-
-    const distance=
-        Math.hypot(
-            target.x-
-            source.x,
-            target.y-
-            source.y
-        );
-
-    const arcHeight=
-        Math.min(
-            120,
-            Math.max(
-                35,
-                distance*
-                .16
-            )
-        );
-
-    const missile=
-        document.createElement(
-            "div"
-        );
-
-    missile.className=
-        "gd9-missile";
-
-    layer.appendChild(
-        missile
-    );
-
-    if(
-        intercepted
-    ){
-        const interceptProgress=
-            .74+
-            Math.random()*
-            .10;
-
-        const interceptPoint=
-        {
-            x:
-                source.x+
-                (
-                    target.x-
-                    source.x
-                )*
-                interceptProgress,
-
-            y:
-                source.y+
-                (
-                    target.y-
-                    source.y
-                )*
-                interceptProgress-
-                Math.sin(
-                    Math.PI*
-                    interceptProgress
-                )*
-                arcHeight
-        };
-
-        const defenseStart=
-        {
-            x:
-                target.x+
-                GD9Random(
-                    -35,
-                    35
-                ),
-
-            y:
-                target.y+
-                GD9Random(
-                    18,
-                    45
-                )
-        };
-
-        const interceptor=
-            document.createElement(
-                "div"
-            );
-
-        interceptor.className=
-            "gd9-interceptor";
-
-        layer.appendChild(
-            interceptor
-        );
-
-        const missileTrail=
-            GD9CreateTrail(
-                source,
-                interceptPoint,
-                false
-            );
-
-        const interceptorTrail=
-            GD9CreateTrail(
-                defenseStart,
-                interceptPoint,
-                true
-            );
-
-        const missileFlight=
-            GD9AnimateProjectile(
-                missile,
-                source,
-                interceptPoint,
-                1500,
-                arcHeight*
-                .68
-            );
-
-        await new Promise(
-            resolve=>
-                setTimeout(
-                    resolve,
-                    650
-                )
-        );
-
-        const interceptorFlight=
-            GD9AnimateProjectile(
-                interceptor,
-                defenseStart,
-                interceptPoint,
-                820,
-                24
-            );
-
-        await Promise.all(
-            [
-                missileFlight,
-                interceptorFlight
-            ]
-        );
-
-        missile.remove();
-
-        interceptor.remove();
-
-        if(
-            missileTrail
-        ){
-            missileTrail.remove();
-        }
-
-        if(
-            interceptorTrail
-        ){
-            interceptorTrail.remove();
-        }
-
-        GD9InterceptRing(
-            interceptPoint
-        );
-
-        GD9Explosion(
-            interceptPoint
-        );
-
-        GD9ResultLabel(
-            interceptPoint,
-            "🛡️ موشک رهگیری شد",
-            "intercepted"
-        );
-
-        return;
-    }
-
-    const trail=
-        GD9CreateTrail(
-            source,
-            target,
-            false
-        );
-
-    await GD9AnimateProjectile(
-        missile,
-        source,
-        target,
-        1800,
-        arcHeight
-    );
-
-    missile.remove();
-
-    if(
-        trail
-    ){
-        trail.remove();
-    }
-
-    GD9Explosion(
-        target
-    );
-
-    GD9ResultLabel(
-        target,
-        "💥 اصابت ثبت شد",
-        "hit"
-    );
-}
-
-
-/* =========================================================
-   LAUNCH MISSILE
-========================================================= */
-
-async function GD9LaunchMissile(
-    targetCode,
-    missileId
-)
-{
-    GD9Migrate();
-
-    if(
-        !GD9WarWith(
-            targetCode
-        )
-    ){
-        GD9Toast(
-            "برای حمله موشکی باید با کشور هدف در جنگ باشی"
-        );
-
-        return;
-    }
-
-    if(
-        typeof EQUIPMENT===
-        "undefined"
-    ){
-        return;
-    }
-
-    const missile=
-        EQUIPMENT.find(
-            item=>
-                item.id===
-                missileId&&
-                item.category===
-                "missile"
-        );
-
-    if(
-        !missile
-    ){
-        GD9Toast(
-            "موشک معتبر نیست"
-        );
-
-        return;
-    }
-
-    const stock=
-        GD9Number(
-            state.inventory[
-                missileId
-            ],
-            0
-        );
-
-    if(
-        stock<=
-        0
-    ){
-        GD9Toast(
-            "این موشک در انبار موجود نیست"
-        );
-
-        return;
-    }
-
-    state.inventory[
-        missileId
-    ]=
-        stock-
-        1;
-
-    const defense=
-        GD9TargetDefense(
-            targetCode
-        );
-
-    const attackerTechnology=
-        GD9Number(
-            state.nation.technology,
-            50
-        );
-
-    const missilePower=
-        GD9Number(
-            missile.power,
-            60
-        );
-
-    let interceptChance=
-        defense*
-        .70-
-        attackerTechnology*
-        .11-
-        missilePower*
-        .07+
-        17;
-
-    interceptChance=
-        GD9Clamp(
-            interceptChance,
-            7,
-            82
-        );
-
-    const intercepted=
-        GD9Chance(
-            interceptChance
-        );
-
-    const record=
-    {
-        id:
-            "MISSILE-"+
-            Date.now()+
-            "-"+
-            Math.random()
-            .toString(
-                36
-            )
-            .slice(
-                2
-            ),
-
-        targetCode,
-
-        missileId,
-
-        intercepted,
-
-        interceptChance,
-
-        date:
-            GD9DateKey()
-    };
-
-    state.missileHistory.unshift(
-        record
-    );
-
-    if(
-        state.missileHistory.length>
-        80
-    ){
-        state.missileHistory.length=
-            80;
-    }
-
-    GD9Save();
-
-    try{
-
-        if(
-            typeof closeModal===
-            "function"
-        ){
-            closeModal();
-        }
-
-    }
-    catch(
-        error
-    ){
-    }
-
-    await GD9PlayMissile(
-        targetCode,
-        intercepted
-    );
-
-    const targetAI=
-        GD9AI(
-            targetCode
-        );
-
-    if(
-        intercepted
-    ){
-        GD9PushAINews(
-            {
-                from:
-                    targetCode,
-
-                type:
-                    "military",
-
-                title:
-                    "رهگیری موشک",
-
-                text:
-                    `سامانه دفاعی ${GD9CountryName(targetCode)} یک حمله موشکی را در شبیه‌سازی رهگیری کرد.`,
-
-                importance:
-                    3
-            }
-        );
-
-        GD9Toast(
-            "🛡️ موشک رهگیری شد"
-        );
-    }
-    else{
-        const abstractDamage=
-            GD9Clamp(
-                missilePower*
-                .10+
-                GD9Random(
-                    1,
-                    5
-                ),
-                2,
-                15
-            );
-
-        targetAI.readiness=
-            GD9Clamp(
-                GD9Number(
-                    targetAI.readiness,
-                    60
-                )-
-                abstractDamage*
-                .35,
-                10,
-                100
-            );
-
-        targetAI.stability=
-            GD9Clamp(
-                GD9Number(
-                    targetAI.stability,
-                    60
-                )-
-                abstractDamage*
-                .12,
-                10,
-                100
-            );
-
-        targetAI.military=
-            GD9Clamp(
-                GD9Number(
-                    targetAI.military,
-                    50
-                )-
-                abstractDamage*
-                .06,
-                10,
-                160
-            );
-
-        GD9PushAINews(
-            {
-                from:
-                    targetCode,
-
-                type:
-                    "military",
-
-                title:
-                    "اصابت موشکی",
-
-                text:
-                    `یک حمله موشکی در شبیه‌سازی به ${GD9CountryName(targetCode)} اصابت کرد و بخشی از آمادگی آن کشور کاهش یافت.`,
-
-                importance:
-                    3
-            }
-        );
-
-        GD9Toast(
-            "💥 موشک اصابت کرد"
-        );
-    }
-
-    GD9Save();
-
-    GD9Render();
 }
 
 
@@ -6446,34 +2469,26 @@ async function GD9LaunchMissile(
    MISSILE PANEL
 ========================================================= */
 
-function GD9OpenMissilePanel(
-    targetCode
-)
-{
+window.openGD10Missiles =
+function(target){
+
     if(
-        !GD9WarWith(
-            targetCode
-        )
+        !warWith(target)
     ){
-        GD9Toast(
-            "کشور هدف در جنگ با شما نیست"
+        toast2(
+            'کشور هدف در جنگ با شما نیست',
+            'warn'
         );
 
         return;
     }
 
-    const missiles=
-        GD9Missiles();
+    var list =
+        missileList();
 
-    const defense=
-        GD9TargetDefense(
-            targetCode
-        );
-
-    GD9OpenModal(
-        "🚀 حمله موشکی",
+    var html =
         '<div class="notice warn">'+
-        'نتیجه حمله فقط یک شبیه‌سازی گیم‌پلی است. انیمیشن روی همان نقشه فعلی نمایش داده می‌شود و خود نقشه هیچ تغییری نمی‌کند.'+
+        'نتیجه حمله کاملاً گیم‌پلی و انتزاعی است. خود نقشه تغییر نمی‌کند.'+
         '</div>'+
 
         '<div class="kpis">'+
@@ -6481,591 +2496,480 @@ function GD9OpenMissilePanel(
         '<div class="kpi">'+
         '<small>هدف</small>'+
         '<b>'+
-        GD9Flag(
-            targetCode
-        )+
-        " "+
-        GD9Safe(
-            GD9CountryName(
-                targetCode
-            )
-        )+
+        cFlag(target)+
+        ' '+
+        esc(cName(target))+
         '</b>'+
         '</div>'+
 
         '<div class="kpi">'+
-        '<small>برآورد دفاع</small>'+
+        '<small>دفاع</small>'+
         '<b>'+
-        defense.toFixed(
-            0
-        )+
-        '/100</b>'+
+        defense(target).toFixed(0)+
+        '/100'+
+        '</b>'+
         '</div>'+
 
         '</div>'+
 
-        (
-            missiles.length
-            ?
-            '<div class="grid">'+
-            missiles
-            .map(
-                missile=>
-                    '<button class="card" onclick="launchGD9Missile(\''+
-                    targetCode+
-                    '\',\''+
-                    missile.id+
-                    '\')">'+
+        '<div class="grid">';
 
-                    '<div class="card-head">'+
-                    '<div class="icon">'+
-                    GD9Safe(
-                        missile.icon||
-                        "🚀"
-                    )+
-                    '</div>'+
-                    '<div>'+
-                    '<div class="card-title">'+
-                    GD9Safe(
-                        missile.name
-                    )+
-                    '</div>'+
-                    '<div class="card-sub">'+
-                    'موجودی '+
-                    GD9Number(
-                        state.inventory[
-                            missile.id
-                        ],
-                        0
-                    )+
-                    " • قدرت گیم‌پلی "+
-                    GD9Number(
-                        missile.power,
-                        0
-                    )+
-                    '</div>'+
-                    '</div>'+
-                    '</div>'+
+    list.forEach(function(e){
 
-                    '</button>'
-            )
-            .join("")+
-            '</div>'
-            :
-            '<div class="notice bad">هیچ موشکی در انبار موجود نیست.</div>'
-        )
+        html +=
+            '<button class="card" onclick="launchGD10Missile(\''+
+            target+
+            '\',\''+
+            e.id+
+            '\')">'+
+
+            '<div class="card-title">'+
+            esc(e.icon || '🚀')+
+            ' '+
+            esc(e.name)+
+            '</div>'+
+
+            '<div class="card-sub">'+
+            'موجودی '+
+            n(S.inventory[e.id])+
+            ' • قدرت '+
+            n(e.power)+
+            '</div>'+
+
+            '</button>';
+    });
+
+    html +=
+        '</div>';
+
+    if(!list.length){
+        html +=
+            '<div class="notice bad">'+
+            'موشکی در انبار موجود نیست.'+
+            '</div>';
+    }
+
+    openM(
+        '🚀 حمله موشکی',
+        html
     );
-}
+};
 
 
 /* =========================================================
-   MISSILE HISTORY
+   MISSILE LAUNCH
 ========================================================= */
 
-function GD9OpenMissileHistory()
-{
-    GD9Migrate();
+window.launchGD10Missile =
+async function(target,mid){
 
-    const records=
-        state.missileHistory;
-
-    GD9OpenModal(
-        "🚀 گزارش حملات موشکی",
-        records.length
-        ?
-        records
-        .slice(
-            0,
-            40
-        )
-        .map(
-            record=>
-            {
-                const equipment=
-                    typeof EQUIPMENT!==
-                    "undefined"
-                    ?
-                    EQUIPMENT.find(
-                        item=>
-                            item.id===
-                            record.missileId
-                    )
-                    :
-                    null;
-
-                return(
-                    '<div class="card gd9-impact-report '+
-                    (
-                        record.intercepted
-                        ?
-                        "intercepted"
-                        :
-                        ""
-                    )+
-                    '">'+
-
-                    '<div class="card-title">'+
-                    (
-                        record.intercepted
-                        ?
-                        "🛡️ رهگیری"
-                        :
-                        "💥 اصابت"
-                    )+
-                    " • "+
-                    GD9Flag(
-                        record.targetCode
-                    )+
-                    " "+
-                    GD9Safe(
-                        GD9CountryName(
-                            record.targetCode
-                        )
-                    )+
-                    '</div>'+
-
-                    '<div class="card-desc">'+
-                    'موشک: '+
-                    GD9Safe(
-                        equipment
-                        ?
-                        equipment.name
-                        :
-                        record.missileId
-                    )+
-                    '<br>'+
-                    'احتمال رهگیری گیم‌پلی: '+
-                    GD9Number(
-                        record.interceptChance
-                    )
-                    .toFixed(
-                        0
-                    )+
-                    '%'+
-                    '<br>'+
-                    'تاریخ: '+
-                    GD9Safe(
-                        record.date
-                    )+
-                    '</div>'+
-
-                    '</div>'
-                );
-            }
-        )
-        .join("")
-        :
-        '<div class="notice">هنوز حمله موشکی ثبت نشده است.</div>'
-    );
-}
-
-
-/* =========================================================
-   PRESERVE ORIGINAL COUNTRY PANEL + ADD ACTIONS
-========================================================= */
-
-function GD9OpenCountryPanel(
-    code
-)
-{
     if(
-        GD9OriginalOpenCountryPanel
+        !warWith(target)
     ){
-        GD9OriginalOpenCountryPanel(
-            code
+        return;
+    }
+
+    var e =
+        Array.isArray(
+            window.EQUIPMENT
+        )
+        ?
+        window.EQUIPMENT.find(function(x){
+            return (
+                x.id === mid &&
+                x.category === 'missile'
+            );
+        })
+        :
+        null;
+
+    if(
+        !e ||
+        n(S.inventory[mid])<=0
+    ){
+        toast2(
+            'موشک موجود نیست',
+            'bad'
+        );
+
+        return;
+    }
+
+    S.inventory[mid] -=
+        1;
+
+    var ic =
+        clamp(
+            defense(target)*.7 -
+            n(S.nation.technology,50)*.11 -
+            n(e.power,60)*.07 +
+            17,
+            7,
+            82
+        );
+
+    var intercepted =
+        chance(ic);
+
+    S.missileHistory.unshift({
+        id:
+            'M-'+
+            Date.now(),
+
+        targetCode:
+            target,
+
+        missileId:
+            mid,
+
+        intercepted:
+            intercepted,
+
+        interceptChance:
+            ic,
+
+        date:
+            dayKey()
+    });
+
+    save();
+
+    try{
+        if(
+            typeof window.closeModal === 'function'
+        ){
+            window.closeModal();
+        }
+    }catch(err){}
+
+    await playMissile(
+        target,
+        intercepted
+    );
+
+    var ai =
+        S.ai && S.ai[target]
+        ? S.ai[target]
+        : {};
+
+    if(intercepted){
+
+        pushNews(
+            target,
+            'military',
+            'رهگیری موشک',
+            'سامانه دفاعی '+
+            cName(target)+
+            ' یک حمله موشکی را رهگیری کرد.',
+            3
+        );
+
+        toast2(
+            '🛡️ رهگیری شد',
+            'warn'
         );
     }
     else{
-        GD9OpenModal(
-            GD9Flag(
-                code
-            )+
-            " "+
-            GD9Safe(
-                GD9CountryName(
-                    code
-                )
-            ),
-            '<div class="notice">اطلاعات کشور</div>'
+
+        ai.readiness =
+            clamp(
+                n(ai.readiness,60)-3,
+                10,
+                100
+            );
+
+        ai.stability =
+            clamp(
+                n(ai.stability,60)-1,
+                10,
+                100
+            );
+
+        pushNews(
+            target,
+            'military',
+            'اصابت موشکی',
+            'حمله موشکی در شبیه‌سازی به '+
+            cName(target)+
+            ' اصابت کرد.',
+            3
+        );
+
+        toast2(
+            '💥 اصابت کرد',
+            'bad'
         );
     }
 
-    if(
-        code===
-        GD9PlayerCode()
-    ){
-        return;
-    }
+    save();
 
-    setTimeout(
-        function(){
+    render();
+};
 
-            const body=
+
+/* =========================================================
+   PRESERVE COUNTRY PANEL
+========================================================= */
+
+var oldCountry =
+    typeof window.openCountryPanel === 'function'
+    ? window.openCountryPanel
+    : null;
+
+
+if(oldCountry){
+
+    window.openCountryPanel =
+    function(id){
+
+        oldCountry(id);
+
+        if(
+            id === playerId()
+        ){
+            return;
+        }
+
+        setTimeout(function(){
+
+            var body =
                 document.getElementById(
-                    "modalBody"
+                    'modalBody'
                 );
 
-            if(
-                !body
-            ){
+            if(!body){
                 return;
             }
 
-            const old=
-                body.querySelector(
-                    "#gd9CountryExtraActions"
+            var old =
+                document.getElementById(
+                    'gd10Extra'
                 );
 
-            if(
-                old
-            ){
+            if(old){
                 old.remove();
             }
 
-            const container=
+            var d =
                 document.createElement(
-                    "div"
+                    'div'
                 );
 
-            container.id=
-                "gd9CountryExtraActions";
+            d.id =
+                'gd10Extra';
 
-            container.className=
-                "gd9-additional-actions";
+            d.innerHTML =
+                '<div class="section-title">'+
+                'اقدامات جدید'+
+                '</div>'+
 
-            const war=
-                GD9WarWith(
-                    code
-                );
-
-            container.innerHTML=
-                '<div class="section-title">جزئیات و اقدامات جدید</div>'+
                 '<div class="row">'+
 
-                '<button class="btn blue" onclick="openTradeHub(\'food\',\''+
-                code+
-                '\')">📦 تجارت همه منابع</button>'+
+                '<button class="btn blue" onclick="openGD10Trade(\'food\',\''+
+                id+
+                '\')">'+
+                '📦 تجارت منابع'+
+                '</button>'+
 
                 (
-                    war
+                    warWith(id)
                     ?
-                    '<button class="btn red" onclick="openGD9MissilePanel(\''+
-                    code+
-                    '\')">🚀 حمله موشکی</button>'
+                    '<button class="btn red" onclick="openGD10Missiles(\''+
+                    id+
+                    '\')">'+
+                    '🚀 حمله موشکی'+
+                    '</button>'
                     :
-                    ""
+                    ''
                 )+
+
+                '<button class="btn purple" onclick="openGD10News()">'+
+                '🤖 اخبار و AI'+
+                '</button>'+
 
                 '</div>';
 
-            body.appendChild(
-                container
-            );
+            body.appendChild(d);
 
-        },
-        0
-    );
+        },0);
+    };
 }
 
 
 /* =========================================================
-   INSTALL DOCK BUTTONS
+   DAILY DETAIL UPDATE
 ========================================================= */
 
-function GD9InstallDock()
-{
-    const dock=
-        document.getElementById(
-            "dock"
-        );
+function daily(){
+
+    ensureState();
+
+    var key =
+        dayKey();
 
     if(
-        !dock
+        S.gd10.lastDay === key
     ){
         return;
     }
 
-    if(
-        !document.getElementById(
-            "gd9TradeDock"
-        )
-    ){
-        const trade=
-            document.createElement(
-                "button"
-            );
+    S.gd10.lastDay =
+        key;
 
-        trade.id=
-            "gd9TradeDock";
+    countryIds()
+    .forEach(function(id){
 
-        trade.className=
-            "dock-btn";
+        if(
+            id === playerId()
+        ){
+            return;
+        }
 
-        trade.innerHTML=
-            '<span>📦</span><small>تجارت</small>';
+        RES.forEach(function(r){
 
-        trade.addEventListener(
-            "click",
-            function(){
-
-                GD9OpenTradeHub(
-                    "food"
+            var v =
+                aiStock(
+                    id,
+                    r.id
                 );
 
-            }
+            setAiStock(
+                id,
+                r.id,
+                v+
+                (
+                    Math.random()-.45
+                )*
+                .35
+            );
+        });
+    });
+
+    resolveTrades();
+
+    if(
+        n(
+            S.date &&
+            S.date.day,
+            1
+        )%
+        2 ===
+        0
+    ){
+        genNews();
+    }
+
+    save();
+}
+
+
+/* =========================================================
+   WRAP MAIN DAILY SIMULATION SAFELY
+========================================================= */
+
+var oldSim =
+    typeof window.processDailySimulation === 'function'
+    ? window.processDailySimulation
+    : null;
+
+
+if(
+    oldSim &&
+    !oldSim.__gd10wrapped
+){
+
+    var wrap =
+    function(){
+
+        var result =
+            oldSim.apply(
+                this,
+                arguments
+            );
+
+        daily();
+
+        return result;
+    };
+
+    wrap.__gd10wrapped =
+        true;
+
+    window.processDailySimulation =
+        wrap;
+}
+
+
+/* =========================================================
+   DOCK BUTTONS
+========================================================= */
+
+function installDock(){
+
+    var dock =
+        document.getElementById(
+            'dock'
         );
 
-        dock.appendChild(
-            trade
-        );
+    if(!dock){
+        return;
     }
 
     if(
         !document.getElementById(
-            "gd9MissileDock"
+            'gd10NewsBtn'
         )
     ){
-        const missile=
+        var b =
             document.createElement(
-                "button"
+                'button'
             );
 
-        missile.id=
-            "gd9MissileDock";
+        b.id =
+            'gd10NewsBtn';
 
-        missile.className=
-            "dock-btn";
+        b.className =
+            'dock-btn';
 
-        missile.innerHTML=
-            '<span>🚀</span><small>گزارش موشک</small>';
+        b.innerHTML =
+            '<span>🤖</span>'+
+            '<small>اخبار AI</small>';
 
-        missile.addEventListener(
-            "click",
-            GD9OpenMissileHistory
-        );
+        b.onclick =
+            window.openGD10News;
 
-        dock.appendChild(
-            missile
-        );
-    }
-}
-
-
-/* =========================================================
-   DETAIL DAILY PROCESS WITH DUPLICATE PROTECTION
-========================================================= */
-
-function GD9DailyDetailProcess()
-{
-    GD9Migrate();
-
-    const dateKey=
-        GD9DateKey();
-
-    if(
-        state.gd9.lastDetailDate===
-        dateKey
-    ){
-        return;
-    }
-
-    state.gd9.lastDetailDate=
-        dateKey;
-
-    GD9ProcessAIResources();
-
-    GD9ResolveTradeOffers();
-
-    const day=
-        GD9Number(
-            state.date.day,
-            1
-        );
-
-    if(
-        day%
-        2===
-        0
-    ){
-        GD9GenerateAINews();
+        dock.appendChild(b);
     }
 
     if(
-        day%
-        3===
-        0&&
-        GD9Chance(
-            58
+        !document.getElementById(
+            'gd10TradeBtn'
         )
     ){
-        GD9GenerateAIProposal();
+        var t =
+            document.createElement(
+                'button'
+            );
+
+        t.id =
+            'gd10TradeBtn';
+
+        t.className =
+            'dock-btn';
+
+        t.innerHTML =
+            '<span>📦</span>'+
+            '<small>تجارت+</small>';
+
+        t.onclick =
+            function(){
+                window.openGD10Trade(
+                    'food'
+                );
+            };
+
+        dock.appendChild(t);
     }
-
-    GD9Save();
-}
-
-
-/* =========================================================
-   NEXT DAY WRAPPER
-========================================================= */
-
-function GD9WrappedNextDay()
-{
-    if(
-        GD9OriginalNextDay
-    ){
-        GD9OriginalNextDay();
-    }
-
-    GD9DailyDetailProcess();
-}
-
-
-/* =========================================================
-   PROCESS SIMULATION WRAPPER
-========================================================= */
-
-function GD9WrappedDailySimulation()
-{
-    if(
-        GD9OriginalProcessDailySimulation
-    ){
-        GD9OriginalProcessDailySimulation();
-    }
-
-    GD9DailyDetailProcess();
-}
-
-
-/* =========================================================
-   START GAME WRAPPER
-========================================================= */
-
-const GD9OriginalStartGame=
-    typeof window.startGame===
-    "function"
-    ?
-    window.startGame
-    :
-    null;
-
-
-function GD9WrappedStartGame(
-    code
-)
-{
-    if(
-        GD9OriginalStartGame
-    ){
-        GD9OriginalStartGame(
-            code
-        );
-    }
-
-    GD9Migrate();
-
-    GD9InitializeAIResources();
-
-    if(
-        state.aiNews.length<
-        8
-    ){
-        GD9GenerateAINews();
-
-        GD9GenerateAINews();
-
-        GD9GenerateAINews();
-    }
-
-    GD9InstallDock();
-
-    GD9Save();
-}
-
-
-/* =========================================================
-   INITIAL AI NEWS
-========================================================= */
-
-function GD9InitialNews()
-{
-    if(
-        !state.started
-    ){
-        return;
-    }
-
-    if(
-        state.aiNews.length>=
-        10
-    ){
-        return;
-    }
-
-    for(
-        let index=
-            0;
-        index<
-            4;
-        index++
-    ){
-        GD9GenerateAINews();
-    }
-}
-
-
-/* =========================================================
-   GLOBAL EXPORTS
-========================================================= */
-
-window.openEconomy=
-    GD9OpenEconomy;
-
-window.openInfrastructure=
-    GD9OpenInfrastructure;
-
-window.openTradeHub=
-    GD9OpenTradeHub;
-
-window.sendGD9TradeOffer=
-    GD9SendTradeOffer;
-
-window.filterGD9TradeCountries=
-    GD9FilterTradeCountries;
-
-window.openAIInbox=
-    GD9OpenAIInbox;
-
-window.respondGD9Proposal=
-    GD9RespondProposal;
-
-window.openCountryPanel=
-    GD9OpenCountryPanel;
-
-window.openGD9MissilePanel=
-    GD9OpenMissilePanel;
-
-window.launchGD9Missile=
-    GD9LaunchMissile;
-
-window.openGD9MissileHistory=
-    GD9OpenMissileHistory;
-
-window.nextDay=
-    GD9WrappedNextDay;
-
-if(
-    GD9OriginalProcessDailySimulation
-){
-    window.processDailySimulation=
-        GD9WrappedDailySimulation;
-}
-
-if(
-    GD9OriginalStartGame
-){
-    window.startGame=
-        GD9WrappedStartGame;
 }
 
 
@@ -7073,46 +2977,21 @@ if(
    BOOT
 ========================================================= */
 
-function GD9Boot()
-{
-    GD9Migrate();
+ensureState();
 
-    GD9FxLayer();
+fxLayer();
 
-    GD9InstallDock();
-
-    GD9InitialNews();
-
-    GD9Save();
-}
-
+installDock();
 
 if(
-    document.readyState===
-    "loading"
+    S.started &&
+    S.aiNews.length<
+    8
 ){
-    document.addEventListener(
-        "DOMContentLoaded",
-        function(){
-
-            setTimeout(
-                GD9Boot,
-                80
-            );
-
-        },
-        {
-            once:
-                true
-        }
-    );
+    genNews();
+    genNews();
 }
-else{
-    setTimeout(
-        GD9Boot,
-        80
-    );
-}
+
+save();
 
 })();
-   </script>
